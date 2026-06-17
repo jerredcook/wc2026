@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FIFA World Cup 2026 — Stadiums</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f7;color:#1a1a1a;padding:24px 16px}
+h1{font-size:22px;font-weight:600;margin-bottom:4px}
+.subtitle{font-size:14px;color:#555;margin-bottom:6px}
+.statusline{font-size:12px;color:#0d6b52;font-weight:600;margin-bottom:18px}
+.statusline .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#0d6b52;margin-right:5px;vertical-align:middle}
+.statusline .et{color:#555}
+
+.filter-panel{background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.filter-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px}
+.filter-row:last-child{margin-bottom:0}
+.filter-label{font-size:11px;font-weight:600;color:#999;letter-spacing:.06em;text-transform:uppercase;min-width:56px;flex-shrink:0}
+.filter-btns{display:flex;gap:5px;flex-wrap:wrap}
+
+.fbtn{font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:16px;background:#fff;cursor:pointer;transition:all .12s;white-space:nowrap}
+.fbtn:hover{border-color:#888;background:#f4f4f4}
+.fbtn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.fbtn.grp-active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+
+.team-select{font-size:13px;padding:4px 10px;border:1px solid #ddd;border-radius:16px;background:#fff;cursor:pointer;appearance:none;-webkit-appearance:none;min-width:180px;outline:none}
+.team-select:focus{border-color:#888}
+
+.summary{font-size:13px;color:#777;margin-bottom:14px;min-height:18px}
+.summary strong{color:#333}
+
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px}
+
+.card{background:#fff;border-radius:12px;padding:14px 16px 14px 20px;position:relative;overflow:hidden;box-shadow:0 1px 3px rgba(0,0,0,.08)}
+.bar{position:absolute;top:0;left:0;width:5px;height:100%}
+.city{font-size:10px;font-weight:600;color:#888;letter-spacing:.07em;text-transform:uppercase;margin-bottom:2px}
+.name{font-size:15px;font-weight:600;color:#111;line-height:1.25;margin-bottom:2px}
+.realname{font-size:12px;color:#777;margin-bottom:10px}
+.hometeams{margin-bottom:10px;display:flex;flex-direction:column;gap:4px}
+.teamrow{display:flex;align-items:center;gap:6px}
+.teamname{font-size:12px;color:#444}
+.sport{font-size:10px;font-weight:600;padding:1px 6px;border-radius:3px;white-space:nowrap}
+.sport-nfl{background:#e8eeff;color:#2040a0}
+.sport-mls{background:#e4f5ec;color:#1a6b3c}
+.sport-liga{background:#fef4dc;color:#7a5000}
+.sport-cfl{background:#fff0ea;color:#8a3010}
+.sport-other{background:#f0f0f0;color:#555}
+
+.match-head{font-size:10px;font-weight:600;color:#999;letter-spacing:.05em;text-transform:uppercase;border-top:1px solid #f0f0f0;padding-top:8px;margin-bottom:4px}
+.mrow{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid #f5f5f5}
+.mrow:last-child{border-bottom:none}
+.mrow.highlight{background:#fffbe6;border-radius:4px;padding-left:4px;padding-right:4px}
+.mrow.played{background:#fbfdfc}
+.mwhen{display:flex;flex-direction:column;gap:1px;min-width:60px;flex-shrink:0}
+.mdate{font-size:11px;font-weight:700;color:#777;line-height:1.15}
+.mtime{font-size:10px;font-weight:600;color:#aaa;font-variant-numeric:tabular-nums;line-height:1.15;white-space:nowrap}
+.mtime.xmtime{color:#c98a00}
+.xmnext{display:block;font-size:8.5px;font-weight:700;color:#c98a00;letter-spacing:.02em}
+.mgame{font-size:12px;flex:1;color:#222;line-height:1.3}
+.mgame .hl{font-weight:700;color:#1a1a1a}
+.mscore{font-weight:700;background:#eef0f2;border-radius:5px;padding:1px 6px;margin:0 3px;font-variant-numeric:tabular-nums;color:#1a1a1a;white-space:nowrap}
+.mscore .win{color:#0d6b52}
+.mscore .los{color:#9a9a9a}
+.ft{font-size:9px;font-weight:700;color:#0d6b52;background:#e2f5ee;border-radius:3px;padding:1px 5px;margin-left:5px;letter-spacing:.04em;white-space:nowrap}
+.rbadge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;white-space:nowrap;flex-shrink:0}
+.rb-group{background:#fef4dc;color:#7a5000}
+.rb-r32{background:#e2f5ee;color:#0d6b52}
+.rb-r16{background:#e6f0fb;color:#0c448c}
+.rb-qf{background:#f0eeff;color:#3c3499}
+.rb-sf{background:#feede8;color:#882010}
+.rb-3rd{background:#f0f0f0;color:#555}
+.rb-final{background:#f5c410;color:#3a2000}
+
+.no-results{text-align:center;padding:48px 20px;color:#aaa;font-size:14px}
+.legend{display:flex;gap:16px;flex-wrap:wrap;margin-bottom:18px;align-items:center}
+.leg{display:flex;align-items:center;gap:6px;font-size:12px;color:#555}
+.leg-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.reset-btn{font-size:12px;padding:4px 12px;border:1px solid #ddd;border-radius:16px;background:#fff;cursor:pointer;color:#c00;border-color:#f5c5c5;margin-left:6px}
+.reset-btn:hover{background:#fff5f5}
+
+.footnote{font-size:11px;color:#999;margin-top:20px;line-height:1.6;max-width:780px}
+.footnote .g{color:#c98a00;font-weight:600}
+
+/* ── Live score updating ── */
+.live-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fff;border-radius:12px;padding:10px 14px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.live-min{font-size:9px;font-weight:700;color:#d6322c;margin-left:4px;white-space:nowrap}
+.live-refresh{font-size:12px;font-weight:600;color:#333;border:1px solid #ddd;border-radius:14px;padding:4px 12px;background:#fafafa;cursor:pointer;white-space:nowrap}
+.live-refresh:hover{background:#f0f0f0}
+.live-refresh:disabled{opacity:.5;cursor:default}
+.live-status{font-size:11px;color:#888;flex:1;min-width:150px;line-height:1.4}
+.live-status .ok{color:#0d6b52;font-weight:700}
+.live-status .warn{color:#c98a00;font-weight:700}
+.live-status .spin{color:#0d6b52;font-weight:700}
+.live-badge{font-size:9px;font-weight:800;color:#fff;background:#d6322c;border-radius:3px;padding:1px 6px;margin-left:5px;letter-spacing:.04em;white-space:nowrap;animation:livepulse 1.3s ease-in-out infinite}
+@keyframes livepulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ── Warm-up friendlies section ── */
+.fr-section{background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.fr-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:10px}
+.fr-titlewrap{flex:1}
+.fr-title{font-size:15px;font-weight:700;color:#111}
+.fr-sub{font-size:11px;color:#888;margin-top:1px}
+.fr-toggle{font-size:12px;font-weight:600;color:#555;border:1px solid #ddd;border-radius:14px;padding:3px 11px;background:#fafafa;white-space:nowrap}
+.fr-toggle:hover{background:#f0f0f0}
+.fr-tabs{display:flex;gap:5px;margin:12px 0 10px;flex-wrap:wrap}
+.fr-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(244px,1fr));gap:10px}
+.fr-card{border:1px solid #eee;border-radius:10px;padding:10px 12px 11px 14px;position:relative;overflow:hidden;background:#fff}
+.fr-bar{position:absolute;top:0;left:0;width:4px;height:100%}
+.fr-dv{display:flex;justify-content:space-between;align-items:baseline;font-size:10px;color:#999;margin-bottom:7px;gap:8px}
+.fr-date{font-weight:700;color:#888;letter-spacing:.04em;text-transform:uppercase;flex-shrink:0}
+.fr-venue{text-align:right;line-height:1.2}
+.fr-match{display:flex;align-items:center;gap:7px}
+.fr-team{flex:1;font-size:12.5px;color:#222;line-height:1.2}
+.fr-th{text-align:right}
+.fr-ta{text-align:left}
+.fr-sb{font-weight:700;font-variant-numeric:tabular-nums;font-size:13px;background:#f4f5f6;border-radius:5px;padding:2px 7px;white-space:nowrap}
+.fr-win{color:#0d6b52}
+.fr-lose{color:#b03030}
+.fr-draw{color:#555}
+.fr-note{font-size:10px;color:#9a9a9a;margin-top:7px;text-align:center;font-style:italic;line-height:1.3}
+</style>
+</head>
+<body>
+
+<h1>FIFA World Cup 2026 — All 16 Stadiums</h1>
+<p class="subtitle">Matches by date &middot; Home teams &middot; June 11 – July 19, 2026</p>
+<p class="statusline"><span class="dot"></span><span class="et">All kickoff times U.S. Eastern (ET)</span> &middot; live &amp; final scores load on open and via the Refresh button</p>
+
+<div class="live-bar" id="liveBar">
+  <button class="live-refresh" id="liveRefreshBtn" onclick="refreshScores()">↻ Refresh latest scores</button>
+  <span class="live-status" id="liveStatus">Tap to pull the latest scores, including matches in progress. Works in Claude's view, or in a normal browser when the page is served over http(s).</span>
+</div>
+
+<div class="legend">
+  <span style="font-size:12px;color:#888;font-weight:600">Country:</span>
+  <div class="leg"><div class="leg-dot" style="background:#378ADD"></div>USA (11 venues)</div>
+  <div class="leg"><div class="leg-dot" style="background:#E24B4A"></div>Canada (2 venues)</div>
+  <div class="leg"><div class="leg-dot" style="background:#639922"></div>Mexico (3 venues)</div>
+</div>
+
+<!-- ══════════ WARM-UP FRIENDLIES ══════════ -->
+<div class="fr-section">
+  <div class="fr-head" onclick="toggleFriendlies()">
+    <div class="fr-titlewrap">
+      <div class="fr-title">⚽ Pre-Tournament Warm-up Friendlies</div>
+      <div class="fr-sub">Tune-up matches played across North America &middot; May 22 – Jun 10, 2026</div>
+    </div>
+    <span class="fr-toggle" id="fr-toggle">▼ Show</span>
+  </div>
+  <div id="fr-body" style="display:none">
+    <div class="fr-tabs" id="fr-tabs">
+      <button class="fbtn active" onclick="frFilter('all',this)">All</button>
+      <button class="fbtn" onclick="frFilter('USA',this)">In USA</button>
+      <button class="fbtn" onclick="frFilter('Mexico',this)">In Mexico</button>
+      <button class="fbtn" onclick="frFilter('Canada',this)">In Canada</button>
+    </div>
+    <div class="fr-grid" id="fr-grid"></div>
+  </div>
+</div>
+
+<div class="filter-panel">
+  <div class="filter-row">
+    <span class="filter-label">Country</span>
+    <div class="filter-btns">
+      <button class="fbtn active" onclick="setFilter('country','all',this)">All</button>
+      <button class="fbtn" onclick="setFilter('country','USA',this)">USA</button>
+      <button class="fbtn" onclick="setFilter('country','Canada',this)">Canada</button>
+      <button class="fbtn" onclick="setFilter('country','Mexico',this)">Mexico</button>
+    </div>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Group</span>
+    <div class="filter-btns" id="groupBtns">
+      <button class="fbtn active" onclick="setFilter('group','all',this)">All</button>
+    </div>
+  </div>
+  <div class="filter-row">
+    <span class="filter-label">Team</span>
+    <select class="team-select" id="teamSelect" onchange="setFilter('team',this.value,null)">
+      <option value="all">All teams</option>
+    </select>
+    <button class="reset-btn" id="resetBtn" onclick="resetAll()" style="display:none">&#x2715; Reset filters</button>
+  </div>
+</div>
+
+<div class="summary" id="summary"></div>
+<div class="grid" id="grid"></div>
+
+<p class="footnote">
+  All kickoff times are <strong>U.S. Eastern (ET)</strong>, matched to the FOX / Telemundo broadcast schedule.
+  Three late games kick off at <span class="g">12:00 AM ET</span> and roll past midnight into the next calendar day in Eastern (shown in gold, on their local match-night date):
+  Australia–Türkiye (Jun 13 local → Jun 14 ET), Austria–Jordan (Jun 16 → Jun 17 ET), and Tunisia–Japan (Jun 20 → Jun 21 ET — the 1,000th match in World Cup history).
+  Brazil–Haiti (Jun 19) is shown at 8:30 PM ET; a few outlets list it at 9:00 PM.
+  <br><br>
+  The <strong>Refresh latest scores</strong> button pulls current scores — including matches in progress (red LIVE badge + live minute) — from a public scoreboard when the page is served over http(s), or via Claude when open in Claude's view. A file opened straight from disk (file://) is blocked by the browser from making web requests, so it keeps the saved scores; the status line always tells you which it is.
+</p>
+
+<script>
+const state={country:'all',group:'all',team:'all'};
+
+/* Each match carries an ET kickoff time (t). Scores are NOT stored here —
+   they're pulled live by the Refresh button (and on load) from a public
+   scoreboard, so nothing in this file ever goes stale. Three late games
+   kick off at 12:00 AM ET and cross into the next day in Eastern — flagged
+   with xd (the Eastern next-day date). */
+const stadiums=[
+  {country:"Mexico",bar:"#639922",fifa:"Mexico City Stadium",real:"Estadio Azteca",city:"Mexico City, Mexico",cap:"87,600",
+   home:[{n:"Club América / Cruz Azul",s:"Liga MX"},{n:"Mexico NT",s:"CONCACAF"}],
+   m:[{d:"Jun 11",t:"3:00 PM",g:"Mexico vs South Africa",r:"Group A"},{d:"Jun 17",t:"10:00 PM",g:"Uzbekistan vs Colombia",r:"Group K"},{d:"Jun 24",t:"9:00 PM",g:"Czechia vs Mexico",r:"Group A"},{d:"Jun 30",t:"9:00 PM",g:"Round of 32",r:"R32"},{d:"Jul 5",t:"8:00 PM",g:"Round of 16",r:"R16"}]},
+  {country:"Mexico",bar:"#639922",fifa:"Guadalajara Stadium",real:"Estadio Akron",city:"Guadalajara, Mexico",cap:"49,850",
+   home:[{n:"CD Guadalajara — Chivas",s:"Liga MX"}],
+   m:[{d:"Jun 11",t:"10:00 PM",g:"South Korea vs Czechia",r:"Group A"},{d:"Jun 18",t:"9:00 PM",g:"Mexico vs South Korea",r:"Group A"},{d:"Jun 23",t:"10:00 PM",g:"Colombia vs DR Congo",r:"Group K"},{d:"Jun 26",t:"8:00 PM",g:"Uruguay vs Spain",r:"Group H"}]},
+  {country:"Mexico",bar:"#639922",fifa:"Monterrey Stadium",real:"Estadio BBVA",city:"Guadalupe, Mexico",cap:"53,500",
+   home:[{n:"CF Monterrey — Rayados",s:"Liga MX"}],
+   m:[{d:"Jun 14",t:"10:00 PM",g:"Sweden vs Tunisia",r:"Group F"},{d:"Jun 20",t:"12:00 AM",xd:"Jun 21",g:"Tunisia vs Japan",r:"Group F"},{d:"Jun 24",t:"9:00 PM",g:"South Africa vs South Korea",r:"Group A"},{d:"Jun 29",t:"9:00 PM",g:"Round of 32",r:"R32"}]},
+  {country:"Canada",bar:"#E24B4A",fifa:"Toronto Stadium",real:"BMO Field",city:"Toronto, Canada",cap:"45,736",
+   home:[{n:"Toronto FC",s:"MLS"},{n:"Canada NT",s:"CONCACAF"}],
+   m:[{d:"Jun 12",t:"3:00 PM",g:"Canada vs Bosnia",r:"Group B"},{d:"Jun 17",t:"7:00 PM",g:"Ghana vs Panama",r:"Group L"},{d:"Jun 20",t:"4:00 PM",g:"Germany vs Ivory Coast",r:"Group E"},{d:"Jun 23",t:"7:00 PM",g:"Panama vs Croatia",r:"Group L"},{d:"Jun 26",t:"3:00 PM",g:"Senegal vs Iraq",r:"Group I"},{d:"Jul 2",t:"7:00 PM",g:"Round of 32",r:"R32"}]},
+  {country:"Canada",bar:"#E24B4A",fifa:"Vancouver Stadium",real:"BC Place",city:"Vancouver, Canada",cap:"54,320",
+   home:[{n:"Vancouver Whitecaps",s:"MLS"},{n:"BC Lions",s:"CFL"}],
+   m:[{d:"Jun 13",t:"12:00 AM",xd:"Jun 14",g:"Australia vs Türkiye",r:"Group D"},{d:"Jun 15",t:"3:00 PM",g:"Belgium vs Egypt",r:"Group G"},{d:"Jun 18",t:"6:00 PM",g:"Canada vs Qatar",r:"Group B"},{d:"Jun 21",t:"9:00 PM",g:"New Zealand vs Egypt",r:"Group G"},{d:"Jun 24",t:"3:00 PM",g:"Switzerland vs Canada",r:"Group B"},{d:"Jun 26",t:"11:00 PM",g:"New Zealand vs Belgium",r:"Group G"},{d:"Jul 2",t:"11:00 PM",g:"Round of 32",r:"R32"},{d:"Jul 7",t:"4:00 PM",g:"Round of 16",r:"R16"}]},
+  {country:"USA",bar:"#378ADD",fifa:"Los Angeles Stadium",real:"SoFi Stadium",city:"Inglewood, CA",cap:"70,240",
+   home:[{n:"LA Rams / LA Chargers",s:"NFL"}],
+   m:[{d:"Jun 12",t:"9:00 PM",g:"USA vs Paraguay",r:"Group D"},{d:"Jun 15",t:"9:00 PM",g:"Iran vs New Zealand",r:"Group G"},{d:"Jun 18",t:"3:00 PM",g:"Switzerland vs Bosnia",r:"Group B"},{d:"Jun 21",t:"3:00 PM",g:"Belgium vs Iran",r:"Group G"},{d:"Jun 25",t:"10:00 PM",g:"Türkiye vs USA",r:"Group D"},{d:"Jun 28",t:"3:00 PM",g:"Round of 32",r:"R32"},{d:"Jul 2",t:"3:00 PM",g:"Round of 32",r:"R32"},{d:"Jul 10",t:"3:00 PM",g:"Quarterfinal",r:"QF"}]},
+  {country:"USA",bar:"#378ADD",fifa:"San Francisco Bay Area Stadium",real:"Levi's Stadium",city:"Santa Clara, CA",cap:"68,500",
+   home:[{n:"San Francisco 49ers",s:"NFL"}],
+   m:[{d:"Jun 13",t:"3:00 PM",g:"Qatar vs Switzerland",r:"Group B"},{d:"Jun 16",t:"12:00 AM",xd:"Jun 17",g:"Austria vs Jordan",r:"Group J"},{d:"Jun 19",t:"11:00 PM",g:"Türkiye vs Paraguay",r:"Group D"},{d:"Jun 22",t:"11:00 PM",g:"Jordan vs Algeria",r:"Group J"},{d:"Jun 25",t:"10:00 PM",g:"Paraguay vs Australia",r:"Group D"},{d:"Jul 1",t:"8:00 PM",g:"Round of 32",r:"R32"}]},
+  {country:"USA",bar:"#378ADD",fifa:"Seattle Stadium",real:"Lumen Field",city:"Seattle, WA",cap:"69,000",
+   home:[{n:"Seattle Seahawks",s:"NFL"},{n:"Seattle Sounders",s:"MLS"}],
+   m:[{d:"Jun 19",t:"3:00 PM",g:"USA vs Australia",r:"Group D"},{d:"Jun 24",t:"3:00 PM",g:"Bosnia vs Qatar",r:"Group B"},{d:"Jun 26",t:"11:00 PM",g:"Egypt vs Iran",r:"Group G"},{d:"Jul 1",t:"4:00 PM",g:"Round of 32",r:"R32"},{d:"Jul 6",t:"8:00 PM",g:"Round of 16",r:"R16"}]},
+  {country:"USA",bar:"#378ADD",fifa:"New York New Jersey Stadium",real:"MetLife Stadium",city:"East Rutherford, NJ",cap:"82,500",
+   home:[{n:"NY Giants / NY Jets",s:"NFL"}],
+   m:[{d:"Jun 13",t:"6:00 PM",g:"Brazil vs Morocco",r:"Group C"},{d:"Jun 16",t:"3:00 PM",g:"France vs Senegal",r:"Group I"},{d:"Jun 22",t:"8:00 PM",g:"Norway vs Senegal",r:"Group I"},{d:"Jun 25",t:"4:00 PM",g:"Ecuador vs Germany",r:"Group E"},{d:"Jun 27",t:"5:00 PM",g:"Panama vs England",r:"Group L"},{d:"Jun 30",t:"5:00 PM",g:"Round of 32",r:"R32"},{d:"Jul 5",t:"4:00 PM",g:"Round of 16",r:"R16"},{d:"Jul 19",t:"3:00 PM",g:"Final",r:"Final"}]},
+  {country:"USA",bar:"#378ADD",fifa:"Boston Stadium",real:"Gillette Stadium",city:"Foxborough, MA",cap:"65,878",
+   home:[{n:"New England Patriots",s:"NFL"},{n:"NE Revolution",s:"MLS"}],
+   m:[{d:"Jun 13",t:"9:00 PM",g:"Haiti vs Scotland",r:"Group C"},{d:"Jun 16",t:"6:00 PM",g:"Iraq vs Norway",r:"Group I"},{d:"Jun 19",t:"6:00 PM",g:"Scotland vs Morocco",r:"Group C"},{d:"Jun 23",t:"4:00 PM",g:"England vs Ghana",r:"Group L"},{d:"Jun 26",t:"3:00 PM",g:"Norway vs France",r:"Group I"},{d:"Jun 29",t:"4:30 PM",g:"Round of 32",r:"R32"},{d:"Jul 9",t:"4:00 PM",g:"Quarterfinal",r:"QF"}]},
+  {country:"USA",bar:"#378ADD",fifa:"Philadelphia Stadium",real:"Lincoln Financial Field",city:"Philadelphia, PA",cap:"69,796",
+   home:[{n:"Philadelphia Eagles",s:"NFL"}],
+   m:[{d:"Jun 14",t:"7:00 PM",g:"Ivory Coast vs Ecuador",r:"Group E"},{d:"Jun 19",t:"8:30 PM",g:"Brazil vs Haiti",r:"Group C"},{d:"Jun 22",t:"5:00 PM",g:"France vs Iraq",r:"Group I"},{d:"Jun 25",t:"4:00 PM",g:"Curaçao vs Ivory Coast",r:"Group E"},{d:"Jun 27",t:"5:00 PM",g:"Croatia vs Ghana",r:"Group L"},{d:"Jul 4",t:"5:00 PM",g:"Round of 16",r:"R16"}]},
+  {country:"USA",bar:"#378ADD",fifa:"Atlanta Stadium",real:"Mercedes-Benz Stadium",city:"Atlanta, GA",cap:"71,000",
+   home:[{n:"Atlanta Falcons",s:"NFL"},{n:"Atlanta United",s:"MLS"}],
+   m:[{d:"Jun 15",t:"12:00 PM",g:"Spain vs Cape Verde",r:"Group H"},{d:"Jun 18",t:"12:00 PM",g:"Czechia vs South Africa",r:"Group A"},{d:"Jun 21",t:"12:00 PM",g:"Spain vs Saudi Arabia",r:"Group H"},{d:"Jun 24",t:"6:00 PM",g:"Morocco vs Haiti",r:"Group C"},{d:"Jun 27",t:"7:30 PM",g:"DR Congo vs Uzbekistan",r:"Group K"},{d:"Jul 1",t:"12:00 PM",g:"Round of 32",r:"R32"},{d:"Jul 7",t:"12:00 PM",g:"Round of 16",r:"R16"},{d:"Jul 15",t:"3:00 PM",g:"Semifinal",r:"SF"}]},
+  {country:"USA",bar:"#378ADD",fifa:"Miami Stadium",real:"Hard Rock Stadium",city:"Miami Gardens, FL",cap:"65,326",
+   home:[{n:"Miami Dolphins",s:"NFL"},{n:"Inter Miami CF",s:"MLS"}],
+   m:[{d:"Jun 15",t:"6:00 PM",g:"Saudi Arabia vs Uruguay",r:"Group H"},{d:"Jun 21",t:"6:00 PM",g:"Uruguay vs Cape Verde",r:"Group H"},{d:"Jun 24",t:"6:00 PM",g:"Scotland vs Brazil",r:"Group C"},{d:"Jun 27",t:"7:30 PM",g:"Colombia vs Portugal",r:"Group K"},{d:"Jul 3",t:"6:00 PM",g:"Round of 32",r:"R32"},{d:"Jul 11",t:"5:00 PM",g:"Quarterfinal",r:"QF"},{d:"Jul 18",t:"5:00 PM",g:"Third place",r:"3rd"}]},
+  {country:"USA",bar:"#378ADD",fifa:"Houston Stadium",real:"NRG Stadium",city:"Houston, TX",cap:"72,220",
+   home:[{n:"Houston Texans",s:"NFL"}],
+   m:[{d:"Jun 14",t:"1:00 PM",g:"Germany vs Curaçao",r:"Group E"},{d:"Jun 17",t:"1:00 PM",g:"Portugal vs DR Congo",r:"Group K"},{d:"Jun 20",t:"1:00 PM",g:"Netherlands vs Sweden",r:"Group F"},{d:"Jun 23",t:"1:00 PM",g:"Portugal vs Uzbekistan",r:"Group K"},{d:"Jun 26",t:"8:00 PM",g:"Cape Verde vs Saudi Arabia",r:"Group H"},{d:"Jun 29",t:"1:00 PM",g:"Round of 32",r:"R32"},{d:"Jul 4",t:"1:00 PM",g:"Round of 16",r:"R16"}]},
+  {country:"USA",bar:"#378ADD",fifa:"Dallas Stadium",real:"AT&T Stadium",city:"Arlington, TX",cap:"80,000+",
+   home:[{n:"Dallas Cowboys",s:"NFL"}],
+   m:[{d:"Jun 14",t:"4:00 PM",g:"Netherlands vs Japan",r:"Group F"},{d:"Jun 17",t:"4:00 PM",g:"England vs Croatia",r:"Group L"},{d:"Jun 22",t:"1:00 PM",g:"Argentina vs Austria",r:"Group J"},{d:"Jun 25",t:"7:00 PM",g:"Japan vs Sweden",r:"Group F"},{d:"Jun 27",t:"10:00 PM",g:"Jordan vs Argentina",r:"Group J"},{d:"Jun 30",t:"1:00 PM",g:"Round of 32",r:"R32"},{d:"Jul 3",t:"2:00 PM",g:"Round of 32",r:"R32"},{d:"Jul 6",t:"3:00 PM",g:"Round of 16",r:"R16"},{d:"Jul 14",t:"3:00 PM",g:"Semifinal",r:"SF"}]},
+  {country:"USA",bar:"#378ADD",fifa:"Kansas City Stadium",real:"Arrowhead Stadium",city:"Kansas City, MO",cap:"76,416",
+   home:[{n:"Kansas City Chiefs",s:"NFL"}],
+   m:[{d:"Jun 16",t:"9:00 PM",g:"Argentina vs Algeria",r:"Group J"},{d:"Jun 20",t:"8:00 PM",g:"Ecuador vs Curaçao",r:"Group E"},{d:"Jun 25",t:"7:00 PM",g:"Tunisia vs Netherlands",r:"Group F"},{d:"Jun 27",t:"10:00 PM",g:"Algeria vs Austria",r:"Group J"},{d:"Jul 3",t:"9:30 PM",g:"Round of 32",r:"R32"},{d:"Jul 11",t:"9:00 PM",g:"Quarterfinal",r:"QF"}]},
+];
+
+/* ══════════ WARM-UP FRIENDLY DATA ══════════
+   Pre-tournament tune-ups played in the host nations (May 22 – Jun 10, 2026).
+   host = country the match was played in. Canada venues were not confirmed
+   in the sources available. */
+const friendlies=[
+  {host:"Mexico",bar:"#639922",date:"May 22",venue:"Estadio Cuauhtémoc, Puebla",h:"Mexico",a:"Ghana",hs:2,as:0},
+  {host:"Mexico",bar:"#639922",date:"Jun 4",venue:"Estadio Nemesio Díez, Toluca",h:"Mexico",a:"Serbia",hs:5,as:1,note:"Biggest rout of the warm-up window"},
+  {host:"Mexico",bar:"#639922",date:"Jun 8",venue:"Estadio Cuauhtémoc, Puebla",h:"Spain",a:"Peru",hs:3,as:1,note:"Spain's last tune-up"},
+  {host:"USA",bar:"#378ADD",date:"May 30",venue:"Rose Bowl, Pasadena",h:"Mexico",a:"Australia",hs:1,as:0},
+  {host:"USA",bar:"#378ADD",date:"May 31",venue:"Charlotte, NC",h:"USA",a:"Senegal",hs:3,as:2,note:"Pulisic ends scoring drought"},
+  {host:"USA",bar:"#378ADD",date:"Jun 6",venue:"Soldier Field, Chicago",h:"USA",a:"Germany",hs:1,as:2,note:"Robinson screamer not enough"},
+  {host:"USA",bar:"#378ADD",date:"Jun 6",venue:"Tampa, FL",h:"England",a:"New Zealand",hs:1,as:0,note:"Kane header"},
+  {host:"USA",bar:"#378ADD",date:"Jun 6",venue:"Cleveland, OH",h:"Brazil",a:"Egypt",hs:2,as:1,note:"Endrick winner"},
+  {host:"USA",bar:"#378ADD",date:"Jun 6",venue:"San Diego, CA",h:"Australia",a:"Switzerland",hs:1,as:1},
+  {host:"USA",bar:"#378ADD",date:"Jun 6",venue:"Fort Lauderdale, FL",h:"Venezuela",a:"Türkiye",hs:1,as:2},
+  {host:"USA",bar:"#378ADD",date:"Jun 7",venue:"Kyle Field, College Station",h:"Argentina",a:"Honduras",hs:2,as:0},
+  {host:"USA",bar:"#378ADD",date:"Jun 7",venue:"Red Bull Arena, Harrison NJ",h:"Morocco",a:"Norway",hs:1,as:1},
+  {host:"USA",bar:"#378ADD",date:"Jun 9",venue:"Jordan-Hare Stadium, Auburn AL",h:"Argentina",a:"Iceland",hs:3,as:0,note:"Messi off the bench, scores a penalty"},
+  {host:"USA",bar:"#378ADD",date:"Jun 10",venue:"Inter&Co Stadium, Orlando",h:"England",a:"Costa Rica",hs:3,as:0},
+  {host:"Canada",bar:"#E24B4A",date:"Jun",venue:"Venue not confirmed",h:"Canada",a:"Uzbekistan",hs:2,as:0},
+  {host:"Canada",bar:"#E24B4A",date:"Jun",venue:"Venue not confirmed",h:"Canada",a:"Rep. of Ireland",hs:1,as:1},
+];
+
+function sportClass(s){
+  return s==="NFL"?"sport-nfl":s==="MLS"?"sport-mls":s==="Liga MX"?"sport-liga":s==="CFL"?"sport-cfl":"sport-other";
+}
+function roundClass(r){
+  if(r.startsWith("Group"))return"rb-group";
+  if(r==="R32")return"rb-r32";
+  if(r==="R16")return"rb-r16";
+  if(r==="QF")return"rb-qf";
+  if(r==="SF")return"rb-sf";
+  if(r==="3rd")return"rb-3rd";
+  if(r==="Final")return"rb-final";
+  return"rb-group";
+}
+function roundLabel(r){
+  return r.startsWith("Group")?r.replace("Group ","Grp "):r;
+}
+
+function teamInMatch(team, matchStr){
+  if(!matchStr.includes(" vs "))return false;
+  const parts=matchStr.split(" vs ");
+  return parts[0].trim()===team||parts[1].trim()===team;
+}
+
+function matchVisible(m){
+  const groupOk=state.group==="all"||(m.r===`Group ${state.group}`);
+  const teamOk=state.team==="all"||teamInMatch(state.team,m.g);
+  return groupOk&&teamOk;
+}
+
+function highlightGame(gameStr){
+  if(state.team==="all"||!gameStr.includes(" vs "))return gameStr;
+  const parts=gameStr.split(" vs ");
+  return parts.map(p=>p.trim()===state.team?`<span class="hl">${p}</span>`:p).join(" vs ");
+}
+
+/* Renders the match text. If the match has a final score (sc),
+   shows "Home  H–A  Away  FT" with the winning number highlighted. */
+function gameHTML(m){
+  if(m.sc&&m.g.includes(" vs ")){
+    const [home,away]=m.g.split(" vs ").map(x=>x.trim());
+    const [hs,as_]=m.sc.split("-");
+    const hN=Number(hs),aN=Number(as_);
+    const hCls=hN>aN?"win":(hN<aN?"los":"");
+    const aCls=aN>hN?"win":(aN<hN?"los":"");
+    const homeEl=(state.team!=="all"&&home===state.team)?`<span class="hl">${home}</span>`:home;
+    const awayEl=(state.team!=="all"&&away===state.team)?`<span class="hl">${away}</span>`:away;
+    const tag=m.live?`<span class="live-badge">● LIVE</span>`+(m.clock?`<span class="live-min">${m.clock}'</span>`:``):`<span class="ft">FT</span>`;
+    return `${homeEl}<span class="mscore"><span class="${hCls}">${hs}</span>–<span class="${aCls}">${as_}</span></span>${awayEl}${tag}`;
+  }
+  return highlightGame(m.g);
+}
+
+/* Renders the stacked date + ET kickoff time. Midnight crossers (xd)
+   show their time in gold with a "→ next-day ET" tag. */
+function whenHTML(m){
+  if(!m.t)return `<span class="mwhen"><span class="mdate">${m.d}</span></span>`;
+  const xm=!!m.xd;
+  const tcls=xm?"mtime xmtime":"mtime";
+  const next=xm?`<span class="xmnext">→ ${m.xd} ET</span>`:"";
+  return `<span class="mwhen"><span class="mdate">${m.d}</span><span class="${tcls}">${m.t}${next}</span></span>`;
+}
+
+function buildGrid(){
+  const grid=document.getElementById("grid");
+  const filtered=stadiums.filter(s=>{
+    if(state.country!=="all"&&s.country!==state.country)return false;
+    return s.m.some(matchVisible);
+  });
+
+  if(filtered.length===0){
+    grid.innerHTML='<div class="no-results">No matches found for the selected filters.</div>';
+    updateSummary(0,0);
+    return;
+  }
+
+  let totalMatches=0;
+  grid.innerHTML=filtered.map(s=>{
+    const visM=s.m.filter(matchVisible);
+    totalMatches+=visM.length;
+    const homeHtml=s.home.map(h=>`<div class="teamrow"><span class="teamname">${h.n}</span><span class="sport ${sportClass(h.s)}">${h.s}</span></div>`).join("");
+    const matchHtml=visM.map(m=>{
+      const hl=state.team!=="all"&&teamInMatch(state.team,m.g);
+      const played=!!m.sc;
+      const cls=(hl?" highlight":"")+(played&&!hl?" played":"");
+      return`<div class="mrow${cls}">${whenHTML(m)}<span class="mgame">${gameHTML(m)}</span><span class="rbadge ${roundClass(m.r)}">${roundLabel(m.r)}</span></div>`;
+    }).join("");
+    return`<div class="card">
+      <div class="bar" style="background:${s.bar}"></div>
+      <div class="city">${s.city} &middot; ${s.country}</div>
+      <div class="name">${s.fifa}</div>
+      <div class="realname">${s.real} &middot; Cap. ${s.cap}</div>
+      <div class="hometeams">${homeHtml}</div>
+      <div class="match-head">${visM.length} match${visM.length!==1?"es":""}</div>
+      ${matchHtml}
+    </div>`;
+  }).join("");
+
+  updateSummary(filtered.length,totalMatches);
+}
+
+function updateSummary(venues,matches){
+  const parts=[];
+  if(state.country!=="all")parts.push(state.country);
+  if(state.group!=="all")parts.push(`Group ${state.group}`);
+  if(state.team!=="all")parts.push(state.team);
+  const desc=parts.length?` &mdash; ${parts.join(", ")}`:""
+  document.getElementById("summary").innerHTML=
+    `<strong>${venues}</strong> venue${venues!==1?"s":""} &middot; <strong>${matches}</strong> match${matches!==1?"es":""}${desc}`;
+  document.getElementById("resetBtn").style.display=parts.length?"":"none";
+}
+
+function setFilter(type,val,btn){
+  state[type]=val;
+  if(btn){
+    if(type==="country"){
+      document.querySelectorAll(".filter-row:nth-child(1) .fbtn").forEach(b=>b.classList.remove("active"));
+    } else if(type==="group"){
+      document.querySelectorAll("#groupBtns .fbtn").forEach(b=>b.classList.remove("active"));
+    }
+    btn.classList.add("active");
+  }
+  if(type==="team"){
+    document.getElementById("teamSelect").value=val;
+  }
+  buildGrid();
+}
+
+function resetAll(){
+  state.country="all";state.group="all";state.team="all";
+  document.querySelectorAll(".filter-row:nth-child(1) .fbtn").forEach((b,i)=>b.classList.toggle("active",i===0));
+  document.querySelectorAll("#groupBtns .fbtn").forEach((b,i)=>b.classList.toggle("active",i===0));
+  document.getElementById("teamSelect").value="all";
+  buildGrid();
+}
+
+/* ══════════ FRIENDLIES RENDER + CONTROLS ══════════ */
+const frState={host:"all"};
+
+function buildFriendlies(){
+  const grid=document.getElementById("fr-grid");
+  const data=frState.host==="all"?friendlies:friendlies.filter(f=>f.host===frState.host);
+  grid.innerHTML=data.map(f=>{
+    const hCls=f.hs>f.as?"fr-win":(f.hs<f.as?"fr-lose":"fr-draw");
+    const aCls=f.as>f.hs?"fr-win":(f.as<f.hs?"fr-lose":"fr-draw");
+    const note=f.note?`<div class="fr-note">${f.note}</div>`:"";
+    return`<div class="fr-card">
+      <div class="fr-bar" style="background:${f.bar}"></div>
+      <div class="fr-dv"><span class="fr-date">${f.date}</span><span class="fr-venue">${f.venue}</span></div>
+      <div class="fr-match">
+        <span class="fr-team fr-th">${f.h}</span>
+        <span class="fr-sb"><span class="${hCls}">${f.hs}</span>–<span class="${aCls}">${f.as}</span></span>
+        <span class="fr-team fr-ta">${f.a}</span>
+      </div>
+      ${note}
+    </div>`;
+  }).join("");
+}
+
+function frFilter(host,btn){
+  frState.host=host;
+  document.querySelectorAll("#fr-tabs .fbtn").forEach(b=>b.classList.remove("active"));
+  btn.classList.add("active");
+  buildFriendlies();
+}
+
+function toggleFriendlies(){
+  const body=document.getElementById("fr-body");
+  const tog=document.getElementById("fr-toggle");
+  if(body.style.display==="none"){
+    body.style.display="";
+    tog.textContent="▲ Hide";
+  } else {
+    body.style.display="none";
+    tog.textContent="▼ Show";
+  }
+}
+
+/* ══════════ LIVE SCORE UPDATING ══════════
+   While this page runs inside Claude's artifact view, its script can ask
+   Claude (via the Anthropic API) to web-search current World Cup scores and
+   merge them in. If that call isn't available — e.g. a downloaded copy opened
+   on your own machine — it fails gracefully and keeps the saved scores, and
+   the status line says so plainly. */
+const liveState={busy:false};
+
+const TEAM_ALIASES={
+  "united states":"USA","usa":"USA","us":"USA","usmnt":"USA",
+  "korea republic":"South Korea","south korea":"South Korea","korea":"South Korea",
+  "turkiye":"Türkiye","turkey":"Türkiye",
+  "cote divoire":"Ivory Coast","cote d ivoire":"Ivory Coast","ivory coast":"Ivory Coast",
+  "curacao":"Curaçao",
+  "cabo verde":"Cape Verde","cape verde":"Cape Verde",
+  "dr congo":"DR Congo","democratic republic of the congo":"DR Congo","congo dr":"DR Congo",
+  "bosnia and herzegovina":"Bosnia","bosnia herzegovina":"Bosnia","bosnia":"Bosnia",
+  "czech republic":"Czechia","czechia":"Czechia",
+  "ir iran":"Iran","iran":"Iran","korea dpr":"South Korea"
+};
+/* Reduce any team name to a comparison key, applying aliases. */
+function canon(name){
+  const flat=String(name||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z ]/g,"").replace(/\s+/g," ").trim();
+  const mapped=TEAM_ALIASES[flat]||name;
+  return String(mapped).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z]/g,"");
+}
+
+async function fetchLiveScores(){
+  const prompt='Use web search to find the live or most recent scores for 2026 FIFA World Cup matches being played today. Reply with ONLY a JSON array, no markdown fences and no commentary. Each item must be {"home":string,"away":string,"hs":number|null,"as":number|null,"status":"LIVE"|"FT"|"UPCOMING","minute":string|null}. Use short English team names such as USA, South Korea, Ivory Coast, Turkiye, Curacao, DR Congo, Cape Verde, Bosnia. hs and as are goals scored so far (null if the match has not started). minute is the current match minute for LIVE games (e.g. "67" or "90+2"), otherwise null. If no matches are on today, reply with [].';
+  const res=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      model:"claude-sonnet-4-6",
+      max_tokens:1000,
+      messages:[{role:"user",content:prompt}],
+      tools:[{type:"web_search_20250305",name:"web_search"}]
+    })
+  });
+  if(!res.ok)throw new Error("api "+res.status);
+  const data=await res.json();
+  const text=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("").trim();
+  const start=text.indexOf("["),end=text.lastIndexOf("]");
+  if(start<0||end<0)throw new Error("no json in response");
+  return JSON.parse(text.slice(start,end+1));
+}
+
+/* Merge fetched results into the fixtures, matching by team pair (either order). */
+function applyLive(results){
+  let updated=0;
+  (results||[]).forEach(r=>{
+    if(r.hs==null||r.as==null)return;
+    const rk1=canon(r.home),rk2=canon(r.away);
+    if(!rk1||!rk2)return;
+    for(const s of stadiums){
+      for(const m of s.m){
+        if(!m.g.includes(" vs "))continue;
+        const [h,a]=m.g.split(" vs ").map(x=>x.trim());
+        const k1=canon(h),k2=canon(a);
+        if((k1===rk1&&k2===rk2)||(k1===rk2&&k2===rk1)){
+          m.sc=((k1===rk1)?r.hs:r.as)+"-"+((k1===rk1)?r.as:r.hs);
+          m.live=(r.status==="LIVE");
+          m.clock=(m.live&&r.minute)?String(r.minute).replace(/['′]/g,""):null;
+          updated++;
+        }
+      }
+    }
+  });
+  return updated;
+}
+
+function setLiveStatus(html){document.getElementById("liveStatus").innerHTML=html;}
+
+/* Public, keyless source — works in a normal browser when the page is
+   served over http(s). ESPN's scoreboard sends permissive CORS headers.
+   We pull each tournament day from Jun 11 through today, so one refresh
+   backfills every completed result plus anything live right now. */
+function parseESPNEvent(ev,out){
+  try{
+    const comp=(ev.competitions&&ev.competitions[0])||{};
+    const cs=comp.competitors||[];
+    const home=cs.find(function(c){return c.homeAway==="home";})||cs[0];
+    const away=cs.find(function(c){return c.homeAway==="away";})||cs[1];
+    if(!home||!away)return;
+    const stt=((ev.status||comp.status||{}).type)||{};
+    const state=stt.state; // "pre" | "in" | "post"
+    const status=state==="in"?"LIVE":(state==="post"?"FT":"UPCOMING");
+    const hs=status==="UPCOMING"?null:parseInt(home.score,10);
+    const as=status==="UPCOMING"?null:parseInt(away.score,10);
+    const clk=(ev.status||comp.status||{}).displayClock;
+    out.push({
+      home:(home.team&&(home.team.displayName||home.team.shortDisplayName||home.team.name))||"",
+      away:(away.team&&(away.team.displayName||away.team.shortDisplayName||away.team.name))||"",
+      hs:isNaN(hs)?null:hs,
+      as:isNaN(as)?null:as,
+      status:status,
+      minute:(status==="LIVE"&&clk)?clk:null
+    });
+  }catch(e){}
+}
+async function fetchScoresFromESPN(){
+  const base="https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
+  const start=new Date(2026,5,11);   // Jun 11, 2026 (month is 0-based)
+  const cap=new Date(2026,6,19);     // Jul 19, 2026
+  let end=new Date();
+  if(end>cap)end=cap;
+  if(end<start)end=new Date(start);
+  const days=[];
+  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
+    days.push(""+d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0"));
+  }
+  const responses=await Promise.all(days.map(function(ds){
+    return fetch(base+"?dates="+ds,{cache:"no-store"})
+      .then(function(r){return r.ok?r.json():null;})
+      .catch(function(){return null;});
+  }));
+  let anyOk=false;
+  const out=[];
+  responses.forEach(function(data){
+    if(!data)return;
+    anyOk=true;
+    (data.events||[]).forEach(function(ev){parseESPNEvent(ev,out);});
+  });
+  if(!anyOk)throw new Error("espn unreachable");
+  return out;
+}
+
+async function refreshScores(){
+  if(liveState.busy)return;
+  liveState.busy=true;
+  const btn=document.getElementById("liveRefreshBtn");
+  btn.disabled=true;
+  setLiveStatus('<span class="spin">Checking live scores…</span>');
+  let results=null,reached=false;
+  // 1) Public endpoint first (works in a normal hosted browser tab)…
+  try{results=await fetchScoresFromESPN();reached=true;}catch(e){}
+  // 2) …then Claude's own search (works inside Claude's artifact view).
+  if(!reached||!results||!results.length){
+    try{const r=await fetchLiveScores();if(r){results=r;reached=true;}}catch(e){}
+  }
+  const t=new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
+  if(reached&&results){
+    const n=applyLive(results);
+    buildGrid();
+    if(n>0)setLiveStatus('<span class="ok">✓ Updated</span> '+n+' match'+(n!==1?"es":"")+' &middot; last checked '+t);
+    else setLiveStatus('<span class="ok">✓ Checked</span> &middot; no World Cup matches in progress right now &middot; '+t);
+  }else{
+    setLiveStatus('<span class="warn">Couldn\'t reach a live source from here</span> — showing saved scores. Works in Claude\'s view, or host the page over http(s) for a normal browser.');
+  }
+  liveState.busy=false;
+  btn.disabled=false;
+}
+
+(function init(){
+  const groups=["A","B","C","D","E","F","G","H","I","J","K","L"];
+  const gpDiv=document.getElementById("groupBtns");
+  groups.forEach(g=>{
+    const b=document.createElement("button");
+    b.className="fbtn";
+    b.textContent=g;
+    b.onclick=function(){setFilter("group",g,this);};
+    gpDiv.appendChild(b);
+  });
+
+  const allTeams=[...new Set(
+    stadiums.flatMap(s=>s.m.filter(m=>m.g.includes(" vs ")).flatMap(m=>m.g.split(" vs ").map(t=>t.trim())))
+  )].sort((a,b)=>a.localeCompare(b));
+
+  const sel=document.getElementById("teamSelect");
+  allTeams.forEach(t=>{
+    const o=document.createElement("option");
+    o.value=t;o.textContent=t;
+    sel.appendChild(o);
+  });
+
+  buildFriendlies();
+  buildGrid();
+  refreshScores(); // auto-pull scores on load (works when hosted or in Claude's view)
+})();
+</script>
+</body>
+</html>
