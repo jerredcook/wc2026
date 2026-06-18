@@ -119,13 +119,46 @@ h1{font-size:22px;font-weight:600;margin-bottom:4px}
 .fr-lose{color:#b03030}
 .fr-draw{color:#555}
 .fr-note{font-size:10px;color:#9a9a9a;margin-top:7px;text-align:center;font-style:italic;line-height:1.3}
+
+/* ── Group standings ── */
+.st-section{background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.st-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:10px}
+.st-titlewrap{flex:1}
+.st-title{font-size:15px;font-weight:700;color:#111}
+.st-sub{font-size:11px;color:#888;margin-top:1px}
+.st-toggle{font-size:12px;font-weight:600;color:#555;border:1px solid #ddd;border-radius:14px;padding:3px 11px;background:#fafafa;white-space:nowrap}
+.st-toggle:hover{background:#f0f0f0}
+.st-updated{font-size:11px;color:#888;margin:12px 0 2px}
+.st-updated .ok{color:#0d6b52;font-weight:700}
+.st-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(288px,1fr));gap:12px;margin-top:8px}
+.st-card{border:1px solid #eee;border-radius:10px;overflow:hidden;background:#fff}
+.st-gh{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#555;background:#f7f7f8;padding:7px 11px;border-bottom:1px solid #eee}
+.st-table{width:100%;border-collapse:collapse;font-size:12px}
+.st-table th{font-size:9px;font-weight:700;color:#aaa;letter-spacing:.02em;text-transform:uppercase;padding:5px 3px;text-align:center;border-bottom:1px solid #f0f0f0}
+.st-table th.tl{text-align:left;padding-left:11px}
+.st-table td{padding:5px 3px;text-align:center;border-bottom:1px solid #f6f6f6;font-variant-numeric:tabular-nums;color:#555}
+.st-table tr:last-child td{border-bottom:none}
+.st-table td.tl{text-align:left;padding-left:11px;color:#1a1a1a;font-weight:600;white-space:nowrap}
+.st-table td.pts{font-weight:800;color:#1a1a1a}
+.st-pos{display:inline-block;width:15px;height:15px;line-height:15px;border-radius:50%;font-size:9px;font-weight:700;margin-right:6px;text-align:center;color:#fff}
+.st-q1 .st-pos,.st-q2 .st-pos{background:#0d8a4f}
+.st-q3 .st-pos{background:#c98a00}
+.st-q4 .st-pos{background:#bdbdbd}
+.st-q1,.st-q2{background:#f3fbf6}
+.st-q3{background:#fffaef}
+.st-gd-pos{color:#0d6b52}
+.st-gd-neg{color:#b03030}
+.st-live{font-size:10px;color:#d6322c;font-weight:600;padding:6px 11px;border-top:1px solid #f0f0f0;background:#fffafa;line-height:1.4}
+.st-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:10.5px;color:#777;margin-top:13px;align-items:center}
+.st-legend .sw{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:middle}
+.st-foot{font-size:10.5px;color:#9a9a9a;margin-top:9px;line-height:1.55}
 </style>
 </head>
 <body>
 
 <h1>FIFA World Cup 2026 — All 16 Stadiums</h1>
 <p class="subtitle">Matches by date &middot; Home teams &middot; June 11 – July 19, 2026</p>
-<p class="statusline"><span class="dot"></span><span class="et">All kickoff times U.S. Eastern (ET)</span> &middot; live &amp; final scores load on open and via the Refresh button</p>
+<p class="statusline"><span class="dot"></span><span class="et">All kickoff times U.S. Eastern (ET)</span> &middot; live &amp; final scores and group standings load on open and via the Refresh button</p>
 
 <div class="live-bar" id="liveBar">
   <button class="live-refresh" id="liveRefreshBtn" onclick="refreshScores()">↻ Refresh latest scores</button>
@@ -137,6 +170,27 @@ h1{font-size:22px;font-weight:600;margin-bottom:4px}
   <div class="leg"><div class="leg-dot" style="background:#378ADD"></div>USA (11 venues)</div>
   <div class="leg"><div class="leg-dot" style="background:#E24B4A"></div>Canada (2 venues)</div>
   <div class="leg"><div class="leg-dot" style="background:#639922"></div>Mexico (3 venues)</div>
+</div>
+
+<!-- ══════════ GROUP STANDINGS ══════════ -->
+<div class="st-section">
+  <div class="st-head" onclick="toggleStandings()">
+    <div class="st-titlewrap">
+      <div class="st-title">📊 Group Standings — Live</div>
+      <div class="st-sub">All 12 groups &middot; top 2 advance, plus the 8 best 3rd-place teams &middot; built from the live scores above</div>
+    </div>
+    <span class="st-toggle" id="st-toggle">▲ Hide</span>
+  </div>
+  <div id="st-body">
+    <div class="st-updated" id="st-updated">Tables build from completed group matches — pull the latest scores to bring them current.</div>
+    <div class="st-grid" id="st-grid"></div>
+    <div class="st-legend">
+      <span><span class="sw" style="background:#0d8a4f"></span>1st–2nd → Round of 32</span>
+      <span><span class="sw" style="background:#c98a00"></span>3rd → in the running (8 best advance)</span>
+      <span><span class="sw" style="background:#bdbdbd"></span>4th → eliminated</span>
+    </div>
+    <div class="st-foot">P played &middot; W won &middot; D drawn &middot; L lost &middot; GF goals for &middot; GA against &middot; GD goal difference &middot; Pts points. Sorted by points, then goal difference, then goals scored. FIFA's official tiebreakers apply head-to-head results first and finish with team-conduct and FIFA-ranking, so a final table level on points can differ slightly. In-progress matches are listed below their group and counted once they finish.</div>
+  </div>
 </div>
 
 <!-- ══════════ WARM-UP FRIENDLIES ══════════ -->
@@ -200,10 +254,11 @@ h1{font-size:22px;font-weight:600;margin-bottom:4px}
 const state={country:'all',group:'all',team:'all'};
 
 /* Each match carries an ET kickoff time (t). Scores are NOT stored here —
-   they're pulled live by the Refresh button (and on load) from a public
-   scoreboard, so nothing in this file ever goes stale. Three late games
-   kick off at 12:00 AM ET and cross into the next day in Eastern — flagged
-   with xd (the Eastern next-day date). */
+   they're pulled live (on load and by the Refresh button) from a public
+   scoreboard, so nothing in this file goes stale. Group standings below are
+   computed from those live scores, never hardcoded. Three late games kick
+   off at 12:00 AM ET and cross into the next day in Eastern — flagged with
+   xd (the Eastern next-day date). */
 const stadiums=[
   {country:"Mexico",bar:"#639922",fifa:"Mexico City Stadium",real:"Estadio Azteca",city:"Mexico City, Mexico",cap:"87,600",
    home:[{n:"Club América / Cruz Azul",s:"Liga MX"},{n:"Mexico NT",s:"CONCACAF"}],
@@ -413,6 +468,98 @@ function resetAll(){
   buildGrid();
 }
 
+/* ══════════ GROUP STANDINGS (derived, never hardcoded) ══════════
+   Tables are computed live from the fixtures' current scores. As the feed
+   fills or updates scores, buildStandings() recomputes from scratch.
+   Groups and their four teams are inferred from the group-stage fixtures. */
+function stRow(name){return {name:name,p:0,w:0,d:0,l:0,gf:0,ga:0,pts:0};}
+
+function computeStandings(){
+  const groups={}; // { A:{teams:{}, live:[]}, ... }
+  stadiums.forEach(function(s){
+    s.m.forEach(function(m){
+      if(m.r.indexOf("Group")!==0)return;
+      if(m.g.indexOf(" vs ")<0)return;
+      const key=m.r.replace("Group ","");
+      if(!groups[key])groups[key]={teams:{},live:[]};
+      const G=groups[key];
+      const parts=m.g.split(" vs ");
+      const home=parts[0].trim(),away=parts[1].trim();
+      if(!G.teams[home])G.teams[home]=stRow(home);
+      if(!G.teams[away])G.teams[away]=stRow(away);
+      if(!m.sc)return;
+      const sp=m.sc.split("-");
+      const hs=parseInt(sp[0],10),as=parseInt(sp[1],10);
+      if(!Number.isFinite(hs)||!Number.isFinite(as))return;
+      if(m.live){
+        G.live.push({home:home,away:away,hs:hs,as:as,clock:m.clock||""});
+        return; // provisional — don't count until full time
+      }
+      const H=G.teams[home],A=G.teams[away];
+      H.p++;A.p++;
+      H.gf+=hs;H.ga+=as;A.gf+=as;A.ga+=hs;
+      if(hs>as){H.w++;A.l++;H.pts+=3;}
+      else if(hs<as){A.w++;H.l++;A.pts+=3;}
+      else{H.d++;A.d++;H.pts++;A.pts++;}
+    });
+  });
+  return groups;
+}
+
+function stSort(rows){
+  return rows.slice().sort(function(a,b){
+    return (b.pts-a.pts)||((b.gf-b.ga)-(a.gf-a.ga))||(b.gf-a.gf)||a.name.localeCompare(b.name);
+  });
+}
+
+function buildStandings(){
+  const grid=document.getElementById("st-grid");
+  if(!grid)return;
+  const groups=computeStandings();
+  const keys=Object.keys(groups).sort();
+  let totalPlayed=0;
+  grid.innerHTML=keys.map(function(k){
+    const G=groups[k];
+    const rows=stSort(Object.keys(G.teams).map(function(t){return G.teams[t];}));
+    const body=rows.map(function(r,i){
+      totalPlayed+=r.p;
+      const pos=i+1, gdv=r.gf-r.ga;
+      const gdCls=gdv>0?"st-gd-pos":(gdv<0?"st-gd-neg":"");
+      const gdTxt=(gdv>0?"+":"")+gdv;
+      return "<tr class=\"st-q"+pos+"\">"+
+        "<td class=\"tl\"><span class=\"st-pos\">"+pos+"</span>"+r.name+"</td>"+
+        "<td>"+r.p+"</td><td>"+r.w+"</td><td>"+r.d+"</td><td>"+r.l+"</td>"+
+        "<td>"+r.gf+"</td><td>"+r.ga+"</td>"+
+        "<td class=\""+gdCls+"\">"+gdTxt+"</td>"+
+        "<td class=\"pts\">"+r.pts+"</td></tr>";
+    }).join("");
+    const live=G.live.length?("<div class=\"st-live\">"+G.live.map(function(l){
+      return "● LIVE "+l.home+" "+l.hs+"–"+l.as+" "+l.away+(l.clock?(" "+String(l.clock).replace(/['′]/g,"")+"'"):"");
+    }).join("<br>")+"</div>"):"";
+    return "<div class=\"st-card\"><div class=\"st-gh\">Group "+k+"</div>"+
+      "<table class=\"st-table\"><thead><tr>"+
+      "<th class=\"tl\">Team</th><th>P</th><th>W</th><th>D</th><th>L</th><th>GF</th><th>GA</th><th>GD</th><th>Pts</th>"+
+      "</tr></thead><tbody>"+body+"</tbody></table>"+live+"</div>";
+  }).join("");
+
+  const stamp=document.getElementById("st-updated");
+  if(stamp){
+    if(totalPlayed>0){
+      const t=new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
+      stamp.innerHTML='<span class="ok">✓</span> Reflecting all completed group matches &middot; as of '+t;
+    }else{
+      stamp.innerHTML='Waiting on scores — tap <strong>Refresh latest scores</strong> above to fill the tables.';
+    }
+  }
+}
+
+function toggleStandings(){
+  const body=document.getElementById("st-body");
+  const tog=document.getElementById("st-toggle");
+  if(body.style.display==="none"){body.style.display="";tog.textContent="▲ Hide";}
+  else{body.style.display="none";tog.textContent="▼ Show";}
+}
+
 /* ══════════ FRIENDLIES RENDER + CONTROLS ══════════ */
 const frState={host:"all"};
 
@@ -530,56 +677,69 @@ function setLiveStatus(html){document.getElementById("liveStatus").innerHTML=htm
 
 /* Public, keyless source — works in a normal browser when the page is
    served over http(s). ESPN's scoreboard sends permissive CORS headers.
-   We pull each tournament day from Jun 11 through today, so one refresh
+   We pull each tournament day so far in parallel and merge, so one refresh
    backfills every completed result plus anything live right now. */
-function parseESPNEvent(ev,out){
-  try{
-    const comp=(ev.competitions&&ev.competitions[0])||{};
-    const cs=comp.competitors||[];
-    const home=cs.find(function(c){return c.homeAway==="home";})||cs[0];
-    const away=cs.find(function(c){return c.homeAway==="away";})||cs[1];
-    if(!home||!away)return;
-    const stt=((ev.status||comp.status||{}).type)||{};
-    const state=stt.state; // "pre" | "in" | "post"
-    const status=state==="in"?"LIVE":(state==="post"?"FT":"UPCOMING");
-    const hs=status==="UPCOMING"?null:parseInt(home.score,10);
-    const as=status==="UPCOMING"?null:parseInt(away.score,10);
-    const clk=(ev.status||comp.status||{}).displayClock;
-    out.push({
-      home:(home.team&&(home.team.displayName||home.team.shortDisplayName||home.team.name))||"",
-      away:(away.team&&(away.team.displayName||away.team.shortDisplayName||away.team.name))||"",
-      hs:isNaN(hs)?null:hs,
-      as:isNaN(as)?null:as,
-      status:status,
-      minute:(status==="LIVE"&&clk)?clk:null
-    });
-  }catch(e){}
+function parseESPNEvents(data){
+  const out=[];
+  (((data||{}).events)||[]).forEach(function(ev){
+    try{
+      const comp=(ev.competitions&&ev.competitions[0])||{};
+      const cs=comp.competitors||[];
+      const home=cs.find(function(c){return c.homeAway==="home";})||cs[0];
+      const away=cs.find(function(c){return c.homeAway==="away";})||cs[1];
+      if(!home||!away)return;
+      const stt=((ev.status||comp.status||{}).type)||{};
+      const st=stt.state; // "pre" | "in" | "post"
+      const status=st==="in"?"LIVE":(st==="post"?"FT":"UPCOMING");
+      const hs=status==="UPCOMING"?null:parseInt(home.score,10);
+      const as=status==="UPCOMING"?null:parseInt(away.score,10);
+      const clk=(ev.status||comp.status||{}).displayClock;
+      out.push({
+        home:(home.team&&(home.team.displayName||home.team.shortDisplayName||home.team.name))||"",
+        away:(away.team&&(away.team.displayName||away.team.shortDisplayName||away.team.name))||"",
+        hs:isNaN(hs)?null:hs,
+        as:isNaN(as)?null:as,
+        status:status,
+        minute:(status==="LIVE"&&clk)?clk:null
+      });
+    }catch(e){}
+  });
+  return out;
 }
+
+/* YYYYMMDD for each day from Jun 11 2026 → today (capped at the Jul 19 final). */
+function tournamentDates(){
+  const out=[];
+  const start=new Date(2026,5,11), end=new Date(2026,6,19), now=new Date();
+  const last=now<end?now:end;
+  for(let d=new Date(start);d<=last;d.setDate(d.getDate()+1)){
+    out.push(""+d.getFullYear()+("0"+(d.getMonth()+1)).slice(-2)+("0"+d.getDate()).slice(-2));
+  }
+  return out;
+}
+
 async function fetchScoresFromESPN(){
   const base="https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
-  const start=new Date(2026,5,11);   // Jun 11, 2026 (month is 0-based)
-  const cap=new Date(2026,6,19);     // Jul 19, 2026
-  let end=new Date();
-  if(end>cap)end=cap;
-  if(end<start)end=new Date(start);
-  const days=[];
-  for(let d=new Date(start); d<=end; d.setDate(d.getDate()+1)){
-    days.push(""+d.getFullYear()+String(d.getMonth()+1).padStart(2,"0")+String(d.getDate()).padStart(2,"0"));
+  const dates=tournamentDates();
+  if(!dates.length){
+    const res=await fetch(base,{cache:"no-store"});
+    if(!res.ok)throw new Error("espn "+res.status);
+    return parseESPNEvents(await res.json());
   }
-  const responses=await Promise.all(days.map(function(ds){
+  const batches=await Promise.all(dates.map(function(ds){
     return fetch(base+"?dates="+ds,{cache:"no-store"})
       .then(function(r){return r.ok?r.json():null;})
-      .catch(function(){return null;});
+      .then(function(j){return j?parseESPNEvents(j):[];})
+      .catch(function(){return [];});
   }));
-  let anyOk=false;
-  const out=[];
-  responses.forEach(function(data){
-    if(!data)return;
-    anyOk=true;
-    (data.events||[]).forEach(function(ev){parseESPNEvent(ev,out);});
-  });
-  if(!anyOk)throw new Error("espn unreachable");
-  return out;
+  // Merge across days, keeping the most informative copy of each fixture.
+  const merged=[],seen={},rank=function(s){return s==="FT"?3:(s==="LIVE"?2:1);};
+  batches.forEach(function(arr){arr.forEach(function(r){
+    const k=canon(r.home)+"|"+canon(r.away);
+    if(!(k in seen)){seen[k]=merged.length;merged.push(r);}
+    else if(rank(r.status)>=rank(merged[seen[k]].status)){merged[seen[k]]=r;}
+  });});
+  return merged;
 }
 
 async function refreshScores(){
@@ -599,6 +759,7 @@ async function refreshScores(){
   if(reached&&results){
     const n=applyLive(results);
     buildGrid();
+    buildStandings();
     if(n>0)setLiveStatus('<span class="ok">✓ Updated</span> '+n+' match'+(n!==1?"es":"")+' &middot; last checked '+t);
     else setLiveStatus('<span class="ok">✓ Checked</span> &middot; no World Cup matches in progress right now &middot; '+t);
   }else{
@@ -631,8 +792,9 @@ async function refreshScores(){
   });
 
   buildFriendlies();
+  buildStandings();
   buildGrid();
-  refreshScores(); // auto-pull scores on load (works when hosted or in Claude's view)
+  refreshScores(); // auto-pull live + final scores on load (works when hosted or in Claude's view)
 })();
 </script>
 </body>
