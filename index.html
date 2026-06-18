@@ -334,6 +334,13 @@ html[data-theme="dark"] .td-rowlive{background:#2a1d1d}
 html[data-theme="dark"] .st-q1,html[data-theme="dark"] .st-q2,html[data-theme="dark"] .th-q td{background:#16271d}
 html[data-theme="dark"] .st-q3{background:#262012}
 html[data-theme="dark"] .st-live{background:#241a1a;border-color:#2c2f36}
+
+/* ── Goal flash (a match pulses when its score changes between refreshes) ── */
+@keyframes goalflash{0%{background:#fff2b8}55%{background:#fffbe6}100%{background:transparent}}
+@keyframes goalflashdark{0%{background:#46400f}55%{background:#2d2a16}100%{background:transparent}}
+.mrow.scored,.td-row.scored{animation:goalflash 1.9s ease-out;border-radius:6px}
+html[data-theme="dark"] .mrow.scored,html[data-theme="dark"] .td-row.scored{animation:goalflashdark 1.9s ease-out}
+.goal-badge{font-size:9px;font-weight:800;color:#7a5000;background:#f5c410;border-radius:3px;padding:1px 5px;margin-left:5px;letter-spacing:.03em;white-space:nowrap}
 </style>
 </head>
 <body>
@@ -353,6 +360,7 @@ html[data-theme="dark"] .st-live{background:#241a1a;border-color:#2c2f36}
   <span class="live-status" id="liveStatus">Tap to pull the latest scores, including matches in progress. Works in Claude's view, or in a normal browser when the page is served over http(s).</span>
   <span class="auto-wrap" id="autoWrap"></span>
   <span class="tz-toggle" id="tzToggle"></span>
+  <button class="theme-btn" id="notifyBtn" onclick="toggleNotify()" style="display:none">🔔 Notify goals</button>
   <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙 Dark</button>
 </div>
 
@@ -754,7 +762,7 @@ function buildGrid(){
     const matchHtml=visM.map(m=>{
       const hl=state.team!=="all"&&teamInMatch(state.team,m.g);
       const played=!!m.sc;
-      const cls=(hl?" highlight":"")+(played&&!hl?" played":"");
+      const cls=(hl?" highlight":"")+(played&&!hl?" played":"")+(m._flash?" scored":"");
       return`<div class="mrow${cls}">${whenHTML(m)}<span class="mgame">${gameHTML(m)}</span><span class="rbadge ${roundClass(m.r)}">${roundLabel(m.r)}</span></div>`;
     }).join("");
     return`<div class="card">
@@ -1016,10 +1024,11 @@ function buildToday(){
         mid=p[0]+' <b>'+sp[0]+'–'+sp[1]+'</b> '+p[1];
       }else mid=m.g;
     }else mid=m.g;
+    const goal=m._flash?'<span class="goal-badge">⚽ GOAL</span>':"";
     const when=live?('<span class="td-live">● LIVE'+(m.clock?" "+String(m.clock).replace(/['′]/g,"")+"'":"")+'</span>')
               :(played?'<span class="td-ft">FT</span>':'<span class="td-time">'+f.time+'</span>');
-    return '<div class="td-row'+(live?' td-rowlive':'')+'"><span class="td-when">'+when+'</span>'+
-      '<span class="td-game">'+mid+'</span><span class="td-meta">'+roundLabel(m.r)+' · '+it.city+'</span></div>';
+    return '<div class="td-row'+(live?' td-rowlive':'')+(m._flash?' scored':'')+'"><span class="td-when">'+when+'</span>'+
+      '<span class="td-game">'+mid+goal+'</span><span class="td-meta">'+roundLabel(m.r)+' · '+it.city+'</span></div>';
   }).join("");
 }
 
@@ -1091,6 +1100,53 @@ function toggleAuto(){
   auto.on=!auto.on;
   setPref("auto",auto.on);
   if(auto.on)scheduleAuto();else{clearAuto();renderAuto();}
+}
+
+/* ══════════ GOAL FLASH + NOTIFICATIONS ══════════
+   detectGoals() compares each fixture's score to the last one we saw. A change
+   flags the match (m._flash) so the grid/banner pulse it, and returns the list
+   of changed matches for optional notifications. On first sight a match is
+   baselined silently, so opening the page never flashes or notifies en masse. */
+function detectGoals(){
+  const goals=[];
+  stadiums.forEach(function(s){s.m.forEach(function(m){
+    if(!m.sc)return;
+    if(m._seen===undefined){m._seen=m.sc;return;} // baseline, no flash
+    if(m.sc!==m._seen){m._flash=true;m._seen=m.sc;goals.push({g:m.g,sc:m.sc,live:!!m.live,clock:m.clock,r:m.r});}
+  });});
+  return goals;
+}
+function clearFlash(){stadiums.forEach(function(s){s.m.forEach(function(m){m._flash=false;});});}
+
+const notifyState={on:false};
+function notifySupported(){try{return typeof Notification!=="undefined";}catch(e){return false;}}
+function updateNotifyBtn(){
+  const b=document.getElementById("notifyBtn");if(!b)return;
+  if(!notifySupported()){b.style.display="none";return;}
+  b.style.display="";
+  const granted=Notification.permission==="granted";
+  if(notifyState.on&&granted){b.textContent="🔔 Goal alerts on";}
+  else if(Notification.permission==="denied"){b.textContent="🔕 Alerts blocked";}
+  else{b.textContent="🔔 Notify goals";}
+}
+function toggleNotify(){
+  if(!notifySupported())return;
+  if(notifyState.on){notifyState.on=false;setPref("notify",false);updateNotifyBtn();return;}
+  if(Notification.permission==="granted"){notifyState.on=true;setPref("notify",true);updateNotifyBtn();}
+  else if(Notification.permission!=="denied"){
+    Notification.requestPermission().then(function(p){notifyState.on=(p==="granted");setPref("notify",notifyState.on);updateNotifyBtn();});
+  }else updateNotifyBtn();
+}
+function fireGoalNotifications(goals){
+  if(!notifyState.on||!notifySupported()||Notification.permission!=="granted")return;
+  goals.forEach(function(g){
+    if(!g.g.includes(" vs "))return;
+    try{
+      const title="⚽ GOAL — "+g.g.replace(" vs "," "+g.sc.replace("-","–")+" ");
+      const body=(g.live?("Live"+(g.clock?" "+String(g.clock).replace(/['′]/g,"")+"'":"")):"Full time")+" · "+roundLabel(g.r);
+      new Notification(title,{body:body,tag:g.g,renotify:true});
+    }catch(e){}
+  });
 }
 
 /* ══════════ KNOCKOUT BRACKET ══════════
@@ -1404,11 +1460,14 @@ async function refreshScores(){
   if(reached&&results){
     const n=applyLive(results);
     applyBracket(espnEvents);
+    const goals=detectGoals();
     buildGrid();
     buildStandings();
     buildThirds();
     buildBracket();
     buildToday();
+    fireGoalNotifications(goals);
+    if(goals.length)setTimeout(function(){clearFlash();buildGrid();buildToday();},2200); // clear pulse after it plays
     if(n>0)setLiveStatus('<span class="ok">✓ Updated</span> '+n+' match'+(n!==1?"es":"")+' &middot; last checked '+t);
     else setLiveStatus('<span class="ok">✓ Checked</span> &middot; no World Cup matches in progress right now &middot; '+t);
   }else{
@@ -1424,6 +1483,8 @@ async function refreshScores(){
   updateThemeBtn();
   if(prefs.tz&&prefs.tz.mode){tzState.mode=prefs.tz.mode;if(prefs.tz.zone)tzState.zone=prefs.tz.zone;}
   if(typeof prefs.auto==="boolean")auto.on=prefs.auto;
+  notifyState.on=!!prefs.notify&&notifySupported()&&Notification.permission==="granted";
+  updateNotifyBtn();
 
   const groups=["A","B","C","D","E","F","G","H","I","J","K","L"];
   const gpDiv=document.getElementById("groupBtns");
