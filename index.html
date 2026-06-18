@@ -4,6 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FIFA World Cup 2026 — Stadiums</title>
+<script>
+/* Apply the saved (or system) theme before first paint to avoid a flash. */
+(function(){try{var p=JSON.parse(localStorage.getItem("wc2026.prefs.v1")||"{}");var t=p.theme;
+if(!t&&window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)t="dark";
+if(t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}})();
+</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f7;color:#1a1a1a;padding:24px 16px}
@@ -251,6 +257,83 @@ h1{font-size:22px;font-weight:600;margin-bottom:4px}
 .th-cutline{display:flex;align-items:center;gap:8px;font-size:9.5px;font-weight:700;color:#c0392b;text-transform:uppercase;letter-spacing:.05em;padding:5px 0 4px}
 .th-cutline::before,.th-cutline::after{content:"";flex:1;height:1px;background:repeating-linear-gradient(90deg,#e0a0a0 0 5px,transparent 5px 9px)}
 .th-foot{font-size:10.5px;color:#9a9a9a;margin-top:10px;line-height:1.5}
+
+/* ── Theme toggle button ── */
+.theme-btn{font-size:12px;font-weight:600;color:#333;border:1px solid #ddd;border-radius:14px;padding:4px 11px;background:#fafafa;cursor:pointer;white-space:nowrap}
+.theme-btn:hover{background:#f0f0f0}
+
+/* ══════════ DARK MODE ══════════ */
+html[data-theme="dark"]{color-scheme:dark}
+html[data-theme="dark"] body{background:#15161a;color:#e9eaed}
+html[data-theme="dark"] h1{color:#f2f3f5}
+html[data-theme="dark"] .subtitle,html[data-theme="dark"] .statusline .et{color:#aab0b8}
+/* surfaces */
+html[data-theme="dark"] .filter-panel,
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .live-bar,
+html[data-theme="dark"] .today-bar,
+html[data-theme="dark"] .fr-section,
+html[data-theme="dark"] .st-section,
+html[data-theme="dark"] .bk-section,
+html[data-theme="dark"] .sd-section,
+html[data-theme="dark"] .th-section{background:#1e2026;box-shadow:0 1px 3px rgba(0,0,0,.45)}
+html[data-theme="dark"] .fr-card,
+html[data-theme="dark"] .st-card,
+html[data-theme="dark"] .bk-m{background:#23262e;border-color:#31343d}
+html[data-theme="dark"] .st-gh{background:#262931;color:#aab0b8;border-color:#31343d}
+/* primary text */
+html[data-theme="dark"] .name,
+html[data-theme="dark"] .st-title,html[data-theme="dark"] .bk-title,html[data-theme="dark"] .fr-title,
+html[data-theme="dark"] .sd-title,html[data-theme="dark"] .th-title,html[data-theme="dark"] .today-title,
+html[data-theme="dark"] .td-game,html[data-theme="dark"] .td-game b,
+html[data-theme="dark"] .bk-tn,html[data-theme="dark"] .bk-sc,
+html[data-theme="dark"] .mgame,html[data-theme="dark"] .mgame .hl,
+html[data-theme="dark"] .fr-team,
+html[data-theme="dark"] .summary strong,
+html[data-theme="dark"] .st-table td.tl,html[data-theme="dark"] .st-table td.pts,
+html[data-theme="dark"] .th-table td.tl,html[data-theme="dark"] .th-table td.pts{color:#e9eaed}
+/* secondary / muted text */
+html[data-theme="dark"] .city,html[data-theme="dark"] .realname,html[data-theme="dark"] .teamname,
+html[data-theme="dark"] .summary,html[data-theme="dark"] .footnote,html[data-theme="dark"] .filter-label,
+html[data-theme="dark"] .match-head,html[data-theme="dark"] .mdate,html[data-theme="dark"] .mtime,
+html[data-theme="dark"] .st-sub,html[data-theme="dark"] .bk-sub,html[data-theme="dark"] .fr-sub,
+html[data-theme="dark"] .sd-sub,html[data-theme="dark"] .th-sub,html[data-theme="dark"] .today-date,
+html[data-theme="dark"] .st-updated,html[data-theme="dark"] .bk-updated,html[data-theme="dark"] .th-updated,
+html[data-theme="dark"] .st-foot,html[data-theme="dark"] .bk-foot,html[data-theme="dark"] .th-foot,html[data-theme="dark"] .fr-note,
+html[data-theme="dark"] .st-table td,html[data-theme="dark"] .th-table td,
+html[data-theme="dark"] .bk-mdv,html[data-theme="dark"] .bk-mvenue,html[data-theme="dark"] .bk-coltitle,
+html[data-theme="dark"] .td-meta,html[data-theme="dark"] .td-empty,html[data-theme="dark"] .td-time,
+html[data-theme="dark"] .fr-dv,html[data-theme="dark"] .fr-date,html[data-theme="dark"] .live-status,
+html[data-theme="dark"] .st-legend,html[data-theme="dark"] .leg,html[data-theme="dark"] .no-results,
+html[data-theme="dark"] .st-live{color:#9aa0a8}
+/* borders / row dividers */
+html[data-theme="dark"] .match-head{border-color:#2c2f36}
+html[data-theme="dark"] .mrow,html[data-theme="dark"] .td-row,
+html[data-theme="dark"] .bk-team+.bk-team,
+html[data-theme="dark"] .st-table th,html[data-theme="dark"] .st-table td,
+html[data-theme="dark"] .th-table th,html[data-theme="dark"] .th-table td{border-color:#2a2d35}
+/* inputs & buttons */
+html[data-theme="dark"] .fbtn,html[data-theme="dark"] .team-select,html[data-theme="dark"] .tzbtn,
+html[data-theme="dark"] .tz-select,html[data-theme="dark"] .live-refresh,html[data-theme="dark"] .auto-btn,
+html[data-theme="dark"] .theme-btn,html[data-theme="dark"] .st-toggle,html[data-theme="dark"] .bk-toggle,
+html[data-theme="dark"] .fr-toggle,html[data-theme="dark"] .sd-toggle,html[data-theme="dark"] .th-toggle{background:#2a2d35;border-color:#3a3e47;color:#cfd3da}
+html[data-theme="dark"] .fbtn:hover,html[data-theme="dark"] .tzbtn:hover,html[data-theme="dark"] .auto-btn:hover,
+html[data-theme="dark"] .theme-btn:hover,html[data-theme="dark"] .st-toggle:hover,html[data-theme="dark"] .bk-toggle:hover,
+html[data-theme="dark"] .fr-toggle:hover,html[data-theme="dark"] .sd-toggle:hover,html[data-theme="dark"] .th-toggle:hover,
+html[data-theme="dark"] .live-refresh:hover{background:#343843}
+html[data-theme="dark"] .fbtn.active,html[data-theme="dark"] .fbtn.grp-active,
+html[data-theme="dark"] .tzbtn.active{background:#e9eaed;color:#15161a;border-color:#e9eaed}
+/* prominent grey chips → dark */
+html[data-theme="dark"] .mscore{background:#33373f;color:#e9eaed}
+html[data-theme="dark"] .fr-sb{background:#33373f}
+html[data-theme="dark"] .reset-btn{background:#2a1f22;color:#ef8a8a;border-color:#5a3338}
+/* highlighted / qualification row tints */
+html[data-theme="dark"] .mrow.highlight{background:#2d2a16}
+html[data-theme="dark"] .mrow.played{background:#1c2520}
+html[data-theme="dark"] .td-rowlive{background:#2a1d1d}
+html[data-theme="dark"] .st-q1,html[data-theme="dark"] .st-q2,html[data-theme="dark"] .th-q td{background:#16271d}
+html[data-theme="dark"] .st-q3{background:#262012}
+html[data-theme="dark"] .st-live{background:#241a1a;border-color:#2c2f36}
 </style>
 </head>
 <body>
@@ -270,6 +353,7 @@ h1{font-size:22px;font-weight:600;margin-bottom:4px}
   <span class="live-status" id="liveStatus">Tap to pull the latest scores, including matches in progress. Works in Claude's view, or in a normal browser when the page is served over http(s).</span>
   <span class="auto-wrap" id="autoWrap"></span>
   <span class="tz-toggle" id="tzToggle"></span>
+  <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙 Dark</button>
 </div>
 
 <div class="legend">
@@ -440,6 +524,63 @@ function fmtInstant(ts){
     time:d.toLocaleTimeString("en-US",{timeZone:z,hour:"numeric",minute:"2-digit"}),
     tz:tzAbbr(z,d)
   };
+}
+
+/* ── Preferences (localStorage): remembers theme, time zone, filters, which
+   sections are open, and the auto-refresh toggle across visits. ── */
+const PREFS_KEY="wc2026.prefs.v1";
+function loadPrefs(){try{return JSON.parse(localStorage.getItem(PREFS_KEY))||{};}catch(e){return {};}}
+function savePrefs(){try{localStorage.setItem(PREFS_KEY,JSON.stringify(prefs));}catch(e){}}
+const prefs=loadPrefs();
+function setPref(k,v){prefs[k]=v;savePrefs();}
+
+/* ── Theme ── */
+function curTheme(){return document.documentElement.getAttribute("data-theme")==="dark"?"dark":"light";}
+function updateThemeBtn(){const b=document.getElementById("themeBtn");if(b)b.textContent=curTheme()==="dark"?"☀️ Light":"🌙 Dark";}
+function applyTheme(t){document.documentElement.setAttribute("data-theme",t==="dark"?"dark":"light");updateThemeBtn();}
+function toggleTheme(){const next=curTheme()==="dark"?"light":"dark";applyTheme(next);setPref("theme",next);}
+
+/* ── Collapsible sections (shared toggle + persistence) ── */
+const SECTIONS=[
+  {key:"standings",body:"st-body",tog:"st-toggle"},
+  {key:"thirds",body:"th-body",tog:"th-toggle"},
+  {key:"bracket",body:"bk-body",tog:"bk-toggle"},
+  {key:"friendlies",body:"fr-body",tog:"fr-toggle"},
+  {key:"stadiums",body:"sd-body",tog:"sd-toggle"}
+];
+function toggleSection(bodyId,togId,key){
+  const body=document.getElementById(bodyId),tog=document.getElementById(togId);
+  if(!body||!tog)return;
+  const collapse=body.style.display!=="none"; // currently shown → collapse it
+  if(collapse){body.style.display="none";tog.textContent="▼ Show";}
+  else{body.style.display="";tog.textContent="▲ Hide";}
+  if(!prefs.sections)prefs.sections={};
+  prefs.sections[key]=collapse;savePrefs();
+}
+function applySavedSections(){
+  if(!prefs.sections)return;
+  SECTIONS.forEach(function(s){
+    if(!(s.key in prefs.sections))return;
+    const body=document.getElementById(s.body),tog=document.getElementById(s.tog);
+    if(!body||!tog)return;
+    if(prefs.sections[s.key]){body.style.display="none";tog.textContent="▼ Show";}
+    else{body.style.display="";tog.textContent="▲ Hide";}
+  });
+}
+function applySavedFilters(){
+  const f=prefs.filters;if(!f)return;
+  if(f.country)state.country=f.country;
+  if(f.group)state.group=f.group;
+  if(f.team)state.team=f.team;
+  document.querySelectorAll(".filter-row:nth-child(1) .fbtn").forEach(function(b){
+    const v=b.textContent.trim()==="All"?"all":b.textContent.trim();
+    b.classList.toggle("active",v===state.country);
+  });
+  document.querySelectorAll("#groupBtns .fbtn").forEach(function(b){
+    const v=b.textContent.trim()==="All"?"all":b.textContent.trim();
+    b.classList.toggle("active",v===state.group);
+  });
+  const sel=document.getElementById("teamSelect");if(sel)sel.value=state.team;
 }
 
 /* Each match carries an ET kickoff time (t). Scores are NOT stored here —
@@ -654,6 +795,7 @@ function setFilter(type,val,btn){
   if(type==="team"){
     document.getElementById("teamSelect").value=val;
   }
+  setPref("filters",{country:state.country,group:state.group,team:state.team});
   buildGrid();
 }
 
@@ -662,6 +804,7 @@ function resetAll(){
   document.querySelectorAll(".filter-row:nth-child(1) .fbtn").forEach((b,i)=>b.classList.toggle("active",i===0));
   document.querySelectorAll("#groupBtns .fbtn").forEach((b,i)=>b.classList.toggle("active",i===0));
   document.getElementById("teamSelect").value="all";
+  setPref("filters",{country:"all",group:"all",team:"all"});
   buildGrid();
 }
 
@@ -812,24 +955,14 @@ function buildStandings(){
   }
 }
 
-function toggleStandings(){
-  const body=document.getElementById("st-body");
-  const tog=document.getElementById("st-toggle");
-  if(body.style.display==="none"){body.style.display="";tog.textContent="▲ Hide";}
-  else{body.style.display="none";tog.textContent="▼ Show";}
-}
-
-function toggleStadiums(){
-  const body=document.getElementById("sd-body");
-  const tog=document.getElementById("sd-toggle");
-  if(body.style.display==="none"){body.style.display="";tog.textContent="▲ Hide";}
-  else{body.style.display="none";tog.textContent="▼ Show";}
-}
+function toggleStandings(){toggleSection("st-body","st-toggle","standings");}
+function toggleStadiums(){toggleSection("sd-body","sd-toggle","stadiums");}
 
 /* ══════════ TIME-ZONE TOGGLE ══════════ */
 function setTimeMode(mode,zone,btn){
   tzState.mode=mode;
   if(zone)tzState.zone=zone;
+  setPref("tz",{mode:tzState.mode,zone:tzState.zone});
   buildTzToggle();
   buildGrid();
   buildToday();
@@ -923,12 +1056,7 @@ function buildThirds(){
     }else stamp.innerHTML='Fills in as group matches are played — the 8 best third-placed teams reach the Round of 32.';
   }
 }
-function toggleThirds(){
-  const body=document.getElementById("th-body");
-  const tog=document.getElementById("th-toggle");
-  if(body.style.display==="none"){body.style.display="";tog.textContent="▲ Hide";}
-  else{body.style.display="none";tog.textContent="▼ Show";}
-}
+function toggleThirds(){toggleSection("th-body","th-toggle","thirds");}
 
 /* ══════════ LIVE AUTO-REFRESH ══════════
    While any match is in progress, re-pull scores every 60s (with a visible
@@ -961,6 +1089,7 @@ function scheduleAuto(){
 }
 function toggleAuto(){
   auto.on=!auto.on;
+  setPref("auto",auto.on);
   if(auto.on)scheduleAuto();else{clearAuto();renderAuto();}
 }
 
@@ -1077,12 +1206,7 @@ function buildBracket(){
   }
 }
 
-function toggleBracket(){
-  const body=document.getElementById("bk-body");
-  const tog=document.getElementById("bk-toggle");
-  if(body.style.display==="none"){body.style.display="";tog.textContent="▲ Hide";}
-  else{body.style.display="none";tog.textContent="▼ Show";}
-}
+function toggleBracket(){toggleSection("bk-body","bk-toggle","bracket");}
 
 /* ══════════ FRIENDLIES RENDER + CONTROLS ══════════ */
 const frState={host:"all"};
@@ -1114,17 +1238,7 @@ function frFilter(host,btn){
   buildFriendlies();
 }
 
-function toggleFriendlies(){
-  const body=document.getElementById("fr-body");
-  const tog=document.getElementById("fr-toggle");
-  if(body.style.display==="none"){
-    body.style.display="";
-    tog.textContent="▲ Hide";
-  } else {
-    body.style.display="none";
-    tog.textContent="▼ Show";
-  }
-}
+function toggleFriendlies(){toggleSection("fr-body","fr-toggle","friendlies");}
 
 /* ══════════ LIVE SCORE UPDATING ══════════
    While this page runs inside Claude's artifact view, its script can ask
@@ -1306,6 +1420,11 @@ async function refreshScores(){
 }
 
 (function init(){
+  // Restore saved preferences (theme was already applied in <head> to avoid a flash).
+  updateThemeBtn();
+  if(prefs.tz&&prefs.tz.mode){tzState.mode=prefs.tz.mode;if(prefs.tz.zone)tzState.zone=prefs.tz.zone;}
+  if(typeof prefs.auto==="boolean")auto.on=prefs.auto;
+
   const groups=["A","B","C","D","E","F","G","H","I","J","K","L"];
   const gpDiv=document.getElementById("groupBtns");
   groups.forEach(g=>{
@@ -1327,6 +1446,8 @@ async function refreshScores(){
     sel.appendChild(o);
   });
 
+  applySavedFilters();   // restore last country/group/team selection
+  applySavedSections();  // restore which sections were collapsed
   buildTzToggle();
   buildToday();
   buildFriendlies();
