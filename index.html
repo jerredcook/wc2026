@@ -193,17 +193,83 @@ h1{font-size:22px;font-weight:600;margin-bottom:4px}
 .sd-sub{font-size:11px;color:#888;margin-top:1px}
 .sd-toggle{font-size:12px;font-weight:600;color:#555;border:1px solid #ddd;border-radius:14px;padding:3px 11px;background:#fafafa;white-space:nowrap}
 .sd-toggle:hover{background:#f0f0f0}
+
+/* ── Today & Live banner ── */
+.today-bar{background:#fff;border-radius:12px;padding:12px 14px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.today-head{display:flex;align-items:baseline;gap:8px;margin-bottom:8px}
+.today-title{font-size:14px;font-weight:700;color:#111}
+.today-date{font-size:12px;color:#888;font-weight:600}
+.td-row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid #f4f4f4;font-size:13px}
+.td-row:last-child{border-bottom:none}
+.td-rowlive{background:#fffafa;border-radius:6px;padding-left:6px;padding-right:6px}
+.td-when{min-width:74px;flex-shrink:0;font-variant-numeric:tabular-nums}
+.td-time{font-weight:700;color:#555}
+.td-live{font-size:10px;font-weight:800;color:#fff;background:#d6322c;border-radius:3px;padding:1px 6px;letter-spacing:.03em;white-space:nowrap;animation:livepulse 1.3s ease-in-out infinite}
+.td-ft{font-size:10px;font-weight:700;color:#0d6b52;background:#e2f5ee;border-radius:3px;padding:1px 6px;letter-spacing:.04em}
+.td-game{flex:1;color:#1a1a1a;line-height:1.25}
+.td-game b{font-weight:800}
+.td-meta{font-size:10px;color:#aaa;font-weight:600;text-transform:uppercase;letter-spacing:.03em;text-align:right;white-space:nowrap;flex-shrink:0}
+.td-empty{font-size:12px;color:#aaa;padding:2px 0}
+
+/* ── Time-zone toggle + auto-refresh (in the live bar) ── */
+.tz-toggle{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.tz-label{font-size:10px;font-weight:700;color:#aaa;letter-spacing:.05em;text-transform:uppercase;margin-right:1px}
+.tzbtn{font-size:11px;padding:3px 9px;border:1px solid #ddd;border-radius:13px;background:#fff;cursor:pointer;white-space:nowrap}
+.tzbtn:hover{border-color:#888}
+.tzbtn.active{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.tz-select{font-size:11px;padding:3px 7px;border:1px solid #ddd;border-radius:13px;background:#fff;cursor:pointer;appearance:none;-webkit-appearance:none}
+.auto-wrap{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.auto-live{font-size:9px;font-weight:800;color:#fff;background:#d6322c;border-radius:3px;padding:1px 5px;letter-spacing:.04em;animation:livepulse 1.3s ease-in-out infinite}
+.auto-cd{font-size:11px;font-weight:600;color:#0d6b52;font-variant-numeric:tabular-nums}
+.auto-cd.auto-off{color:#c98a00}
+.auto-btn{font-size:11px;font-weight:600;color:#333;border:1px solid #ddd;border-radius:12px;padding:2px 9px;background:#fafafa;cursor:pointer;white-space:nowrap}
+.auto-btn:hover{background:#f0f0f0}
+
+/* ── Best third-placed teams ── */
+.th-section{background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.th-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:10px}
+.th-titlewrap{flex:1}
+.th-title{font-size:15px;font-weight:700;color:#111}
+.th-sub{font-size:11px;color:#888;margin-top:1px}
+.th-toggle{font-size:12px;font-weight:600;color:#555;border:1px solid #ddd;border-radius:14px;padding:3px 11px;background:#fafafa;white-space:nowrap}
+.th-toggle:hover{background:#f0f0f0}
+.th-updated{font-size:11px;color:#888;margin:12px 0 6px}
+.th-updated .ok{color:#0d6b52;font-weight:700}
+.th-table{width:100%;border-collapse:collapse;font-size:12.5px;max-width:520px}
+.th-table th{font-size:9px;font-weight:700;color:#aaa;letter-spacing:.02em;text-transform:uppercase;padding:5px 4px;text-align:center;border-bottom:1px solid #f0f0f0}
+.th-table th.tl{text-align:left;padding-left:10px}
+.th-table td{padding:6px 4px;text-align:center;border-bottom:1px solid #f6f6f6;font-variant-numeric:tabular-nums;color:#555}
+.th-table td.tl{text-align:left;padding-left:10px;color:#1a1a1a;font-weight:600;white-space:nowrap}
+.th-table td.pts{font-weight:800;color:#1a1a1a}
+.th-grp{display:inline-block;font-size:9px;font-weight:800;color:#7a5000;background:#fef4dc;border-radius:3px;padding:1px 5px;margin-right:7px;vertical-align:middle}
+.th-q td{background:#f3fbf6}
+.th-out td{color:#aaa}
+.th-out .th-grp{color:#999;background:#f0f0f0}
+.th-pos{display:inline-block;width:15px;height:15px;line-height:15px;border-radius:50%;font-size:9px;font-weight:700;margin-right:7px;text-align:center;color:#fff;background:#0d8a4f}
+.th-out .th-pos{background:#bdbdbd}
+.th-cut td{border:none;padding:0}
+.th-cutline{display:flex;align-items:center;gap:8px;font-size:9.5px;font-weight:700;color:#c0392b;text-transform:uppercase;letter-spacing:.05em;padding:5px 0 4px}
+.th-cutline::before,.th-cutline::after{content:"";flex:1;height:1px;background:repeating-linear-gradient(90deg,#e0a0a0 0 5px,transparent 5px 9px)}
+.th-foot{font-size:10.5px;color:#9a9a9a;margin-top:10px;line-height:1.5}
 </style>
 </head>
 <body>
 
 <h1>FIFA World Cup 2026 — All 16 Stadiums</h1>
 <p class="subtitle">Matches by date &middot; Home teams &middot; June 11 – July 19, 2026</p>
-<p class="statusline"><span class="dot"></span><span class="et">All kickoff times U.S. Eastern (ET)</span> &middot; live &amp; final scores and group standings load on open and via the Refresh button</p>
+<p class="statusline"><span class="dot"></span><span class="et" id="tzNote">Kickoff times shown in U.S. Eastern (ET)</span> &middot; live &amp; final scores and group standings load on open and via the Refresh button</p>
+
+<!-- ══════════ TODAY & LIVE ══════════ -->
+<div class="today-bar" id="todayBar">
+  <div class="today-head"><span class="today-title">📅 Today &amp; Live</span><span class="today-date" id="today-date"></span></div>
+  <div id="today-body"></div>
+</div>
 
 <div class="live-bar" id="liveBar">
   <button class="live-refresh" id="liveRefreshBtn" onclick="refreshScores()">↻ Refresh latest scores</button>
   <span class="live-status" id="liveStatus">Tap to pull the latest scores, including matches in progress. Works in Claude's view, or in a normal browser when the page is served over http(s).</span>
+  <span class="auto-wrap" id="autoWrap"></span>
+  <span class="tz-toggle" id="tzToggle"></span>
 </div>
 
 <div class="legend">
@@ -232,6 +298,22 @@ h1{font-size:22px;font-weight:600;margin-bottom:4px}
       <span><span class="st-tb" style="margin-left:0">h2h</span>order set by head-to-head</span>
     </div>
     <div class="st-foot">P played &middot; W won &middot; D drawn &middot; L lost &middot; GF goals for &middot; GA against &middot; GD goal difference &middot; Pts points. Ranked by FIFA's criteria in order: points, goal difference, then goals scored; teams still level are separated by head-to-head results among themselves (points, then goal difference, then goals) — those rows are tagged <span class="st-tb" style="margin-left:0">h2h</span>. The only criteria not modeled here are fair-play/disciplinary points and the final drawing of lots, so a table still dead level after head-to-head is tagged <span class="st-tb st-tb-lots" style="margin-left:0">tied</span>. In-progress matches are listed below their group and counted once they finish.</div>
+  </div>
+</div>
+
+<!-- ══════════ BEST THIRD-PLACED TEAMS ══════════ -->
+<div class="th-section">
+  <div class="th-head" onclick="toggleThirds()">
+    <div class="th-titlewrap">
+      <div class="th-title">🥉 Best Third-Placed Teams</div>
+      <div class="th-sub">The 8 best of the 12 group thirds also reach the Round of 32 &middot; live race</div>
+    </div>
+    <span class="th-toggle" id="th-toggle">▲ Hide</span>
+  </div>
+  <div id="th-body">
+    <div class="th-updated" id="th-updated">Fills in as group matches are played — the 8 best third-placed teams reach the Round of 32.</div>
+    <div id="th-grid"></div>
+    <div class="th-foot">Ranked by points, then goal difference, then goals scored across each team's three group games. FIFA then applies fair-play/disciplinary points and a drawing of lots to break any remaining ties — not modeled here — and uses a fixed table to assign which thirds land in which Round-of-32 slot. Provisional until all 12 groups finish.</div>
   </div>
 </div>
 
@@ -326,6 +408,39 @@ h1{font-size:22px;font-weight:600;margin-bottom:4px}
 
 <script>
 const state={country:'all',group:'all',team:'all'};
+
+/* ── Time handling ──────────────────────────────────────────────
+   Match times are stored as U.S. Eastern wall-clock. The whole tournament
+   (Jun 11 – Jul 19, 2026) is in EDT = UTC-4, a constant offset, so we can build
+   a precise UTC instant for each kickoff and re-display it in any zone. For the
+   three midnight-crossers, m.xd holds the ET calendar date the match starts on. */
+const MONTHS={Jan:0,Feb:1,Mar:2,Apr:3,May:4,Jun:5,Jul:6,Aug:7,Sep:8,Oct:9,Nov:10,Dec:11};
+const ET_TO_UTC_H=4; // EDT
+const tzState={mode:'et',zone:'America/New_York'};
+const COMMON_ZONES=[["America/Los_Angeles","Pacific"],["America/Denver","Mountain"],["America/Chicago","Central"],["America/New_York","Eastern"],["America/Mexico_City","Mexico City"],["America/Sao_Paulo","São Paulo"],["Europe/London","London"],["Europe/Madrid","Madrid (CET)"]];
+
+function localZone(){try{return Intl.DateTimeFormat().resolvedOptions().timeZone||"America/New_York";}catch(e){return "America/New_York";}}
+function tzAbbr(zone,d){try{return new Intl.DateTimeFormat("en-US",{timeZone:zone,timeZoneName:"short"}).formatToParts(d||new Date()).find(p=>p.type==="timeZoneName").value;}catch(e){return "";}}
+/* UTC instant (ms) of a fixture's kickoff, or null if it has no time. */
+function matchInstant(m){
+  if(!m.t)return null;
+  const ds=String(m.xd||m.d).split(" ");      // ET calendar date the match starts
+  const mo=MONTHS[ds[0]],day=parseInt(ds[1],10);
+  const mt=String(m.t).match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if(mo==null||isNaN(day)||!mt)return null;
+  let h=parseInt(mt[1],10);const min=parseInt(mt[2],10);const ap=mt[3].toUpperCase();
+  if(ap==="PM"&&h!==12)h+=12;if(ap==="AM"&&h===12)h=0;
+  return Date.UTC(2026,mo,day,h+ET_TO_UTC_H,min);
+}
+/* Format an instant in the active display zone → {date,time,tz}. */
+function fmtInstant(ts){
+  const d=new Date(ts),z=tzState.zone;
+  return {
+    date:d.toLocaleDateString("en-US",{timeZone:z,month:"short",day:"numeric"}),
+    time:d.toLocaleTimeString("en-US",{timeZone:z,hour:"numeric",minute:"2-digit"}),
+    tz:tzAbbr(z,d)
+  };
+}
 
 /* Each match carries an ET kickoff time (t). Scores are NOT stored here —
    they're pulled live (on load and by the Refresh button) from a public
@@ -459,10 +574,18 @@ function gameHTML(m){
   return highlightGame(m.g);
 }
 
-/* Renders the stacked date + ET kickoff time. Midnight crossers (xd)
-   show their time in gold with a "→ next-day ET" tag. */
+/* Renders the stacked date + kickoff time. In ET mode, midnight crossers (xd)
+   show their time in gold with a "→ next-day ET" tag. In a chosen zone, the
+   instant is converted and shown with that zone's abbreviation. */
 function whenHTML(m){
   if(!m.t)return `<span class="mwhen"><span class="mdate">${m.d}</span></span>`;
+  if(tzState.mode==='tz'){
+    const ts=matchInstant(m);
+    if(ts!=null){
+      const f=fmtInstant(ts);
+      return `<span class="mwhen"><span class="mdate">${f.date}</span><span class="mtime">${f.time} ${f.tz}</span></span>`;
+    }
+  }
   const xm=!!m.xd;
   const tcls=xm?"mtime xmtime":"mtime";
   const next=xm?`<span class="xmnext">→ ${m.xd} ET</span>`:"";
@@ -701,6 +824,144 @@ function toggleStadiums(){
   const tog=document.getElementById("sd-toggle");
   if(body.style.display==="none"){body.style.display="";tog.textContent="▲ Hide";}
   else{body.style.display="none";tog.textContent="▼ Show";}
+}
+
+/* ══════════ TIME-ZONE TOGGLE ══════════ */
+function setTimeMode(mode,zone,btn){
+  tzState.mode=mode;
+  if(zone)tzState.zone=zone;
+  buildTzToggle();
+  buildGrid();
+  buildToday();
+}
+function buildTzToggle(){
+  const el=document.getElementById("tzToggle");
+  if(!el)return;
+  const lz=localZone(),la=tzAbbr(lz)||"Local";
+  const etActive=tzState.mode==='et';
+  const localActive=tzState.mode==='tz'&&tzState.zone===lz;
+  const opts=COMMON_ZONES.map(function(z){
+    const sel=(tzState.mode==='tz'&&tzState.zone===z[0]&&!localActive)?" selected":"";
+    return '<option value="'+z[0]+'"'+sel+'>'+z[1]+'</option>';
+  }).join("");
+  el.innerHTML='<span class="tz-label">Times</span>'+
+    '<button class="tzbtn'+(etActive?' active':'')+'" onclick="setTimeMode(\'et\',null,this)">ET</button>'+
+    '<button class="tzbtn'+(localActive?' active':'')+'" onclick="setTimeMode(\'tz\',\''+lz+'\',this)">My time ('+la+')</button>'+
+    '<select class="tz-select" onchange="if(this.value)setTimeMode(\'tz\',this.value,null)"><option value="">Pick a zone…</option>'+opts+'</select>';
+  const note=document.getElementById("tzNote");
+  if(note){
+    if(tzState.mode==='et')note.textContent="Kickoff times shown in U.S. Eastern (ET)";
+    else note.textContent="Kickoff times shown in "+(tzAbbr(tzState.zone)||tzState.zone);
+  }
+}
+
+/* ══════════ TODAY & LIVE BANNER ══════════ */
+function buildToday(){
+  const wrap=document.getElementById("today-body");
+  if(!wrap)return;
+  const zone=tzState.mode==='tz'?tzState.zone:'America/New_York';
+  const dayKey=function(ts){return new Date(ts).toLocaleDateString("en-US",{timeZone:zone,year:"numeric",month:"2-digit",day:"2-digit"});};
+  const today=new Date().toLocaleDateString("en-US",{timeZone:zone,year:"numeric",month:"2-digit",day:"2-digit"});
+  const items=[];
+  stadiums.forEach(function(s){s.m.forEach(function(m){
+    const ts=matchInstant(m);
+    if(ts==null||dayKey(ts)!==today)return;
+    items.push({m:m,ts:ts,city:String(s.city).split(",")[0]});
+  });});
+  items.sort(function(a,b){return a.ts-b.ts;});
+  const dateLabel=new Date().toLocaleDateString("en-US",{timeZone:zone,weekday:"short",month:"short",day:"numeric"});
+  const stamp=document.getElementById("today-date");
+  if(stamp)stamp.textContent=dateLabel+(tzState.mode==='tz'?(" · "+(tzAbbr(zone)||zone)):" · ET");
+  if(!items.length){wrap.innerHTML='<div class="td-empty">No World Cup matches scheduled today.</div>';return;}
+  wrap.innerHTML=items.map(function(it){
+    const m=it.m,f=fmtInstant(it.ts),live=!!m.live,played=!!m.sc;
+    let mid;
+    if(m.g.includes(" vs ")){
+      if(played){
+        const p=m.g.split(" vs ").map(function(x){return x.trim();});
+        const sp=m.sc.split("-");
+        mid=p[0]+' <b>'+sp[0]+'–'+sp[1]+'</b> '+p[1];
+      }else mid=m.g;
+    }else mid=m.g;
+    const when=live?('<span class="td-live">● LIVE'+(m.clock?" "+String(m.clock).replace(/['′]/g,"")+"'":"")+'</span>')
+              :(played?'<span class="td-ft">FT</span>':'<span class="td-time">'+f.time+'</span>');
+    return '<div class="td-row'+(live?' td-rowlive':'')+'"><span class="td-when">'+when+'</span>'+
+      '<span class="td-game">'+mid+'</span><span class="td-meta">'+roundLabel(m.r)+' · '+it.city+'</span></div>';
+  }).join("");
+}
+
+/* ══════════ BEST THIRD-PLACED TEAMS ══════════
+   Top 2 of each group advance directly; the 8 best of the 12 third-placed
+   teams also go through. Ranked by points, goal difference, goals scored
+   (FIFA then applies fair-play/lots, which we don't model — see standings). */
+function buildThirds(){
+  const wrap=document.getElementById("th-grid");
+  if(!wrap)return;
+  const groups=computeStandings();
+  const thirds=[];
+  Object.keys(groups).sort().forEach(function(k){
+    const G=groups[k];
+    const rows=stSort(Object.keys(G.teams).map(function(t){return G.teams[t];}),G.matches);
+    if(rows.length>=3){const r=rows[2];thirds.push({grp:k,name:r.name,p:r.p,gf:r.gf,ga:r.ga,pts:r.pts});}
+  });
+  thirds.sort(function(a,b){return (b.pts-a.pts)||((b.gf-b.ga)-(a.gf-a.ga))||(b.gf-a.gf)||a.name.localeCompare(b.name);});
+  let totalPlayed=0;
+  const body=thirds.map(function(r,i){
+    totalPlayed+=r.p;
+    const q=i<8,gdv=r.gf-r.ga,gdTxt=(gdv>0?"+":"")+gdv;
+    const cut=i===8?'<tr class="th-cut"><td colspan="6"><div class="th-cutline">8 advance · cut line</div></td></tr>':"";
+    return cut+'<tr class="'+(q?"th-q":"th-out")+'">'+
+      '<td class="tl"><span class="th-pos">'+(i+1)+'</span><span class="th-grp">'+r.grp+'</span>'+r.name+'</td>'+
+      '<td>'+r.p+'</td><td>'+gdTxt+'</td><td>'+r.gf+'</td><td class="pts">'+r.pts+'</td></tr>';
+  }).join("");
+  wrap.innerHTML='<table class="th-table"><thead><tr><th class="tl">3rd-placed team</th><th>P</th><th>GD</th><th>GF</th><th>Pts</th></tr></thead><tbody>'+body+'</tbody></table>';
+  const stamp=document.getElementById("th-updated");
+  if(stamp){
+    if(totalPlayed>0){
+      const t=new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
+      stamp.innerHTML='<span class="ok">✓</span> Provisional race from completed group matches &middot; as of '+t;
+    }else stamp.innerHTML='Fills in as group matches are played — the 8 best third-placed teams reach the Round of 32.';
+  }
+}
+function toggleThirds(){
+  const body=document.getElementById("th-body");
+  const tog=document.getElementById("th-toggle");
+  if(body.style.display==="none"){body.style.display="";tog.textContent="▲ Hide";}
+  else{body.style.display="none";tog.textContent="▼ Show";}
+}
+
+/* ══════════ LIVE AUTO-REFRESH ══════════
+   While any match is in progress, re-pull scores every 60s (with a visible
+   countdown) until nothing is live. Pausable; idle when no match is on. */
+const auto={on:true,secs:60,left:0,interval:null};
+function anyLive(){
+  return stadiums.some(function(s){return s.m.some(function(m){return m.live;});})
+    || bracket.some(function(b){return b.status==="LIVE";});
+}
+function clearAuto(){if(auto.interval){clearInterval(auto.interval);auto.interval=null;}}
+function renderAuto(){
+  const el=document.getElementById("autoWrap");
+  if(!el)return;
+  if(!anyLive()){el.innerHTML="";return;}
+  const cd=auto.on?'<span class="auto-cd">next refresh in '+auto.left+'s</span>'
+                  :'<span class="auto-cd auto-off">auto-refresh paused</span>';
+  el.innerHTML='<span class="auto-live">● LIVE</span>'+cd+
+    '<button class="auto-btn" onclick="toggleAuto()">'+(auto.on?"⏸ Pause":"▶ Resume")+'</button>';
+}
+function scheduleAuto(){
+  clearAuto();
+  renderAuto();
+  if(!auto.on||!anyLive())return;
+  auto.left=auto.secs;
+  auto.interval=setInterval(function(){
+    auto.left--;
+    if(auto.left<=0){clearAuto();refreshScores();return;}
+    renderAuto();
+  },1000);
+}
+function toggleAuto(){
+  auto.on=!auto.on;
+  if(auto.on)scheduleAuto();else{clearAuto();renderAuto();}
 }
 
 /* ══════════ KNOCKOUT BRACKET ══════════
@@ -1031,7 +1292,9 @@ async function refreshScores(){
     applyBracket(espnEvents);
     buildGrid();
     buildStandings();
+    buildThirds();
     buildBracket();
+    buildToday();
     if(n>0)setLiveStatus('<span class="ok">✓ Updated</span> '+n+' match'+(n!==1?"es":"")+' &middot; last checked '+t);
     else setLiveStatus('<span class="ok">✓ Checked</span> &middot; no World Cup matches in progress right now &middot; '+t);
   }else{
@@ -1039,6 +1302,7 @@ async function refreshScores(){
   }
   liveState.busy=false;
   btn.disabled=false;
+  scheduleAuto(); // keep polling while any match is live
 }
 
 (function init(){
@@ -1063,8 +1327,11 @@ async function refreshScores(){
     sel.appendChild(o);
   });
 
+  buildTzToggle();
+  buildToday();
   buildFriendlies();
   buildStandings();
+  buildThirds();
   buildBracket();
   buildGrid();
   refreshScores(); // auto-pull live + final scores on load (works when hosted or in Claude's view)
