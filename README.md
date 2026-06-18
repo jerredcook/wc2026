@@ -1,18 +1,32 @@
 # FIFA World Cup 2026 — Stadiums & Live Tracker
 
-A single-file, zero-dependency web app for the 2026 FIFA World Cup (June 11 – July 19, 2026) hosted across the USA, Canada, and Mexico. It shows all 16 stadiums and their full match schedule, live & final scores, computed group standings, and the complete knockout bracket — and it pulls live data on its own, so nothing in the file goes stale.
+A near-zero-dependency web app for the 2026 FIFA World Cup (June 11 – July 19, 2026) hosted across the USA, Canada, and Mexico. It shows all 16 stadiums and their full match schedule, live & final scores, computed group standings, and the complete knockout bracket — and it pulls live data on its own, so nothing goes stale.
 
-Everything lives in [`index.html`](index.html): HTML, CSS, and vanilla JavaScript. No build step, no framework, no package install.
+The whole app is [`index.html`](index.html) — HTML, CSS, and vanilla JavaScript, no build step or framework. Two small companion files make it installable as an app: [`manifest.webmanifest`](manifest.webmanifest) and [`apple-touch-icon.png`](apple-touch-icon.png).
 
 ## Features
 
 - **All 16 stadiums** with FIFA tournament names, real venue names, city, capacity, and resident home teams (NFL / MLS / Liga MX / CFL).
 - **Full match schedule** — every group and knockout fixture, with kickoff times in U.S. Eastern (ET) matched to the FOX / Telemundo broadcast schedule. Three late games that kick off at 12:00 AM ET and roll past midnight are flagged with their next-day Eastern date.
+- **Today & Live banner** — today's fixtures with live scores, full-time results, and upcoming kickoff times.
 - **Filters** by country, group (A–L), and team, with a running summary and reset.
-- **Live & final scores** pulled automatically on load and via the **Refresh latest scores** button. Matches in progress show a red LIVE badge and the current minute.
-- **Group standings — live**, computed from the fetched scores (never hardcoded), with full FIFA tiebreakers (see below).
+- **Live & final scores** pulled automatically on load and via the **Refresh latest scores** button. Matches in progress show a red LIVE badge and the current minute, and the page **auto-refreshes every 60s while a match is live**. A goal **flashes** the match on screen, and you can opt in to **browser goal notifications**.
+- **Group standings — live**, computed from the fetched scores (never hardcoded), with full FIFA tiebreakers (see below), plus a **best-third-placed race** showing the top-8 Round-of-32 cut line.
 - **Knockout bracket** — the complete Round of 32 → Final tree using the official 2026 slotting, with team names and scores filling in from the live feed as the tournament progresses.
+- **Time-zone toggle** — view kickoff times in ET, your local zone, or any picked zone.
+- **Dark mode** (respects your system preference) and **persistent preferences** — theme, time zone, filters, open/closed sections, and auto-refresh are remembered across visits.
+- **Installable** — add it to your phone's home screen for a full-screen, app-like experience (see below).
 - **Pre-tournament warm-up friendlies** played across the host nations (collapsible).
+
+## Installing it (add to home screen)
+
+The app ships a web manifest and icons, so it can be installed:
+
+- **iPhone / iPad (Safari):** Share → *Add to Home Screen*. It launches full-screen with its own icon.
+- **Android (Chrome):** the ⋮ menu shows *Install app* / *Add to Home screen*.
+- **Desktop (Chrome/Edge):** an install icon appears in the address bar.
+
+There's no service worker, so it always loads fresh content (no offline cache to go stale) — it just needs a connection on launch like any normal page.
 
 ## How live data works
 
