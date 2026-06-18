@@ -184,6 +184,15 @@ h1{font-size:22px;font-weight:600;margin-bottom:4px}
 .bk-extra{margin-top:12px;display:flex;flex-wrap:wrap;gap:12px;align-items:stretch}
 .bk-3rdcard{flex:1;min-width:220px;max-width:340px}
 .bk-foot{font-size:10.5px;color:#9a9a9a;margin-top:11px;line-height:1.55}
+
+/* ── Stadiums & matches section ── */
+.sd-section{background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.sd-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:10px}
+.sd-titlewrap{flex:1}
+.sd-title{font-size:15px;font-weight:700;color:#111}
+.sd-sub{font-size:11px;color:#888;margin-top:1px}
+.sd-toggle{font-size:12px;font-weight:600;color:#555;border:1px solid #ddd;border-radius:14px;padding:3px 11px;background:#fafafa;white-space:nowrap}
+.sd-toggle:hover{background:#f0f0f0}
 </style>
 </head>
 <body>
@@ -265,6 +274,18 @@ h1{font-size:22px;font-weight:600;margin-bottom:4px}
   </div>
 </div>
 
+<!-- ══════════ STADIUMS & MATCHES ══════════ -->
+<div class="sd-section">
+  <div class="sd-head" onclick="toggleStadiums()">
+    <div class="sd-titlewrap">
+      <div class="sd-title">🏟️ Stadiums &amp; Matches</div>
+      <div class="sd-sub">All 16 venues, every fixture by date &middot; filter by country, group, or team</div>
+    </div>
+    <span class="sd-toggle" id="sd-toggle">▲ Hide</span>
+  </div>
+</div>
+
+<div id="sd-body">
 <div class="filter-panel">
   <div class="filter-row">
     <span class="filter-label">Country</span>
@@ -292,6 +313,7 @@ h1{font-size:22px;font-weight:600;margin-bottom:4px}
 
 <div class="summary" id="summary"></div>
 <div class="grid" id="grid"></div>
+</div><!-- /sd-body -->
 
 <p class="footnote">
   All kickoff times are <strong>U.S. Eastern (ET)</strong>, matched to the FOX / Telemundo broadcast schedule.
@@ -670,6 +692,13 @@ function buildStandings(){
 function toggleStandings(){
   const body=document.getElementById("st-body");
   const tog=document.getElementById("st-toggle");
+  if(body.style.display==="none"){body.style.display="";tog.textContent="▲ Hide";}
+  else{body.style.display="none";tog.textContent="▼ Show";}
+}
+
+function toggleStadiums(){
+  const body=document.getElementById("sd-body");
+  const tog=document.getElementById("sd-toggle");
   if(body.style.display==="none"){body.style.display="";tog.textContent="▲ Hide";}
   else{body.style.display="none";tog.textContent="▼ Show";}
 }
