@@ -429,6 +429,57 @@ html[data-theme="dark"] .tm-fv,html[data-theme="dark"] .tm-pn{color:#e9eaed}
 html[data-theme="dark"] .tm-fk,html[data-theme="dark"] .tm-sec,html[data-theme="dark"] .tm-club{color:#9aa0a8}
 html[data-theme="dark"] .tm-blurb{background:#262318;border-color:#3d3a25;color:#d8cfae}
 html[data-theme="dark"] .tm-pl{border-color:#2a2d35}
+/* clickable squad rows */
+.tm-plk{cursor:pointer;border-radius:7px;padding-left:6px;padding-right:4px;transition:background .12s}
+.tm-plk:hover{background:#f1f5fb}
+html[data-theme="dark"] .tm-plk:hover{background:#262b34}
+.tm-go{font-size:18px;color:#c2c8d0;font-weight:700;margin-left:2px}
+.tm-plk:hover .tm-go{color:#1565c0}
+html[data-theme="dark"] .tm-go{color:#555c66}
+
+/* ── Player card popup ── */
+.pp-overlay{position:fixed;inset:0;background:rgba(15,17,22,.6);display:none;align-items:flex-start;justify-content:center;padding:30px 14px;z-index:1100;overflow-y:auto;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.pp-overlay.open{display:flex}
+.pp-modal{background:#fff;border-radius:16px;max-width:540px;width:100%;box-shadow:0 16px 48px rgba(0,0,0,.4);overflow:hidden;animation:tmIn .18s ease-out}
+.pp-hd{position:relative;padding:18px 20px;color:#fff;display:flex;gap:16px;align-items:center}
+.pp-x{position:absolute;top:12px;right:14px;width:30px;height:30px;border:none;border-radius:50%;background:rgba(255,255,255,.22);color:#fff;font-size:17px;cursor:pointer;line-height:1}
+.pp-x:hover{background:rgba(255,255,255,.4)}
+.pp-photowrap{flex-shrink:0}
+.pp-photo{width:92px;height:92px;border-radius:12px;background-size:cover;background-position:center top;background-color:rgba(255,255,255,.18);box-shadow:0 2px 10px rgba(0,0,0,.25)}
+.pp-photo-ph{display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:800;color:rgba(255,255,255,.85)}
+.pp-hdtext{min-width:0}
+.pp-name{font-size:21px;font-weight:800;line-height:1.12}
+.pp-sub{font-size:13px;opacity:.95;margin-top:3px}
+.pp-team{font-size:12px;opacity:.9;margin-top:6px}
+.pp-flag{font-size:14px}
+.pp-body{padding:16px 20px 20px}
+.pp-loading{display:flex;align-items:center;gap:9px;justify-content:center;color:#888;font-size:13px;padding:26px 0}
+.pp-spin{width:15px;height:15px;border:2px solid #ccc;border-top-color:#666;border-radius:50%;display:inline-block;animation:ppspin .7s linear infinite}
+@keyframes ppspin{to{transform:rotate(360deg)}}
+.pp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:6px}
+.pp-stat{background:#f4f6f9;border-radius:10px;padding:11px 6px;text-align:center}
+.pp-statv{font-size:21px;font-weight:800;color:#1a1a1a;line-height:1;font-variant-numeric:tabular-nums}
+.pp-statl{font-size:10px;font-weight:700;color:#9aa3ad;letter-spacing:.05em;text-transform:uppercase;margin-top:5px}
+.pp-statnote{font-size:10px;color:#aaa;text-align:center;margin-bottom:12px}
+.pp-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:12px 0}
+.pp-fact{background:#f6f7f9;border-radius:9px;padding:7px 11px}
+.pp-fk{font-size:9px;font-weight:700;color:#999;letter-spacing:.05em;text-transform:uppercase}
+.pp-fv{font-size:13px;font-weight:600;color:#1a1a1a;margin-top:2px}
+.pp-bio{font-size:13px;line-height:1.5;color:#444;margin:12px 0}
+.pp-bio-warn{color:#8a6d3b;background:#fffaf0;border:1px solid #f0e3c5;border-radius:9px;padding:9px 12px}
+.pp-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.pp-link{font-size:12px;font-weight:700;text-decoration:none;color:#1565c0;background:#eef4fc;border:1px solid #d6e6f8;border-radius:16px;padding:5px 12px}
+.pp-link:hover{background:#e0edfb}
+.pp-foot{font-size:10px;color:#aaa;margin-top:13px;line-height:1.45}
+/* player card — dark */
+html[data-theme="dark"] .pp-modal{background:#1e2026}
+html[data-theme="dark"] .pp-stat,html[data-theme="dark"] .pp-fact{background:#23262e}
+html[data-theme="dark"] .pp-statv,html[data-theme="dark"] .pp-fv{color:#e9eaed}
+html[data-theme="dark"] .pp-fk,html[data-theme="dark"] .pp-statl,html[data-theme="dark"] .pp-statnote,html[data-theme="dark"] .pp-foot{color:#9aa0a8}
+html[data-theme="dark"] .pp-bio{color:#c4c9d0}
+html[data-theme="dark"] .pp-bio-warn{color:#d8c48a;background:#262318;border-color:#3d3a25}
+html[data-theme="dark"] .pp-link{color:#7db4ff;background:#1f2733;border-color:#2c3a4d}
+html[data-theme="dark"] .pp-link:hover{background:#263243}
 </style>
 </head>
 <body>
@@ -608,6 +659,11 @@ html[data-theme="dark"] .tm-pl{border-color:#2a2d35}
 <!-- ══════════ TEAM INFO POPUP ══════════ -->
 <div class="tm-overlay" id="tm-overlay" role="dialog" aria-modal="true">
   <div class="tm-modal" id="tm-modal"></div>
+</div>
+
+<!-- ══════════ PLAYER CARD POPUP ══════════ -->
+<div class="pp-overlay" id="pp-overlay" role="dialog" aria-modal="true">
+  <div class="pp-modal" id="pp-modal"></div>
 </div>
 
 <script>
@@ -900,8 +956,10 @@ function openTeam(name){
     fact("World Cup apps",t.apps+(t.apps===1?" (incl. 2026)":""))+fact("Best finish",t.best)+
     fact("Head coach",t.coach)+fact("Capital",t.capital);
   const squad=t.players.map(function(p){
-    return '<div class="tm-pl"><span class="tm-pos '+p[1]+'">'+p[1]+'</span>'+
-      '<span class="tm-pn">'+p[0]+'</span><span class="tm-club">'+p[2]+'</span></div>';
+    return '<div class="tm-pl tm-plk" data-player="'+p[0]+'" data-pteam="'+t.name+'">'+
+      '<span class="tm-pos '+p[1]+'">'+p[1]+'</span>'+
+      '<span class="tm-pn">'+p[0]+'</span><span class="tm-club">'+p[2]+'</span>'+
+      '<span class="tm-go">›</span></div>';
   }).join("");
   document.getElementById("tm-modal").innerHTML=
     '<div class="tm-hd" style="background:'+hd+'">'+
@@ -928,14 +986,190 @@ function closeTeam(){
   if(ov)ov.classList.remove("open");
   document.body.style.overflow="";
 }
-/* Delegated: any element carrying data-team opens that team's popup; clicking
-   the dimmed backdrop or pressing Escape closes it. */
+/* Delegated: a [data-player] row opens the player card; any other element
+   carrying data-team opens that team's popup; clicking a dimmed backdrop or
+   pressing Escape closes the topmost open modal. */
 document.addEventListener("click",function(e){
+  const prow=e.target.closest("[data-player]");
+  if(prow){openPlayer(prow.getAttribute("data-player"),prow.getAttribute("data-pteam"));return;}
   const link=e.target.closest("[data-team]");
   if(link){openTeam(link.getAttribute("data-team"));return;}
+  if(e.target.id==="pp-overlay"){closePlayer();return;}
   if(e.target.id==="tm-overlay")closeTeam();
 });
-document.addEventListener("keydown",function(e){if(e.key==="Escape")closeTeam();});
+document.addEventListener("keydown",function(e){
+  if(e.key!=="Escape")return;
+  if(document.getElementById("pp-overlay").classList.contains("open"))closePlayer();
+  else closeTeam();
+});
+
+/* ══════════ PLAYER CARD (live-enriched from Wikipedia + Wikidata) ══════════
+   We hold no per-player stat database; on click we fetch a recent photo, bio,
+   birthplace, date of birth, height and playing positions live from Wikipedia
+   + Wikidata (CORS-friendly from the browser), plus caps/goals where Wikidata
+   carries them, and link out to full stat sheets (Wikipedia/FBref/Transfermarkt)
+   for match logs and cards. Degrades gracefully offline / on file://. */
+const SEARCH_COUNTRY={"USA":"United States","Türkiye":"Turkey","Czechia":"Czech Republic","South Korea":"South Korea","DR Congo":"DR Congo","Ivory Coast":"Ivory Coast","Cape Verde":"Cape Verde","Curaçao":"Curaçao","Bosnia":"Bosnia and Herzegovina"};
+const plState={token:0};
+
+function esc(s){return String(s==null?"":s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
+function playerMeta(name,team){
+  const t=TEAMS[team];if(!t)return{pos:"",club:""};
+  const p=(t.players||[]).find(function(x){return x[0]===name;});
+  return p?{pos:p[1],club:p[2]}:{pos:"",club:""};
+}
+const POS_FULL={GK:"Goalkeeper",DF:"Defender",MF:"Midfielder",FW:"Forward"};
+
+function openPlayer(name,team){
+  const t=TEAMS[team]||{};
+  const meta=playerMeta(name,team);
+  const hd=CONF_COLOR[t.conf]||"#444";
+  const ov=document.getElementById("pp-overlay");
+  document.getElementById("pp-modal").innerHTML=
+    '<div class="pp-hd" style="background:'+hd+'">'+
+      '<button class="pp-x" onclick="closePlayer()" aria-label="Close">&times;</button>'+
+      '<div class="pp-photowrap"><div class="pp-photo pp-photo-ph" id="pp-photo">'+esc(name.slice(0,1))+'</div></div>'+
+      '<div class="pp-hdtext">'+
+        '<div class="pp-name">'+esc(name)+'</div>'+
+        '<div class="pp-sub">'+(meta.pos?(POS_FULL[meta.pos]+' &middot; '):'')+esc(meta.club||"")+'</div>'+
+        '<div class="pp-team"><span class="pp-flag">'+(t.flag||"")+'</span> '+esc(team)+(t.rank?' &middot; FIFA #'+t.rank:'')+'</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="pp-body" id="pp-body">'+
+      '<div class="pp-loading" id="pp-loading"><span class="pp-spin"></span> Loading profile &amp; stats…</div>'+
+    '</div>';
+  ov.classList.add("open");ov.scrollTop=0;
+  document.body.style.overflow="hidden";
+  const myToken=++plState.token;
+  fetchPlayer(name,team).then(function(data){
+    if(myToken!==plState.token)return;
+    renderPlayer(name,team,meta,data);
+  }).catch(function(){
+    if(myToken!==plState.token)return;
+    renderPlayer(name,team,meta,null);
+  });
+}
+function closePlayer(){
+  plState.token++; // cancel any in-flight render
+  const ov=document.getElementById("pp-overlay");
+  if(ov)ov.classList.remove("open");
+  // team modal may still be open underneath; only release scroll if nothing is open
+  if(!document.getElementById("tm-overlay").classList.contains("open"))document.body.style.overflow="";
+}
+
+function wdTime(claims,prop){
+  try{return claims[prop][0].mainsnak.datavalue.value.time;}catch(e){return null;}
+}
+function wdAmount(snak){try{return Math.round(parseFloat(snak.datavalue.value.amount));}catch(e){return null;}}
+function ageFrom(iso){
+  const m=/([+-]\d+)-(\d\d)-(\d\d)/.exec(iso||"");if(!m)return null;
+  const y=parseInt(m[1],10),mo=parseInt(m[2],10),d=parseInt(m[3],10);
+  if(!y)return null;
+  const now=new Date();let a=now.getFullYear()-y;
+  if(now.getMonth()+1<mo||(now.getMonth()+1===mo&&now.getDate()<d))a--;
+  return {age:a,dateText:new Date(Date.UTC(y,(mo||1)-1,d||1)).toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"})};
+}
+
+async function fetchPlayer(name,team){
+  const nat=SEARCH_COUNTRY[team]||team;
+  const api="https://en.wikipedia.org/w/api.php";
+  const q1=api+"?action=query&format=json&origin=*&redirects=1&generator=search&gsrsearch="+
+    encodeURIComponent(name+" "+nat+" footballer")+"&gsrlimit=1&prop=extracts|pageimages|pageprops&exintro=1&explaintext=1&piprop=thumbnail&pithumbsize=420";
+  const j1=await (await fetch(q1)).json();
+  const out={};
+  const pages=j1.query&&j1.query.pages;
+  const page=pages?Object.values(pages)[0]:null;
+  if(page){
+    out.title=page.title;
+    out.extract=page.extract||"";
+    out.thumb=page.thumbnail&&page.thumbnail.source;
+    out.qid=page.pageprops&&page.pageprops.wikibase_item;
+    out.url="https://en.wikipedia.org/wiki/"+encodeURIComponent(String(page.title).replace(/ /g,"_"));
+  }
+  if(out.qid){
+    try{
+      const j2=await (await fetch("https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&origin=*&props=claims&ids="+out.qid)).json();
+      const ent=j2.entities[out.qid],cl=(ent&&ent.claims)||{};
+      out.dob=wdTime(cl,"P569");
+      try{out.height=wdAmount(cl.P2048[0].mainsnak);}catch(e){}
+      const need={};
+      function ref(q){if(q)need[q]=1;}
+      try{ref(cl.P19[0].mainsnak.datavalue.value.id);}catch(e){}      // place of birth
+      (cl.P27||[]).forEach(function(s){try{ref(s.mainsnak.datavalue.value.id);}catch(e){}}); // citizenship
+      (cl.P413||[]).forEach(function(s){try{ref(s.mainsnak.datavalue.value.id);}catch(e){}}); // positions
+      // national-team caps/goals: P54 statements carrying a matches qualifier
+      const natTeams=[];
+      (cl.P54||[]).forEach(function(s){
+        try{
+          const tq=s.mainsnak.datavalue.value.id;
+          const caps=s.qualifiers&&s.qualifiers.P1350?wdAmount(s.qualifiers.P1350[0]):null;
+          const goals=s.qualifiers&&s.qualifiers.P1351?wdAmount(s.qualifiers.P1351[0]):null;
+          if(caps!=null||goals!=null){ref(tq);natTeams.push({q:tq,caps:caps,goals:goals});}
+        }catch(e){}
+      });
+      const ids=Object.keys(need);
+      let labels={};
+      if(ids.length){
+        const lj=await (await fetch("https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&origin=*&props=labels&languages=en&ids="+ids.join("|"))).json();
+        Object.keys(lj.entities||{}).forEach(function(q){
+          const e2=lj.entities[q];labels[q]=e2.labels&&e2.labels.en?e2.labels.en.value:null;
+        });
+      }
+      try{out.birthplace=labels[cl.P19[0].mainsnak.datavalue.value.id];}catch(e){}
+      out.citizenship=(cl.P27||[]).map(function(s){try{return labels[s.mainsnak.datavalue.value.id];}catch(e){return null;}}).filter(Boolean);
+      out.positions=(cl.P413||[]).map(function(s){try{return labels[s.mainsnak.datavalue.value.id];}catch(e){return null;}}).filter(Boolean);
+      // pick the senior national team: label has "national" + not youth/B/Olympic; prefer most caps
+      const senior=natTeams.map(function(n){return {label:labels[n.q]||"",caps:n.caps,goals:n.goals};})
+        .filter(function(n){return /national (association )?football team|national team/i.test(n.label)&&!/under-?\d|U-?\d|youth|olympic|\bB\b|futsal|women/i.test(n.label);})
+        .sort(function(a,b){return (b.caps||0)-(a.caps||0);});
+      if(senior.length){out.caps=senior[0].caps;out.goals=senior[0].goals;out.capsTeam=senior[0].label;}
+    }catch(e){/* wikidata optional */}
+  }
+  return out;
+}
+
+function renderPlayer(name,team,meta,d){
+  d=d||{};
+  // photo
+  if(d.thumb){
+    const ph=document.getElementById("pp-photo");
+    if(ph){ph.classList.remove("pp-photo-ph");ph.textContent="";ph.style.backgroundImage="url('"+d.thumb+"')";}
+  }
+  const fact=function(k,v){return v?('<div class="pp-fact"><div class="pp-fk">'+k+'</div><div class="pp-fv">'+v+'</div></div>'):"";};
+  const a=ageFrom(d.dob);
+  const from=[d.birthplace,(d.citizenship&&d.citizenship.length?d.citizenship.join(", "):null)].filter(Boolean).join(" · ");
+  const positions=(d.positions&&d.positions.length)?d.positions.join(", "):(meta.pos?POS_FULL[meta.pos]:"");
+  // stat tiles
+  const statTile=function(v,lab){return '<div class="pp-stat"><div class="pp-statv">'+(v==null||v===""?"&mdash;":v)+'</div><div class="pp-statl">'+lab+'</div></div>';};
+  const stats='<div class="pp-stats">'+
+    statTile(d.caps!=null?d.caps:null,"Caps")+
+    statTile(d.goals!=null?d.goals:null,"Goals")+
+    statTile(meta.pos||null,"Role")+
+  '</div>';
+  const capsNote=(d.caps!=null&&d.capsTeam)?'<div class="pp-statnote">International totals for '+esc(d.capsTeam)+' (Wikidata)</div>':'';
+  const facts='<div class="pp-facts">'+
+    fact("Age",a?(a.age+" yrs"):null)+
+    fact("Date of birth",a?a.dateText:null)+
+    fact("From",from)+
+    fact("Positions played",positions)+
+    fact("Height",d.height?(d.height+" cm"):null)+
+    fact("Club",meta.club)+
+  '</div>';
+  const bio=d.extract?'<div class="pp-bio">'+esc(d.extract.length>620?d.extract.slice(0,620).replace(/\s+\S*$/,"")+"…":d.extract)+'</div>':'';
+  const nm=encodeURIComponent(name);
+  const links='<div class="pp-links">'+
+    (d.url?'<a class="pp-link" href="'+d.url+'" target="_blank" rel="noopener">Wikipedia ↗</a>':'')+
+    '<a class="pp-link" href="https://fbref.com/en/search/search.fcgi?search='+nm+'" target="_blank" rel="noopener">FBref stats ↗</a>'+
+    '<a class="pp-link" href="https://www.transfermarkt.com/schnellsuche/ergebnis/schnellsuche?query='+nm+'" target="_blank" rel="noopener">Transfermarkt ↗</a>'+
+  '</div>';
+  const cardNote='<div class="pp-foot">Caps &amp; goals are international totals from Wikidata where available (may lag the latest match). Yellow/red cards and full match logs aren\'t in a free open dataset — open FBref or Transfermarkt above for complete, up-to-date stats.</div>';
+  const body=document.getElementById("pp-body");
+  if(!d.title&&!d.extract&&!d.thumb){
+    body.innerHTML=stats+facts+'<div class="pp-bio pp-bio-warn">Couldn\'t load a live profile for this player (you may be offline, on a file:// copy, or the name didn\'t match a Wikipedia article). The links below still open full profiles.</div>'+links+cardNote;
+  }else{
+    body.innerHTML=stats+capsNote+facts+bio+links+cardNote;
+  }
+}
 
 function sportClass(s){
   return s==="NFL"?"sport-nfl":s==="MLS"?"sport-mls":s==="Liga MX"?"sport-liga":s==="CFL"?"sport-cfl":"sport-other";
