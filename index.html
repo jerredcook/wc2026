@@ -181,8 +181,11 @@ h1{font-size:22px;font-weight:600;margin-bottom:4px}
 .bk-updated{font-size:11px;color:#888;margin:12px 0 2px}
 .bk-updated .ok{color:#0d6b52;font-weight:700}
 .bk-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:6px 2px 8px}
-.bk-cols{display:flex;gap:13px;min-width:880px}
-.bk-col{display:flex;flex-direction:column;justify-content:space-around;flex:1;min-width:148px;gap:7px}
+.bk-cols{display:flex;gap:13px;min-width:880px;position:relative}
+.bk-col{display:flex;flex-direction:column;justify-content:space-around;flex:1;min-width:148px;gap:7px;position:relative;z-index:1}
+#bk-svg{position:absolute;top:0;left:0;z-index:0;pointer-events:none;overflow:visible}
+.bk-link{fill:none;stroke:#d2d5da;stroke-width:1.5}
+html[data-theme="dark"] .bk-link{stroke:#3a3e47}
 .bk-coltitle{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#aaa;text-align:center;padding-bottom:2px}
 .bk-m{border:1px solid #eee;border-left:4px solid #bbb;border-radius:8px;padding:6px 9px;background:#fff}
 .bk-mdv{font-size:8.5px;font-weight:700;color:#aaa;letter-spacing:.03em;text-transform:uppercase;margin-bottom:4px;display:flex;justify-content:space-between;gap:6px}
@@ -347,8 +350,8 @@ html[data-theme="dark"] .st-live{background:#241a1a;border-color:#2c2f36}
 /* ── Goal flash (a match pulses when its score changes between refreshes) ── */
 @keyframes goalflash{0%{background:#fff2b8}55%{background:#fffbe6}100%{background:transparent}}
 @keyframes goalflashdark{0%{background:#46400f}55%{background:#2d2a16}100%{background:transparent}}
-.mrow.scored,.td-row.scored{animation:goalflash 1.9s ease-out;border-radius:6px}
-html[data-theme="dark"] .mrow.scored,html[data-theme="dark"] .td-row.scored{animation:goalflashdark 1.9s ease-out}
+.mrow.scored,.td-row.scored,.bk-m.scored{animation:goalflash 1.9s ease-out;border-radius:6px}
+html[data-theme="dark"] .mrow.scored,html[data-theme="dark"] .td-row.scored,html[data-theme="dark"] .bk-m.scored{animation:goalflashdark 1.9s ease-out}
 .goal-badge{font-size:9px;font-weight:800;color:#7a5000;background:#f5c410;border-radius:3px;padding:1px 5px;margin-left:5px;letter-spacing:.03em;white-space:nowrap}
 </style>
 </head>
@@ -1236,7 +1239,7 @@ function bkCard(m){
   const badge=live?'<span class="bk-livebadge">●'+(m.minute?" "+String(m.minute).replace(/['′]/g,"")+"'":" LIVE")+'</span>'
             :(played?'<span class="bk-ftbadge">FT</span>':"");
   const label=m.r==="Final"?"Final":(m.r==="3rd"?"3rd place":(m.r+"-"+m.no));
-  return '<div class="bk-m bk-'+m.r.toLowerCase()+'">'+
+  return '<div class="bk-m bk-'+m.r.toLowerCase()+(m._flash?" scored":"")+'" data-bk="'+m.r+'-'+m.no+'">'+
     '<div class="bk-mdv"><span>'+label+' &middot; '+m.d+badge+'</span><span class="bk-mvenue">'+m.city+'</span></div>'+
     bkTeamRow(m.h,m.liveH,played?m.hs:null,played?m.as:null)+
     bkTeamRow(m.a,m.liveA,played?m.as:null,played?m.hs:null)+
@@ -1269,9 +1272,69 @@ function buildBracket(){
       stamp.innerHTML='Bracket positions are fixed; team names appear as groups finish and the knockout rounds are played. Pull the latest scores to fill them in.';
     }
   }
+  drawBracketConnectors();
 }
 
-function toggleBracket(){toggleSection("bk-body","bk-toggle","bracket");}
+/* Knockout goals: flag changed bracket matches and return them for notifying. */
+function detectBracketGoals(){
+  const goals=[];
+  bracket.forEach(function(b){
+    if(b.hs==null||b.as==null)return;
+    const sc=b.hs+"-"+b.as;
+    if(b._seen===undefined){b._seen=sc;return;} // baseline silently
+    if(sc!==b._seen){
+      b._flash=true;b._seen=sc;
+      const home=(b.liveH&&!isSlotName(b.liveH))?b.liveH:b.h;
+      const away=(b.liveA&&!isSlotName(b.liveA))?b.liveA:b.a;
+      goals.push({g:home+" vs "+away,sc:sc,live:b.status==="LIVE",clock:b.minute,r:b.r});
+    }
+  });
+  return goals;
+}
+function clearBracketFlash(){bracket.forEach(function(b){b._flash=false;});}
+
+/* Which earlier matches feed this one (parsed from "Winner R32-1" style slots). */
+function bkFeeders(m){
+  const out=[];
+  [m.h,m.a].forEach(function(slot){
+    const mt=/(R32|R16|QF|SF)-(\d+)/.exec(slot||"");
+    if(mt)out.push({r:mt[1],no:parseInt(mt[2],10)});
+  });
+  return out;
+}
+/* Draw orthogonal connector lines between each match and the two it feeds.
+   Measures real card positions so it stays aligned across resize / scroll. */
+function drawBracketConnectors(){
+  const cols=document.getElementById("bk-cols");
+  if(!cols)return;
+  const old=document.getElementById("bk-svg");if(old)old.remove();
+  const body=document.getElementById("bk-body");
+  if(body&&body.style.display==="none")return; // not visible → nothing to align to
+  if(!cols.offsetHeight)return;
+  const NS="http://www.w3.org/2000/svg";
+  const base=cols.getBoundingClientRect();
+  const svg=document.createElementNS(NS,"svg");
+  svg.setAttribute("id","bk-svg");
+  svg.setAttribute("width",cols.offsetWidth);svg.setAttribute("height",cols.offsetHeight);
+  function pt(el,side){const r=el.getBoundingClientRect();return {x:(side==="right"?r.right:r.left)-base.left,y:r.top-base.top+r.height/2};}
+  ["R16","QF","SF","Final"].forEach(function(rnd){
+    bracket.filter(function(m){return m.r===rnd;}).forEach(function(m){
+      const tgt=cols.querySelector('[data-bk="'+m.r+'-'+m.no+'"]');if(!tgt)return;
+      const b=pt(tgt,"left");
+      bkFeeders(m).forEach(function(f){
+        const src=cols.querySelector('[data-bk="'+f.r+'-'+f.no+'"]');if(!src)return;
+        const a=pt(src,"right"),midx=(a.x+b.x)/2;
+        const p=document.createElementNS(NS,"path");
+        p.setAttribute("d","M"+a.x+" "+a.y+" H"+midx.toFixed(1)+" V"+b.y.toFixed(1)+" H"+b.x.toFixed(1));
+        p.setAttribute("class","bk-link");
+        svg.appendChild(p);
+      });
+    });
+  });
+  cols.insertBefore(svg,cols.firstChild);
+}
+
+function toggleBracket(){toggleSection("bk-body","bk-toggle","bracket");drawBracketConnectors();}
 
 /* ══════════ FRIENDLIES RENDER + CONTROLS ══════════ */
 const frState={host:"all"};
@@ -1470,13 +1533,14 @@ async function refreshScores(){
     const n=applyLive(results);
     applyBracket(espnEvents);
     const goals=detectGoals();
+    const bgoals=detectBracketGoals();
     buildGrid();
     buildStandings();
     buildThirds();
     buildBracket();
     buildToday();
-    fireGoalNotifications(goals);
-    if(goals.length)setTimeout(function(){clearFlash();buildGrid();buildToday();},2200); // clear pulse after it plays
+    fireGoalNotifications(goals.concat(bgoals));
+    if(goals.length||bgoals.length)setTimeout(function(){clearFlash();clearBracketFlash();buildGrid();buildToday();buildBracket();},2200); // clear pulse after it plays
     if(n>0)setLiveStatus('<span class="ok">✓ Updated</span> '+n+' match'+(n!==1?"es":"")+' &middot; last checked '+t);
     else setLiveStatus('<span class="ok">✓ Checked</span> &middot; no World Cup matches in progress right now &middot; '+t);
   }else{
@@ -1526,6 +1590,10 @@ async function refreshScores(){
   buildBracket();
   buildGrid();
   refreshScores(); // auto-pull live + final scores on load (works when hosted or in Claude's view)
+
+  // Keep bracket connector lines aligned when the layout changes.
+  let bkResizeT;
+  window.addEventListener("resize",function(){clearTimeout(bkResizeT);bkResizeT=setTimeout(drawBracketConnectors,150);});
 })();
 </script>
 
