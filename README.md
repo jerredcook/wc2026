@@ -12,6 +12,8 @@ The whole app is [`index.html`](index.html) — HTML, CSS, and vanilla JavaScrip
 - **Filters** by country, group (A–L), and team, with a running summary and reset.
 - **Live & final scores** pulled automatically on load and via the **Refresh latest scores** button. Matches in progress show a red LIVE badge and the current minute, and the page **auto-refreshes every 60s while a match is live**. A goal **flashes** the match on screen, and you can opt in to **browser goal notifications**.
 - **Group standings — live**, computed from the fetched scores (never hardcoded), with full FIFA tiebreakers (see below), plus a **best-third-placed race** showing the top-8 Round-of-32 cut line.
+- **Team rankings** — all 48 qualified nations listed by FIFA World Ranking, filterable by confederation.
+- **Team info popup** — click any team name *anywhere* (schedule, standings, third-place race, knockout bracket, Today bar, friendlies, or the rankings table) to open a profile card: flag, FIFA rank, group, confederation, head coach, capital, World Cup appearances and best finish, a fact about the country, and a key-player squad list (color-coded by position).
 - **Knockout bracket** — the complete Round of 32 → Final tree using the official 2026 slotting, with team names and scores filling in from the live feed as the tournament progresses.
 - **Time-zone toggle** — view kickoff times in ET, your local zone, or any picked zone.
 - **Dark mode** (respects your system preference) and **persistent preferences** — theme, time zone, filters, open/closed sections, and auto-refresh are remembered across visits.

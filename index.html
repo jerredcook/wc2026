@@ -353,6 +353,80 @@ html[data-theme="dark"] .st-live{background:#241a1a;border-color:#2c2f36}
 .mrow.scored,.td-row.scored,.bk-m.scored{animation:goalflash 1.9s ease-out;border-radius:6px}
 html[data-theme="dark"] .mrow.scored,html[data-theme="dark"] .td-row.scored,html[data-theme="dark"] .bk-m.scored{animation:goalflashdark 1.9s ease-out}
 .goal-badge{font-size:9px;font-weight:800;color:#7a5000;background:#f5c410;border-radius:3px;padding:1px 5px;margin-left:5px;letter-spacing:.03em;white-space:nowrap}
+
+/* ── Clickable team names (open the team popup) ── */
+.tlink{cursor:pointer;border-bottom:1px dotted transparent;transition:border-color .12s,color .12s}
+.tlink:hover{border-bottom-color:currentColor;color:#1565c0}
+html[data-theme="dark"] .tlink:hover{color:#7db4ff}
+.tflag{margin-right:4px}
+
+/* ── FIFA rankings section ── */
+.rk-section{background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.rk-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:10px}
+.rk-title{font-size:15px;font-weight:700;color:#111}
+.rk-sub{font-size:11px;color:#888;margin-top:1px}
+.rk-toggle{font-size:12px;font-weight:600;color:#555;border:1px solid #ddd;border-radius:14px;padding:3px 11px;background:#fafafa;white-space:nowrap}
+.rk-toggle:hover{background:#f0f0f0}
+.rk-controls{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin:12px 0 10px}
+.rk-note{font-size:11px;color:#999;margin:10px 0}
+.rk-table{width:100%;border-collapse:collapse;font-size:13px}
+.rk-table th{font-size:9px;font-weight:700;color:#aaa;letter-spacing:.03em;text-transform:uppercase;padding:6px 6px;text-align:left;border-bottom:1px solid #f0f0f0}
+.rk-table th.rc,.rk-table td.rc{text-align:center}
+.rk-table td{padding:8px 6px;border-bottom:1px solid #f6f6f6;color:#444;font-variant-numeric:tabular-nums}
+.rk-table tr:last-child td{border-bottom:none}
+.rk-row{cursor:pointer;transition:background .12s}
+.rk-row:hover{background:#f5f7fb}
+.rk-rank{font-weight:800;color:#1a1a1a}
+.rk-tn{font-weight:600;color:#1a1a1a}
+.rk-conf{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;background:#eef1f6;color:#5566aa;white-space:nowrap}
+.rk-grp{color:#888}
+
+/* ── Team info popup ── */
+.tm-overlay{position:fixed;inset:0;background:rgba(15,17,22,.55);display:none;align-items:flex-start;justify-content:center;padding:30px 14px;z-index:1000;overflow-y:auto;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.tm-overlay.open{display:flex}
+.tm-modal{background:#fff;border-radius:16px;max-width:560px;width:100%;box-shadow:0 14px 44px rgba(0,0,0,.34);overflow:hidden;animation:tmIn .18s ease-out}
+@keyframes tmIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+.tm-hd{position:relative;padding:20px 22px 18px;color:#fff}
+.tm-flag{font-size:42px;line-height:1}
+.tm-name{font-size:23px;font-weight:800;margin-top:8px;line-height:1.1}
+.tm-nick{font-size:13px;opacity:.92;margin-top:3px}
+.tm-rankpill{display:inline-block;margin-top:11px;font-size:12px;font-weight:700;background:rgba(255,255,255,.22);border-radius:20px;padding:4px 13px}
+.tm-x{position:absolute;top:13px;right:14px;width:30px;height:30px;border:none;border-radius:50%;background:rgba(255,255,255,.22);color:#fff;font-size:17px;cursor:pointer;line-height:1}
+.tm-x:hover{background:rgba(255,255,255,.38)}
+.tm-body{padding:16px 22px 22px}
+.tm-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:9px;margin-bottom:15px}
+.tm-fact{background:#f6f7f9;border-radius:10px;padding:8px 11px}
+.tm-fk{font-size:9px;font-weight:700;color:#999;letter-spacing:.05em;text-transform:uppercase}
+.tm-fv{font-size:13px;font-weight:600;color:#1a1a1a;margin-top:2px}
+.tm-blurb{font-size:13px;line-height:1.5;color:#5a4a1a;background:#fffdf2;border:1px solid #f1e6b8;border-radius:10px;padding:10px 13px;margin-bottom:16px}
+.tm-sec{font-size:11px;font-weight:700;color:#999;letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px}
+.tm-squad{display:flex;flex-direction:column}
+.tm-pl{display:flex;align-items:center;gap:9px;padding:7px 2px;border-bottom:1px solid #f2f2f2}
+.tm-pl:last-child{border-bottom:none}
+.tm-pos{font-size:9px;font-weight:800;width:32px;flex-shrink:0;text-align:center;border-radius:5px;padding:3px 0;letter-spacing:.02em}
+.tm-pos.GK{background:#fdf0d5;color:#9a6b00}
+.tm-pos.DF{background:#e8eeff;color:#2040a0}
+.tm-pos.MF{background:#e4f5ec;color:#1a6b3c}
+.tm-pos.FW{background:#fde8ea;color:#b02030}
+.tm-pn{font-size:13px;font-weight:600;color:#1a1a1a;flex:1}
+.tm-club{font-size:11px;color:#999;text-align:right}
+.tm-foot{font-size:10px;color:#aaa;margin-top:13px;line-height:1.45}
+/* dark mode — rankings + popup */
+html[data-theme="dark"] .rk-section{background:#1e2026;box-shadow:0 1px 3px rgba(0,0,0,.45)}
+html[data-theme="dark"] .rk-title{color:#e9eaed}
+html[data-theme="dark"] .rk-sub,html[data-theme="dark"] .rk-note,html[data-theme="dark"] .rk-grp,html[data-theme="dark"] .rk-table td,html[data-theme="dark"] .rk-table th{color:#9aa0a8}
+html[data-theme="dark"] .rk-toggle{background:#2a2d35;border-color:#3a3e47;color:#cfd3da}
+html[data-theme="dark"] .rk-toggle:hover{background:#343843}
+html[data-theme="dark"] .rk-table th,html[data-theme="dark"] .rk-table td{border-color:#2a2d35}
+html[data-theme="dark"] .rk-rank,html[data-theme="dark"] .rk-tn{color:#e9eaed}
+html[data-theme="dark"] .rk-row:hover{background:#23262e}
+html[data-theme="dark"] .rk-conf{background:#2a2d35;color:#9aa6c8}
+html[data-theme="dark"] .tm-modal{background:#1e2026}
+html[data-theme="dark"] .tm-fact{background:#23262e}
+html[data-theme="dark"] .tm-fv,html[data-theme="dark"] .tm-pn{color:#e9eaed}
+html[data-theme="dark"] .tm-fk,html[data-theme="dark"] .tm-sec,html[data-theme="dark"] .tm-club{color:#9aa0a8}
+html[data-theme="dark"] .tm-blurb{background:#262318;border-color:#3d3a25;color:#d8cfae}
+html[data-theme="dark"] .tm-pl{border-color:#2a2d35}
 </style>
 </head>
 <body>
@@ -418,6 +492,25 @@ html[data-theme="dark"] .mrow.scored,html[data-theme="dark"] .td-row.scored,html
     <div class="th-updated" id="th-updated">Fills in as group matches are played — the 8 best third-placed teams reach the Round of 32.</div>
     <div id="th-grid"></div>
     <div class="th-foot">Ranked by points, then goal difference, then goals scored across each team's three group games. FIFA then applies fair-play/disciplinary points and a drawing of lots to break any remaining ties — not modeled here — and uses a fixed table to assign which thirds land in which Round-of-32 slot. Provisional until all 12 groups finish.</div>
+  </div>
+</div>
+
+<!-- ══════════ FIFA WORLD RANKINGS ══════════ -->
+<div class="rk-section">
+  <div class="rk-head" onclick="toggleRankings()">
+    <div class="rk-titlewrap">
+      <div class="rk-title">🏅 Team Rankings</div>
+      <div class="rk-sub">All 48 qualified nations by FIFA World Ranking &middot; tap any team for its roster &amp; profile</div>
+    </div>
+    <span class="rk-toggle" id="rk-toggle">▲ Hide</span>
+  </div>
+  <div id="rk-body">
+    <div class="rk-controls" id="rk-controls"></div>
+    <table class="rk-table">
+      <thead><tr><th class="rc">#</th><th>Team</th><th class="rc">Confederation</th><th class="rc">Group</th></tr></thead>
+      <tbody id="rk-tbody"></tbody>
+    </table>
+    <div class="rk-note">FIFA World Ranking is approximate. Click a row to open the team's profile — roster, head coach, World Cup history, and a fact about the country.</div>
   </div>
 </div>
 
@@ -510,6 +603,11 @@ html[data-theme="dark"] .mrow.scored,html[data-theme="dark"] .td-row.scored,html
   The <strong>Refresh latest scores</strong> button pulls current scores — including matches in progress (red LIVE badge + live minute) — from a public scoreboard when the page is served over http(s), or via Claude when open in Claude's view. A file opened straight from disk (file://) is blocked by the browser from making web requests, so it keeps the saved scores; the status line always tells you which it is.
 </p>
 
+<!-- ══════════ TEAM INFO POPUP ══════════ -->
+<div class="tm-overlay" id="tm-overlay" role="dialog" aria-modal="true">
+  <div class="tm-modal" id="tm-modal"></div>
+</div>
+
 <script>
 const state={country:'all',group:'all',team:'all'};
 
@@ -564,6 +662,7 @@ function toggleTheme(){const next=curTheme()==="dark"?"light":"dark";applyTheme(
 const SECTIONS=[
   {key:"standings",body:"st-body",tog:"st-toggle"},
   {key:"thirds",body:"th-body",tog:"th-toggle"},
+  {key:"rankings",body:"rk-body",tog:"rk-toggle"},
   {key:"bracket",body:"bk-body",tog:"bk-toggle"},
   {key:"friendlies",body:"fr-body",tog:"fr-toggle"},
   {key:"stadiums",body:"sd-body",tog:"sd-toggle"}
@@ -683,6 +782,171 @@ const friendlies=[
   {host:"Canada",bar:"#E24B4A",date:"Jun",venue:"Venue not confirmed",h:"Canada",a:"Rep. of Ireland",hs:1,as:1},
 ];
 
+/* ══════════ TEAM / COUNTRY DATA ══════════
+   One record per qualified nation, keyed by the short name used in the
+   fixtures. Powers the FIFA-ranking table and the click-anywhere team popup.
+   `rank` is an approximate FIFA World Ranking; `players` is a notable-call-ups
+   list (key internationals + their clubs), not an official 26-man roster. */
+const TEAMS={
+  // ── Group A ──
+  "Mexico":{flag:"🇲🇽",group:"A",conf:"CONCACAF",rank:14,nick:"El Tri",coach:"Javier Aguirre",capital:"Mexico City",apps:18,best:"Quarterfinals (1970, 1986)",fact:"Co-host in 2026 — the first nation ever to host three men's World Cups (1970, 1986, 2026).",players:[["Guillermo Ochoa","GK","unattached"],["César Montes","DF","Lokomotiv Moscow"],["Edson Álvarez","MF","West Ham"],["Hirving Lozano","FW","San Diego FC"],["Santiago Giménez","FW","AC Milan"],["Raúl Jiménez","FW","Fulham"]]},
+  "South Africa":{flag:"🇿🇦",group:"A",conf:"CAF",rank:56,nick:"Bafana Bafana",coach:"Hugo Broos",capital:"Pretoria",apps:4,best:"Group stage (1998, 2002, 2010)",fact:"In 2010 became the first host nation to be eliminated in the group stage.",players:[["Ronwen Williams","GK","Mamelodi Sundowns"],["Siyanda Xulu","DF","AmaZulu"],["Teboho Mokoena","MF","Mamelodi Sundowns"],["Themba Zwane","MF","Mamelodi Sundowns"],["Percy Tau","FW","Qatar SC"],["Lyle Foster","FW","Burnley"]]},
+  "South Korea":{flag:"🇰🇷",group:"A",conf:"AFC",rank:23,nick:"Taegeuk Warriors",coach:"Hong Myung-bo",capital:"Seoul",apps:12,best:"Fourth place (2002)",fact:"Reached the semifinals as co-hosts in 2002 — the best-ever finish by an Asian side.",players:[["Kim Seung-gyu","GK","Al-Shabab"],["Kim Min-jae","DF","Bayern Munich"],["Son Heung-min","FW","LAFC"],["Lee Kang-in","MF","Paris Saint-Germain"],["Hwang Hee-chan","FW","Wolves"],["Hwang In-beom","MF","Feyenoord"]]},
+  "Czechia":{flag:"🇨🇿",group:"A",conf:"UEFA",rank:42,nick:"Národní tým",coach:"Ivan Hašek",capital:"Prague",apps:1,best:"Runners-up (1934, 1962, as Czechoslovakia)",fact:"As an independent nation, this is a first World Cup; as Czechoslovakia they were twice finalists.",players:[["Jindřich Staněk","GK","Slavia Prague"],["Tomáš Souček","MF","West Ham"],["Ladislav Krejčí","DF","Wolves"],["Antonín Barák","MF","Fiorentina"],["Adam Hložek","FW","Hoffenheim"],["Patrik Schick","FW","Bayer Leverkusen"]]},
+  // ── Group B ──
+  "Canada":{flag:"🇨🇦",group:"B",conf:"CONCACAF",rank:27,nick:"Les Rouges",coach:"Jesse Marsch",capital:"Ottawa",apps:3,best:"Group stage (1986, 2022)",fact:"Co-host in 2026; in 1986 they qualified without scoring a single goal at the finals.",players:[["Maxime Crépeau","GK","Portland Timbers"],["Alphonso Davies","DF","Bayern Munich"],["Stephen Eustáquio","MF","Porto"],["Jonathan David","FW","Juventus"],["Cyle Larin","FW","Mallorca"],["Tajon Buchanan","MF","Villarreal"]]},
+  "Bosnia":{flag:"🇧🇦",group:"B",conf:"UEFA",rank:74,nick:"Zmajevi (The Dragons)",coach:"Sergej Barbarez",capital:"Sarajevo",apps:2,best:"Group stage (2014)",fact:"Edin Džeko is the country's all-time leading scorer and captain across both eras.",players:[["Nikola Vasilj","GK","St. Pauli"],["Sead Kolašinac","DF","Atalanta"],["Miralem Pjanić","MF","unattached"],["Edin Džeko","FW","Fenerbahçe"],["Ermedin Demirović","FW","VfB Stuttgart"],["Amar Dedić","DF","Benfica"]]},
+  "Qatar":{flag:"🇶🇦",group:"B",conf:"AFC",rank:36,nick:"The Maroon",coach:"Luís Castro",capital:"Doha",apps:2,best:"Group stage (2022)",fact:"Hosted and won nothing in 2022 (the first host ever to lose its opener); back-to-back Asian Cup champions in 2019 and 2023.",players:[["Meshaal Barsham","GK","Al-Sadd"],["Boualem Khoukhi","DF","Al-Sadd"],["Hassan Al-Haydos","MF","Al-Sadd"],["Akram Afif","FW","Al-Sadd"],["Almoez Ali","FW","Al-Duhail"],["Abdulaziz Hatem","MF","Al-Rayyan"]]},
+  "Switzerland":{flag:"🇨🇭",group:"B",conf:"UEFA",rank:19,nick:"La Nati",coach:"Murat Yakin",capital:"Bern",apps:13,best:"Quarterfinals (1934, 1938, 1954)",fact:"Has reached the knockout stage at four of the last five World Cups.",players:[["Yann Sommer","GK","Inter Milan"],["Manuel Akanji","DF","Manchester City"],["Granit Xhaka","MF","Bayer Leverkusen"],["Remo Freuler","MF","Bologna"],["Breel Embolo","FW","Monaco"],["Dan Ndoye","FW","Bologna"]]},
+  // ── Group C ──
+  "Brazil":{flag:"🇧🇷",group:"C",conf:"CONMEBOL",rank:5,nick:"Seleção",coach:"Carlo Ancelotti",capital:"Brasília",apps:23,best:"Champions (1958, 1962, 1970, 1994, 2002)",fact:"The only nation to play in every World Cup, and the record five-time champions.",players:[["Alisson","GK","Liverpool"],["Marquinhos","DF","Paris Saint-Germain"],["Vinícius Júnior","FW","Real Madrid"],["Rodrygo","FW","Real Madrid"],["Bruno Guimarães","MF","Newcastle"],["Raphinha","FW","Barcelona"]]},
+  "Morocco":{flag:"🇲🇦",group:"C",conf:"CAF",rank:11,nick:"Atlas Lions",coach:"Walid Regragui",capital:"Rabat",apps:7,best:"Fourth place (2022)",fact:"In 2022 became the first African and first Arab nation to reach a World Cup semifinal.",players:[["Yassine Bounou","GK","Al-Hilal"],["Achraf Hakimi","DF","Paris Saint-Germain"],["Sofyan Amrabat","MF","Fenerbahçe"],["Hakim Ziyech","MF","Al-Duhail"],["Brahim Díaz","MF","Real Madrid"],["Youssef En-Nesyri","FW","Fenerbahçe"]]},
+  "Haiti":{flag:"🇭🇹",group:"C",conf:"CONCACAF",rank:83,nick:"Les Grenadiers",coach:"Sébastien Migné",capital:"Port-au-Prince",apps:2,best:"Group stage (1974)",fact:"Returns to the World Cup for the first time in 52 years, since their lone 1974 appearance.",players:[["Johny Placide","GK","unattached"],["Ricardo Adé","DF","unattached"],["Carlens Arcus","DF","Çorum FK"],["Danley Jean Jacques","MF","Pisa"],["Frantzdy Pierrot","FW","Al-Kholood"],["Duckens Nazon","FW","unattached"]]},
+  "Scotland":{flag:"🏴󠁧󠁢󠁳󠁣󠁴󠁿",group:"C",conf:"UEFA",rank:35,nick:"The Tartan Army",coach:"Steve Clarke",capital:"Edinburgh",apps:9,best:"Group stage (8 times)",fact:"Holds the unwanted record of most World Cup appearances (8 before 2026) without ever reaching the knockout rounds.",players:[["Angus Gunn","GK","Nottingham Forest"],["Andy Robertson","DF","Liverpool"],["Scott McTominay","MF","Napoli"],["Billy Gilmour","MF","Napoli"],["John McGinn","MF","Aston Villa"],["Che Adams","FW","Torino"]]},
+  // ── Group D ──
+  "USA":{flag:"🇺🇸",group:"D",conf:"CONCACAF",rank:16,nick:"The Stars and Stripes",coach:"Mauricio Pochettino",capital:"Washington, D.C.",apps:12,best:"Third place (1930)",fact:"Lead co-host in 2026, staging 78 of the 104 matches including the final at MetLife Stadium.",players:[["Matt Turner","GK","New England Revolution"],["Sergiño Dest","DF","PSV"],["Tyler Adams","MF","Bournemouth"],["Weston McKennie","MF","Juventus"],["Christian Pulisic","FW","AC Milan"],["Folarin Balogun","FW","Monaco"]]},
+  "Paraguay":{flag:"🇵🇾",group:"D",conf:"CONMEBOL",rank:39,nick:"La Albirroja",coach:"Gustavo Alfaro",capital:"Asunción",apps:9,best:"Quarterfinals (2010)",fact:"Goalkeeper-captain José Luis Chilavert famously scored eight goals for the national team from free kicks and penalties.",players:[["Roberto Fernández","GK","Belgrano"],["Gustavo Gómez","DF","Palmeiras"],["Andrés Cubas","MF","Vancouver Whitecaps"],["Miguel Almirón","MF","Atlanta United"],["Julio Enciso","FW","Ipswich Town"],["Antonio Sanabria","FW","Cremonese"]]},
+  "Türkiye":{flag:"🇹🇷",group:"D",conf:"UEFA",rank:26,nick:"Ay-Yıldızlılar (Crescent-Stars)",coach:"Vincenzo Montella",capital:"Ankara",apps:3,best:"Third place (2002)",fact:"In 2002 Hakan Şükür scored after 11 seconds — still the fastest goal in World Cup history.",players:[["Altay Bayındır","GK","Manchester United"],["Merih Demiral","DF","Al-Ahli"],["Hakan Çalhanoğlu","MF","Inter Milan"],["Arda Güler","MF","Real Madrid"],["Kenan Yıldız","FW","Juventus"],["Kerem Aktürkoğlu","FW","Fenerbahçe"]]},
+  "Australia":{flag:"🇦🇺",group:"D",conf:"AFC",rank:24,nick:"Socceroos",coach:"Tony Popovic",capital:"Canberra",apps:7,best:"Round of 16 (2006, 2022)",fact:"Switched from Oceania to the Asian confederation in 2006 and have qualified for every World Cup since.",players:[["Mathew Ryan","GK","Lens"],["Harry Souttar","DF","Sheffield United"],["Aiden O'Neill","MF","Standard Liège"],["Riley McGree","MF","Middlesbrough"],["Martin Boyle","FW","Hibernian"],["Kusini Yengi","FW","Portsmouth"]]},
+  // ── Group E ──
+  "Germany":{flag:"🇩🇪",group:"E",conf:"UEFA",rank:9,nick:"Die Mannschaft",coach:"Julian Nagelsmann",capital:"Berlin",apps:21,best:"Champions (1954, 1974, 1990, 2014)",fact:"Four-time champions; reached at least the quarterfinals at 16 straight World Cups before the 2018/2022 group exits.",players:[["Marc-André ter Stegen","GK","Barcelona"],["Antonio Rüdiger","DF","Real Madrid"],["Joshua Kimmich","MF","Bayern Munich"],["Florian Wirtz","MF","Liverpool"],["Jamal Musiala","MF","Bayern Munich"],["Kai Havertz","FW","Arsenal"]]},
+  "Ivory Coast":{flag:"🇨🇮",group:"E",conf:"CAF",rank:40,nick:"Les Éléphants",coach:"Emerse Faé",capital:"Yamoussoukro",apps:4,best:"Group stage (2006, 2010, 2014)",fact:"Won the 2023 Africa Cup of Nations on home soil after starting the tournament on the brink of elimination.",players:[["Yahia Fofana","GK","Angers"],["Odilon Kossounou","DF","Atalanta"],["Franck Kessié","MF","Al-Ahli"],["Seko Fofana","MF","Rennes"],["Simon Adingra","FW","Sunderland"],["Sébastien Haller","FW","Utrecht"]]},
+  "Ecuador":{flag:"🇪🇨",group:"E",conf:"CONMEBOL",rank:25,nick:"La Tri",coach:"Sebastián Beccacece",capital:"Quito",apps:5,best:"Round of 16 (2006)",fact:"Plays home qualifiers at 2,850 m altitude in Quito, one of football's toughest away trips.",players:[["Hernán Galíndez","GK","Huracán"],["Piero Hincapié","DF","Bayer Leverkusen"],["Moisés Caicedo","MF","Chelsea"],["Pervis Estupiñán","DF","AC Milan"],["Kendry Páez","MF","Chelsea"],["Enner Valencia","FW","Internacional"]]},
+  "Curaçao":{flag:"🇨🇼",group:"E",conf:"CONCACAF",rank:82,nick:"Famia Kòrsou",coach:"Dick Advocaat",capital:"Willemstad",apps:1,best:"Debut (2026)",fact:"With ~150,000 people, by far the smallest nation ever to qualify for a men's World Cup.",players:[["Eloy Room","GK","unattached"],["Cuco Martina","DF","unattached"],["Juninho Bacuna","MF","Birmingham City"],["Leandro Bacuna","MF","unattached"],["Tahith Chong","MF","Sheffield United"],["Gervane Kastaneer","FW","unattached"]]},
+  // ── Group F ──
+  "Netherlands":{flag:"🇳🇱",group:"F",conf:"UEFA",rank:7,nick:"Oranje",coach:"Ronald Koeman",capital:"Amsterdam",apps:12,best:"Runners-up (1974, 1978, 2010)",fact:"The greatest side never to win it — three-time finalists and the home of 'Total Football'.",players:[["Bart Verbruggen","GK","Brighton"],["Virgil van Dijk","DF","Liverpool"],["Frenkie de Jong","MF","Barcelona"],["Tijjani Reijnders","MF","Manchester City"],["Cody Gakpo","FW","Liverpool"],["Memphis Depay","FW","Corinthians"]]},
+  "Japan":{flag:"🇯🇵",group:"F",conf:"AFC",rank:18,nick:"Samurai Blue",coach:"Hajime Moriyasu",capital:"Tokyo",apps:8,best:"Round of 16 (2002, 2010, 2018, 2022)",fact:"Beat both Germany and Spain in the 2022 group stage; first Asian nation to qualify for 2026.",players:[["Zion Suzuki","GK","Parma"],["Ko Itakura","DF","Ajax"],["Wataru Endo","MF","Liverpool"],["Takefusa Kubo","FW","Real Sociedad"],["Kaoru Mitoma","FW","Brighton"],["Daichi Kamada","MF","Crystal Palace"]]},
+  "Sweden":{flag:"🇸🇪",group:"F",conf:"UEFA",rank:33,nick:"Blågult (Blue-Yellow)",coach:"Graham Potter",capital:"Stockholm",apps:13,best:"Runners-up (1958)",fact:"Finished runners-up as hosts in 1958, with a teenage Pelé scoring twice in the final against them.",players:[["Robin Olsen","GK","Aston Villa"],["Victor Lindelöf","DF","unattached"],["Lucas Bergvall","MF","Tottenham"],["Alexander Isak","FW","Liverpool"],["Viktor Gyökeres","FW","Arsenal"],["Anthony Elanga","FW","Newcastle"]]},
+  "Tunisia":{flag:"🇹🇳",group:"F",conf:"CAF",rank:41,nick:"Eagles of Carthage",coach:"Sami Trabelsi",capital:"Tunis",apps:7,best:"Group stage (beat France 1-0 in 2022)",fact:"In 1978 became the first African nation to win a match at a World Cup.",players:[["Aymen Dahmen","GK","Sampdoria"],["Montassar Talbi","DF","Lille"],["Aïssa Laïdouni","MF","Wolfsburg"],["Ellyes Skhiri","MF","Eintracht Frankfurt"],["Hannibal Mejbri","MF","Burnley"],["Naïm Sliti","FW","Al-Ettifaq"]]},
+  // ── Group G ──
+  "Belgium":{flag:"🇧🇪",group:"G",conf:"UEFA",rank:8,nick:"Red Devils",coach:"Rudi Garcia",capital:"Brussels",apps:15,best:"Third place (2018)",fact:"The 'Golden Generation' was ranked world No. 1 for much of 2015–2022.",players:[["Thibaut Courtois","GK","Real Madrid"],["Wout Faes","DF","Leicester City"],["Kevin De Bruyne","MF","Napoli"],["Youri Tielemans","MF","Aston Villa"],["Jérémy Doku","FW","Manchester City"],["Romelu Lukaku","FW","Napoli"]]},
+  "Egypt":{flag:"🇪🇬",group:"G",conf:"CAF",rank:34,nick:"The Pharaohs",coach:"Hossam Hassan",capital:"Cairo",apps:4,best:"Group stage (1934, 1990, 2018)",fact:"Record seven-time Africa Cup of Nations champions; in 1934 they were the first African side at a World Cup.",players:[["Mohamed El-Shenawy","GK","Al-Ahly"],["Mohamed Abdelmonem","DF","Nice"],["Mohamed Elneny","MF","Al-Jazira"],["Mohamed Salah","FW","Liverpool"],["Omar Marmoush","FW","Manchester City"],["Trezeguet","FW","Al-Ahram"]]},
+  "New Zealand":{flag:"🇳🇿",group:"G",conf:"OFC",rank:86,nick:"All Whites",coach:"Darren Bazeley",capital:"Wellington",apps:3,best:"Group stage (2010, unbeaten)",fact:"The only team to leave the 2010 World Cup undefeated — three draws — yet not advance.",players:[["Max Crocombe","GK","Oxford United"],["Tyler Bindon","DF","Nottingham Forest"],["Marko Stamenić","MF","Olympiacos"],["Matthew Garbett","MF","Torino"],["Chris Wood","FW","Nottingham Forest"],["Ben Waine","FW","Plymouth Argyle"]]},
+  "Iran":{flag:"🇮🇷",group:"G",conf:"AFC",rank:20,nick:"Team Melli",coach:"Amir Ghalenoei",capital:"Tehran",apps:7,best:"Group stage (beat USA 2-1 in 1998)",fact:"Has topped the Asian rankings for years but has never made it out of the World Cup group stage.",players:[["Alireza Beiranvand","GK","Tractor"],["Shojae Khalilzadeh","DF","Tractor"],["Saeid Ezatolahi","MF","Esteghlal"],["Mehdi Taremi","FW","Olympiacos"],["Sardar Azmoun","FW","Shabab Al-Ahli"],["Alireza Jahanbakhsh","MF","Heerenveen"]]},
+  // ── Group H ──
+  "Spain":{flag:"🇪🇸",group:"H",conf:"UEFA",rank:2,nick:"La Roja",coach:"Luis de la Fuente",capital:"Madrid",apps:17,best:"Champions (2010)",fact:"Reigning European champions (2024); won the 2010 World Cup with a tiki-taka golden era.",players:[["Unai Simón","GK","Athletic Bilbao"],["Robin Le Normand","DF","Atlético Madrid"],["Rodri","MF","Manchester City"],["Pedri","MF","Barcelona"],["Lamine Yamal","FW","Barcelona"],["Nico Williams","FW","Athletic Bilbao"]]},
+  "Cape Verde":{flag:"🇨🇻",group:"H",conf:"CAF",rank:70,nick:"Tubarões Azuis (Blue Sharks)",coach:"Pedro 'Bubista' Brito",capital:"Praia",apps:1,best:"Debut (2026)",fact:"A 500,000-person island nation reaching its first World Cup — one of the great qualifying stories.",players:[["Vozinha","GK","Marítimo"],["Roberto 'Pico' Lopes","DF","Shamrock Rovers"],["Kenny Rocha Santos","MF","Casa Pia"],["Jamiro Monteiro","MF","San Jose Earthquakes"],["Garry Rodrigues","FW","unattached"],["Bryan Teixeira","FW","unattached"]]},
+  "Uruguay":{flag:"🇺🇾",group:"H",conf:"CONMEBOL",rank:15,nick:"La Celeste",coach:"Marcelo Bielsa",capital:"Montevideo",apps:15,best:"Champions (1930, 1950)",fact:"Won the very first World Cup in 1930 as hosts; the four-star Uruguayan crest counts its two Olympic golds too.",players:[["Sergio Rochet","GK","Internacional"],["Ronald Araújo","DF","Barcelona"],["Federico Valverde","MF","Real Madrid"],["Manuel Ugarte","MF","Manchester United"],["Darwin Núñez","FW","Al-Hilal"],["Facundo Pellistri","FW","Panathinaikos"]]},
+  "Saudi Arabia":{flag:"🇸🇦",group:"H",conf:"AFC",rank:58,nick:"The Green Falcons",coach:"Hervé Renard",capital:"Riyadh",apps:7,best:"Round of 16 (1994)",fact:"Stunned eventual champions Argentina 2-1 in the opening round in 2022.",players:[["Nawaf Al-Aqidi","GK","Al-Nassr"],["Ali Al-Bulaihi","DF","Al-Hilal"],["Mohamed Kanno","MF","Al-Hilal"],["Salem Al-Dawsari","FW","Al-Hilal"],["Firas Al-Buraikan","FW","Al-Ahli"],["Saleh Al-Shehri","FW","Al-Ittihad"]]},
+  // ── Group I ──
+  "France":{flag:"🇫🇷",group:"I",conf:"UEFA",rank:3,nick:"Les Bleus",coach:"Didier Deschamps",capital:"Paris",apps:17,best:"Champions (1998, 2018)",fact:"Reached the last two finals (winning 2018, losing 2022 on penalties); Mbappé scored a hat-trick in the 2022 final.",players:[["Mike Maignan","GK","AC Milan"],["William Saliba","DF","Arsenal"],["Aurélien Tchouaméni","MF","Real Madrid"],["Kylian Mbappé","FW","Real Madrid"],["Ousmane Dembélé","FW","Paris Saint-Germain"],["Bradley Barcola","FW","Paris Saint-Germain"]]},
+  "Senegal":{flag:"🇸🇳",group:"I",conf:"CAF",rank:17,nick:"Lions of Teranga",coach:"Pape Thiaw",capital:"Dakar",apps:4,best:"Quarterfinals (2002)",fact:"Beat holders France on debut in 2002 and were crowned African champions for the first time in 2021.",players:[["Édouard Mendy","GK","Al-Ahli"],["Kalidou Koulibaly","DF","Al-Hilal"],["Pape Matar Sarr","MF","Tottenham"],["Idrissa Gueye","MF","Everton"],["Nicolas Jackson","FW","Bayern Munich"],["Ismaïla Sarr","FW","Crystal Palace"]]},
+  "Iraq":{flag:"🇮🇶",group:"I",conf:"AFC",rank:57,nick:"Lions of Mesopotamia",coach:"Graham Arnold",capital:"Baghdad",apps:2,best:"Group stage (1986)",fact:"Won the 2007 Asian Cup just months after the team was assembled amid wartime, a landmark national moment.",players:[["Jalal Hassan","GK","Al-Zawraa"],["Rebin Sulaka","DF","PEC Zwolle"],["Amir Al-Ammari","MF","Halmstad"],["Ibrahim Bayesh","MF","Al-Quwa Al-Jawiya"],["Aymen Hussein","FW","Al-Batin"],["Ali Al-Hamadi","FW","Ipswich Town"]]},
+  "Norway":{flag:"🇳🇴",group:"I",conf:"UEFA",rank:28,nick:"Løvene (The Lions)",coach:"Ståle Solbakken",capital:"Oslo",apps:4,best:"Round of 16 (1998)",fact:"Back at the World Cup for the first time since 1998, now built around Haaland and Ødegaard.",players:[["Ørjan Nyland","GK","Sevilla"],["Kristoffer Ajer","DF","Brentford"],["Martin Ødegaard","MF","Arsenal"],["Sander Berge","MF","Fulham"],["Erling Haaland","FW","Manchester City"],["Alexander Sørloth","FW","Atlético Madrid"]]},
+  // ── Group J ──
+  "Argentina":{flag:"🇦🇷",group:"J",conf:"CONMEBOL",rank:1,nick:"La Albiceleste",coach:"Lionel Scaloni",capital:"Buenos Aires",apps:19,best:"Champions (1978, 1986, 2022)",fact:"Reigning world champions and ranked No. 1; won 2022 in Messi's crowning tournament.",players:[["Emiliano Martínez","GK","Aston Villa"],["Cristian Romero","DF","Tottenham"],["Rodrigo De Paul","MF","Inter Miami"],["Enzo Fernández","MF","Chelsea"],["Lionel Messi","FW","Inter Miami"],["Julián Álvarez","FW","Atlético Madrid"]]},
+  "Austria":{flag:"🇦🇹",group:"J",conf:"UEFA",rank:22,nick:"Das Team",coach:"Ralf Rangnick",capital:"Vienna",apps:8,best:"Third place (1954)",fact:"The 'Wunderteam' of the 1930s was one of Europe's best; this is a first World Cup since 1998.",players:[["Patrick Pentz","GK","Brøndby"],["Kevin Danso","DF","Tottenham"],["Konrad Laimer","MF","Bayern Munich"],["Nicolas Seiwald","MF","RB Leipzig"],["Marcel Sabitzer","MF","Borussia Dortmund"],["Marko Arnautović","FW","Red Star Belgrade"]]},
+  "Jordan":{flag:"🇯🇴",group:"J",conf:"AFC",rank:62,nick:"Al-Nashama (The Chivalrous)",coach:"Jamal Sellami",capital:"Amman",apps:1,best:"Debut (2026)",fact:"Reached its first World Cup after a fairy-tale run to the 2023 Asian Cup final.",players:[["Yazeed Abulaila","GK","Al-Wehdat"],["Yazan Al-Arab","DF","Al-Wehdat"],["Noor Al-Rawabdeh","MF","Al-Hussein"],["Mahmoud Al-Mardi","MF","Al-Ramtha"],["Mousa Al-Taamari","FW","Montpellier"],["Yazan Al-Naimat","FW","Al-Ahli"]]},
+  "Algeria":{flag:"🇩🇿",group:"J",conf:"CAF",rank:38,nick:"Les Fennecs (Desert Foxes)",coach:"Vladimir Petković",capital:"Algiers",apps:5,best:"Round of 16 (2014)",fact:"Their 1982 win over West Germany triggered the 'Disgrace of Gijón' that led FIFA to play final group games simultaneously.",players:[["Alexandre Oukidja","GK","Al-Kholood"],["Aïssa Mandi","DF","Lille"],["Ismaël Bennacer","MF","AC Milan"],["Houssem Aouar","MF","Real Betis"],["Riyad Mahrez","FW","Al-Ahli"],["Amine Gouiri","FW","Marseille"]]},
+  // ── Group K ──
+  "Colombia":{flag:"🇨🇴",group:"K",conf:"CONMEBOL",rank:13,nick:"Los Cafeteros",coach:"Néstor Lorenzo",capital:"Bogotá",apps:7,best:"Quarterfinals (2014)",fact:"James Rodríguez won the 2014 Golden Boot, scoring one of the great World Cup volleys against Uruguay.",players:[["Camilo Vargas","GK","Atlas"],["Dávinson Sánchez","DF","Galatasaray"],["James Rodríguez","MF","Club León"],["Jefferson Lerma","MF","Crystal Palace"],["Luis Díaz","FW","Bayern Munich"],["Jhon Durán","FW","Fenerbahçe"]]},
+  "Uzbekistan":{flag:"🇺🇿",group:"K",conf:"AFC",rank:54,nick:"The White Wolves",coach:"Timur Kapadze",capital:"Tashkent",apps:1,best:"Debut (2026)",fact:"Qualified for its first-ever World Cup, having been an AFC powerhouse since independence in 1991.",players:[["Utkir Yusupov","GK","Pakhtakor"],["Abdukodir Khusanov","DF","Manchester City"],["Jaloliddin Masharipov","MF","Pakhtakor"],["Abbosbek Fayzullaev","MF","CSKA Moscow"],["Eldor Shomurodov","FW","Roma"],["Igor Sergeev","FW","Pakhtakor"]]},
+  "DR Congo":{flag:"🇨🇩",group:"K",conf:"CAF",rank:55,nick:"Léopards",coach:"Sébastien Desabre",capital:"Kinshasa",apps:2,best:"Quarterfinals (1974, as Zaire)",fact:"As Zaire in 1974, they were the first Black African nation to play at a World Cup.",players:[["Lionel Mpasi","GK","Rodez"],["Chancel Mbemba","DF","Lille"],["Samuel Moutoussamy","MF","Nantes"],["Charles Pickel","MF","Cremonese"],["Cédric Bakambu","FW","Real Betis"],["Yoane Wissa","FW","Newcastle"]]},
+  "Portugal":{flag:"🇵🇹",group:"K",conf:"UEFA",rank:6,nick:"A Seleção das Quinas",coach:"Roberto Martínez",capital:"Lisbon",apps:9,best:"Third place (1966)",fact:"Cristiano Ronaldo is the all-time leading scorer in men's international football, with 130+ goals.",players:[["Diogo Costa","GK","Porto"],["Rúben Dias","DF","Manchester City"],["Bruno Fernandes","MF","Manchester United"],["Vitinha","MF","Paris Saint-Germain"],["Cristiano Ronaldo","FW","Al-Nassr"],["Rafael Leão","FW","AC Milan"]]},
+  // ── Group L ──
+  "England":{flag:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",group:"L",conf:"UEFA",rank:4,nick:"The Three Lions",coach:"Thomas Tuchel",capital:"London",apps:17,best:"Champions (1966)",fact:"Captain Harry Kane is England's all-time record scorer and won the 2018 World Cup Golden Boot.",players:[["Jordan Pickford","GK","Everton"],["John Stones","DF","Manchester City"],["Declan Rice","MF","Arsenal"],["Jude Bellingham","MF","Real Madrid"],["Bukayo Saka","FW","Arsenal"],["Harry Kane","FW","Bayern Munich"]]},
+  "Croatia":{flag:"🇭🇷",group:"L",conf:"UEFA",rank:10,nick:"Vatreni (The Blazers)",coach:"Zlatko Dalić",capital:"Zagreb",apps:7,best:"Runners-up (2018)",fact:"A nation of under 4 million that reached the 2018 final and finished third in 2022.",players:[["Dominik Livaković","GK","Girona"],["Joško Gvardiol","DF","Manchester City"],["Luka Modrić","MF","AC Milan"],["Mateo Kovačić","MF","Manchester City"],["Andrej Kramarić","FW","Hoffenheim"],["Ante Budimir","FW","Osasuna"]]},
+  "Ghana":{flag:"🇬🇭",group:"L",conf:"CAF",rank:72,nick:"Black Stars",coach:"Otto Addo",capital:"Accra",apps:5,best:"Quarterfinals (2010)",fact:"In 2010 came within a Suárez handball and a missed penalty of being the first African semifinalists.",players:[["Lawrence Ati-Zigi","GK","St. Gallen"],["Mohammed Salisu","DF","Monaco"],["Thomas Partey","MF","Villarreal"],["Mohammed Kudus","FW","Tottenham"],["Antoine Semenyo","FW","Bournemouth"],["Iñaki Williams","FW","Athletic Bilbao"]]},
+  "Panama":{flag:"🇵🇦",group:"L",conf:"CONCACAF",rank:30,nick:"La Marea Roja (Red Tide)",coach:"Thomas Christiansen",capital:"Panama City",apps:2,best:"Group stage (2018)",fact:"The government declared a national holiday when Panama qualified for its first World Cup in 2018.",players:[["Orlando Mosquera","GK","Pyramids"],["Fidel Escobar","DF","Pumas"],["Aníbal Godoy","MF","San Jose Earthquakes"],["Adalberto Carrasquilla","MF","Houston Dynamo"],["Ismael Díaz","FW","León"],["José Fajardo","FW","Mushuc Runa"]]}
+};
+const CONF_ORDER=["UEFA","CONMEBOL","CONCACAF","CAF","AFC","OFC"];
+const CONF_COLOR={UEFA:"#2b6cb0",CONMEBOL:"#1a7d4f",CONCACAF:"#9c5400",CAF:"#1f8a70",AFC:"#9a2b2b",OFC:"#5a3e9a"};
+
+/* Resolve a (possibly feed-variant) name to a TEAMS record, reusing canon(). */
+let _teamByCanon=null;
+function teamRecord(name){
+  if(!name)return null;
+  if(TEAMS[name])return Object.assign({name:name},TEAMS[name]);
+  if(!_teamByCanon){_teamByCanon={};for(const n in TEAMS)_teamByCanon[canon(n)]=n;}
+  const hit=_teamByCanon[canon(name)];
+  return hit?Object.assign({name:hit},TEAMS[hit]):null;
+}
+/* Wrap a team name as a clickable popup link, with flag — only if it's a known
+   team. `hl` adds the active-filter highlight. Unknown names pass through. */
+function teamLink(name,hl,withFlag){
+  const t=teamRecord(name);
+  if(!t)return hl?'<span class="hl">'+name+'</span>':name;
+  const flag=withFlag?'<span class="tflag">'+t.flag+'</span>':'';
+  return '<span class="tlink'+(hl?' hl':'')+'" data-team="'+t.name+'">'+flag+name+'</span>';
+}
+
+/* ══════════ FIFA RANKINGS TABLE ══════════ */
+const rkState={conf:"all"};
+function buildRankingsControls(){
+  const el=document.getElementById("rk-controls");
+  if(!el)return;
+  const mk=function(val,label){return '<button class="fbtn'+(rkState.conf===val?' active':'')+'" onclick="setRankConf(\''+val+'\',this)">'+label+'</button>';};
+  el.innerHTML='<span class="filter-label">Confederation</span>'+mk("all","All")+CONF_ORDER.map(function(c){return mk(c,c);}).join("");
+}
+function setRankConf(val,btn){
+  rkState.conf=val;
+  document.querySelectorAll("#rk-controls .fbtn").forEach(function(b){b.classList.remove("active");});
+  if(btn)btn.classList.add("active");
+  buildRankings();
+}
+function buildRankings(){
+  const tb=document.getElementById("rk-tbody");
+  if(!tb)return;
+  let rows=Object.keys(TEAMS).map(function(n){return Object.assign({name:n},TEAMS[n]);});
+  if(rkState.conf!=="all")rows=rows.filter(function(r){return r.conf===rkState.conf;});
+  rows.sort(function(a,b){return a.rank-b.rank;});
+  tb.innerHTML=rows.map(function(r){
+    return '<tr class="rk-row" data-team="'+r.name+'">'+
+      '<td class="rc rk-rank">'+r.rank+'</td>'+
+      '<td><span class="tflag">'+r.flag+'</span><span class="rk-tn">'+r.name+'</span></td>'+
+      '<td class="rc"><span class="rk-conf">'+r.conf+'</span></td>'+
+      '<td class="rc rk-grp">'+r.group+'</td></tr>';
+  }).join("");
+}
+function toggleRankings(){toggleSection("rk-body","rk-toggle","rankings");}
+
+/* ══════════ TEAM INFO POPUP ══════════ */
+function openTeam(name){
+  const t=teamRecord(name);
+  if(!t)return;
+  const hd=CONF_COLOR[t.conf]||"#333";
+  const fact=function(k,v){return '<div class="tm-fact"><div class="tm-fk">'+k+'</div><div class="tm-fv">'+v+'</div></div>';};
+  const facts=fact("Group","Group "+t.group)+fact("Confederation",t.conf)+
+    fact("World Cup apps",t.apps+(t.apps===1?" (incl. 2026)":""))+fact("Best finish",t.best)+
+    fact("Head coach",t.coach)+fact("Capital",t.capital);
+  const squad=t.players.map(function(p){
+    return '<div class="tm-pl"><span class="tm-pos '+p[1]+'">'+p[1]+'</span>'+
+      '<span class="tm-pn">'+p[0]+'</span><span class="tm-club">'+p[2]+'</span></div>';
+  }).join("");
+  document.getElementById("tm-modal").innerHTML=
+    '<div class="tm-hd" style="background:'+hd+'">'+
+      '<button class="tm-x" onclick="closeTeam()" aria-label="Close">&times;</button>'+
+      '<div class="tm-flag">'+t.flag+'</div>'+
+      '<div class="tm-name">'+t.name+'</div>'+
+      '<div class="tm-nick">'+t.nick+'</div>'+
+      '<span class="tm-rankpill">FIFA Rank #'+t.rank+'</span>'+
+    '</div>'+
+    '<div class="tm-body">'+
+      '<div class="tm-facts">'+facts+'</div>'+
+      '<div class="tm-blurb">💡 '+t.fact+'</div>'+
+      '<div class="tm-sec">Squad — key players</div>'+
+      '<div class="tm-squad">'+squad+'</div>'+
+      '<div class="tm-foot">Notable internationals and their clubs — a representative selection, not the official 26-player roster. GK goalkeeper · DF defender · MF midfielder · FW forward.</div>'+
+    '</div>';
+  const ov=document.getElementById("tm-overlay");
+  ov.classList.add("open");
+  ov.scrollTop=0;
+  document.body.style.overflow="hidden";
+}
+function closeTeam(){
+  const ov=document.getElementById("tm-overlay");
+  if(ov)ov.classList.remove("open");
+  document.body.style.overflow="";
+}
+/* Delegated: any element carrying data-team opens that team's popup; clicking
+   the dimmed backdrop or pressing Escape closes it. */
+document.addEventListener("click",function(e){
+  const link=e.target.closest("[data-team]");
+  if(link){openTeam(link.getAttribute("data-team"));return;}
+  if(e.target.id==="tm-overlay")closeTeam();
+});
+document.addEventListener("keydown",function(e){if(e.key==="Escape")closeTeam();});
+
 function sportClass(s){
   return s==="NFL"?"sport-nfl":s==="MLS"?"sport-mls":s==="Liga MX"?"sport-liga":s==="CFL"?"sport-cfl":"sport-other";
 }
@@ -713,9 +977,11 @@ function matchVisible(m){
 }
 
 function highlightGame(gameStr){
-  if(state.team==="all"||!gameStr.includes(" vs "))return gameStr;
-  const parts=gameStr.split(" vs ");
-  return parts.map(p=>p.trim()===state.team?`<span class="hl">${p}</span>`:p).join(" vs ");
+  if(!gameStr.includes(" vs "))return gameStr;
+  return gameStr.split(" vs ").map(p=>{
+    const n=p.trim();
+    return teamLink(n,state.team!=="all"&&n===state.team,false);
+  }).join(" vs ");
 }
 
 /* Renders the match text. If the match has a final score (sc),
@@ -727,8 +993,8 @@ function gameHTML(m){
     const hN=Number(hs),aN=Number(as_);
     const hCls=hN>aN?"win":(hN<aN?"los":"");
     const aCls=aN>hN?"win":(aN<hN?"los":"");
-    const homeEl=(state.team!=="all"&&home===state.team)?`<span class="hl">${home}</span>`:home;
-    const awayEl=(state.team!=="all"&&away===state.team)?`<span class="hl">${away}</span>`:away;
+    const homeEl=teamLink(home,state.team!=="all"&&home===state.team,false);
+    const awayEl=teamLink(away,state.team!=="all"&&away===state.team,false);
     const tag=m.live?`<span class="live-badge">● LIVE</span>`+(m.clock?`<span class="live-min">${m.clock}'</span>`:``):`<span class="ft">FT</span>`;
     return `${homeEl}<span class="mscore"><span class="${hCls}">${hs}</span>–<span class="${aCls}">${as_}</span></span>${awayEl}${tag}`;
   }
@@ -949,7 +1215,7 @@ function buildStandings(){
       const tb=!gComplete?"":r._tb==="h2h"?"<span class=\"st-tb\" title=\"order decided by head-to-head\">h2h</span>"
               :r._tb==="lots"?"<span class=\"st-tb st-tb-lots\" title=\"level on all criteria — falls to fair play / drawing of lots\">tied</span>":"";
       return "<tr class=\"st-q"+pos+"\">"+
-        "<td class=\"tl\"><span class=\"st-pos\">"+pos+"</span>"+r.name+tb+"</td>"+
+        "<td class=\"tl\"><span class=\"st-pos\">"+pos+"</span>"+teamLink(r.name,false,false)+tb+"</td>"+
         "<td>"+r.p+"</td><td>"+r.w+"</td><td>"+r.d+"</td><td>"+r.l+"</td>"+
         "<td>"+r.gf+"</td><td>"+r.ga+"</td>"+
         "<td class=\""+gdCls+"\">"+gdTxt+"</td>"+
@@ -1033,8 +1299,8 @@ function buildToday(){
       if(played){
         const p=m.g.split(" vs ").map(function(x){return x.trim();});
         const sp=m.sc.split("-");
-        mid=p[0]+' <b>'+sp[0]+'–'+sp[1]+'</b> '+p[1];
-      }else mid=m.g;
+        mid=teamLink(p[0],false,false)+' <b>'+sp[0]+'–'+sp[1]+'</b> '+teamLink(p[1],false,false);
+      }else mid=m.g.split(" vs ").map(function(x){return teamLink(x.trim(),false,false);}).join(" vs ");
     }else mid=m.g;
     const goal=m._flash?'<span class="goal-badge">⚽ GOAL</span>':"";
     const when=live?('<span class="td-live">● LIVE'+(m.clock?" "+String(m.clock).replace(/['′]/g,"")+"'":"")+'</span>')
@@ -1065,7 +1331,7 @@ function buildThirds(){
     const q=i<8,gdv=r.gf-r.ga,gdTxt=(gdv>0?"+":"")+gdv;
     const cut=i===8?'<tr class="th-cut"><td colspan="6"><div class="th-cutline">8 advance · cut line</div></td></tr>':"";
     return cut+'<tr class="'+(q?"th-q":"th-out")+'">'+
-      '<td class="tl"><span class="th-pos">'+(i+1)+'</span><span class="th-grp">'+r.grp+'</span>'+r.name+'</td>'+
+      '<td class="tl"><span class="th-pos">'+(i+1)+'</span><span class="th-grp">'+r.grp+'</span>'+teamLink(r.name,false,false)+'</td>'+
       '<td>'+r.p+'</td><td>'+gdTxt+'</td><td>'+r.gf+'</td><td class="pts">'+r.pts+'</td></tr>';
   }).join("");
   wrap.innerHTML='<table class="th-table"><thead><tr><th class="tl">3rd-placed team</th><th>P</th><th>GD</th><th>GF</th><th>Pts</th></tr></thead><tbody>'+body+'</tbody></table>';
@@ -1231,7 +1497,8 @@ function bkTeamRow(slot,liveName,myScore,oppScore){
   const name=real?liveName:slot;
   const cls="bk-tn"+(real?"":" ph")+((myScore!=null&&oppScore!=null&&myScore>oppScore)?" win":"");
   const sc=(myScore!=null)?'<span class="bk-sc">'+myScore+'</span>':"";
-  return '<div class="bk-team"><span class="'+cls+'">'+name+'</span>'+sc+'</div>';
+  const label=(real&&teamRecord(name))?'<span class="tlink" data-team="'+teamRecord(name).name+'">'+name+'</span>':name;
+  return '<div class="bk-team"><span class="'+cls+'">'+label+'</span>'+sc+'</div>';
 }
 function bkCard(m){
   const live=m.status==="LIVE";
@@ -1350,9 +1617,9 @@ function buildFriendlies(){
       <div class="fr-bar" style="background:${f.bar}"></div>
       <div class="fr-dv"><span class="fr-date">${f.date}</span><span class="fr-venue">${f.venue}</span></div>
       <div class="fr-match">
-        <span class="fr-team fr-th">${f.h}</span>
+        <span class="fr-team fr-th">${teamLink(f.h,false,false)}</span>
         <span class="fr-sb"><span class="${hCls}">${f.hs}</span>–<span class="${aCls}">${f.as}</span></span>
-        <span class="fr-team fr-ta">${f.a}</span>
+        <span class="fr-team fr-ta">${teamLink(f.a,false,false)}</span>
       </div>
       ${note}
     </div>`;
@@ -1587,6 +1854,8 @@ async function refreshScores(){
   buildFriendlies();
   buildStandings();
   buildThirds();
+  buildRankingsControls();
+  buildRankings();
   buildBracket();
   buildGrid();
   refreshScores(); // auto-pull live + final scores on load (works when hosted or in Claude's view)
