@@ -359,6 +359,8 @@ html[data-theme="dark"] .mrow.scored,html[data-theme="dark"] .td-row.scored,html
 .tlink:hover{border-bottom-color:currentColor;color:#1565c0}
 html[data-theme="dark"] .tlink:hover{color:#7db4ff}
 .tflag{margin-right:4px}
+.trank{font-size:.72em;font-weight:700;color:#9aa3ad;margin-left:3px;vertical-align:.35em;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+html[data-theme="dark"] .trank{color:#7e858f}
 
 /* ── FIFA rankings section ── */
 .rk-section{background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
@@ -855,7 +857,7 @@ function teamLink(name,hl,withFlag){
   const t=teamRecord(name);
   if(!t)return hl?'<span class="hl">'+name+'</span>':name;
   const flag=withFlag?'<span class="tflag">'+t.flag+'</span>':'';
-  return '<span class="tlink'+(hl?' hl':'')+'" data-team="'+t.name+'">'+flag+name+'</span>';
+  return '<span class="tlink'+(hl?' hl':'')+'" data-team="'+t.name+'">'+flag+name+'<span class="trank" title="FIFA World Ranking">#'+t.rank+'</span></span>';
 }
 
 /* ══════════ FIFA RANKINGS TABLE ══════════ */
@@ -1049,7 +1051,7 @@ function updateSummary(venues,matches){
   const parts=[];
   if(state.country!=="all")parts.push(state.country);
   if(state.group!=="all")parts.push(`Group ${state.group}`);
-  if(state.team!=="all")parts.push(state.team);
+  if(state.team!=="all")parts.push(state.team+(TEAMS[state.team]?" (FIFA #"+TEAMS[state.team].rank+")":""));
   const desc=parts.length?` &mdash; ${parts.join(", ")}`:""
   document.getElementById("summary").innerHTML=
     `<strong>${venues}</strong> venue${venues!==1?"s":""} &middot; <strong>${matches}</strong> match${matches!==1?"es":""}${desc}`;
@@ -1485,7 +1487,8 @@ function bkTeamRow(slot,liveName,myScore,oppScore){
   const name=real?liveName:slot;
   const cls="bk-tn"+(real?"":" ph")+((myScore!=null&&oppScore!=null&&myScore>oppScore)?" win":"");
   const sc=(myScore!=null)?'<span class="bk-sc">'+myScore+'</span>':"";
-  const label=(real&&teamRecord(name))?'<span class="tlink" data-team="'+teamRecord(name).name+'">'+name+'</span>':name;
+  const tr=real?teamRecord(name):null;
+  const label=tr?'<span class="tlink" data-team="'+tr.name+'">'+name+'<span class="trank" title="FIFA World Ranking">#'+tr.rank+'</span></span>':name;
   return '<div class="bk-team"><span class="'+cls+'">'+label+'</span>'+sc+'</div>';
 }
 function bkCard(m){
@@ -1831,7 +1834,7 @@ async function refreshScores(){
   const sel=document.getElementById("teamSelect");
   allTeams.forEach(t=>{
     const o=document.createElement("option");
-    o.value=t;o.textContent=t;
+    o.value=t;o.textContent=t+(TEAMS[t]?"  (FIFA #"+TEAMS[t].rank+")":"");
     sel.appendChild(o);
   });
 
