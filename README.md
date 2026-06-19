@@ -2,7 +2,7 @@
 
 A near-zero-dependency web app for the 2026 FIFA World Cup (June 11 – July 19, 2026) hosted across the USA, Canada, and Mexico. It shows all 16 stadiums and their full match schedule, live & final scores, computed group standings, and the complete knockout bracket — and it pulls live data on its own, so nothing goes stale.
 
-The whole app is [`index.html`](index.html) — HTML, CSS, and vanilla JavaScript, no build step or framework. Two small companion files make it installable as an app: [`manifest.webmanifest`](manifest.webmanifest) and [`apple-touch-icon.png`](apple-touch-icon.png).
+The whole app is [`index.html`](index.html) — HTML, CSS, and vanilla JavaScript, no build step or framework. Three small companion files make it installable and offline-capable: [`manifest.webmanifest`](manifest.webmanifest), [`apple-touch-icon.png`](apple-touch-icon.png), and a network-first service worker ([`sw.js`](sw.js)).
 
 ## Features
 
@@ -26,7 +26,9 @@ The app ships a web manifest and icons, so it can be installed:
 - **Android (Chrome):** the ⋮ menu shows *Install app* / *Add to Home screen*.
 - **Desktop (Chrome/Edge):** an install icon appears in the address bar.
 
-There's no service worker, so it always loads fresh content (no offline cache to go stale) — it just needs a connection on launch like any normal page.
+### Offline
+
+A small **network-first** service worker ([`sw.js`](sw.js)) makes the installed app resilient: it **always tries the network first**, so when you're online you get fresh content (no stale-cache surprises). Only when the network is unreachable does it serve the last-cached app shell, so the page still opens offline. Live score feeds (ESPN / Anthropic) are cross-origin and are never intercepted or cached — they go straight to the network and degrade gracefully on their own when there's no connection.
 
 ## How live data works
 

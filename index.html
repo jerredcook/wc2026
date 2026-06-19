@@ -1528,5 +1528,14 @@ async function refreshScores(){
   refreshScores(); // auto-pull live + final scores on load (works when hosted or in Claude's view)
 })();
 </script>
+
+<script>
+/* Register the offline service worker — only in a secure context (https or
+   localhost); a no-op for file:// or unsupported browsers. */
+if("serviceWorker" in navigator &&
+   (location.protocol==="https:"||location.hostname==="localhost"||location.hostname==="127.0.0.1")){
+  window.addEventListener("load",function(){navigator.serviceWorker.register("sw.js").catch(function(){});});
+}
+</script>
 </body>
 </html>
