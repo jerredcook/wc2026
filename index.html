@@ -445,8 +445,8 @@ html[data-theme="dark"] .tm-go{color:#555c66}
 .pp-x{position:absolute;top:12px;right:14px;width:30px;height:30px;border:none;border-radius:50%;background:rgba(255,255,255,.22);color:#fff;font-size:17px;cursor:pointer;line-height:1}
 .pp-x:hover{background:rgba(255,255,255,.4)}
 .pp-photowrap{flex-shrink:0}
-.pp-photo{width:92px;height:92px;border-radius:12px;background-size:cover;background-position:center top;background-color:rgba(255,255,255,.18);box-shadow:0 2px 10px rgba(0,0,0,.25)}
-.pp-photo-ph{display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:800;color:rgba(255,255,255,.85)}
+.pp-photo{width:112px;height:112px;border-radius:13px;background-size:cover;background-position:center top;background-color:rgba(255,255,255,.18);box-shadow:0 3px 14px rgba(0,0,0,.3)}
+.pp-photo-ph{display:flex;align-items:center;justify-content:center;font-size:44px;font-weight:800;color:rgba(255,255,255,.85)}
 .pp-hdtext{min-width:0}
 .pp-name{font-size:21px;font-weight:800;line-height:1.12}
 .pp-sub{font-size:13px;opacity:.95;margin-top:3px}
@@ -456,10 +456,12 @@ html[data-theme="dark"] .tm-go{color:#555c66}
 .pp-loading{display:flex;align-items:center;gap:9px;justify-content:center;color:#888;font-size:13px;padding:26px 0}
 .pp-spin{width:15px;height:15px;border:2px solid #ccc;border-top-color:#666;border-radius:50%;display:inline-block;animation:ppspin .7s linear infinite}
 @keyframes ppspin{to{transform:rotate(360deg)}}
-.pp-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-bottom:6px}
-.pp-stat{background:#f4f6f9;border-radius:10px;padding:11px 6px;text-align:center}
-.pp-statv{font-size:21px;font-weight:800;color:#1a1a1a;line-height:1;font-variant-numeric:tabular-nums}
-.pp-statl{font-size:10px;font-weight:700;color:#9aa3ad;letter-spacing:.05em;text-transform:uppercase;margin-top:5px}
+.pp-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:6px}
+.pp-stat{background:#f4f6f9;border-radius:10px;padding:11px 4px;text-align:center}
+.pp-statv{font-size:20px;font-weight:800;color:#1a1a1a;line-height:1;font-variant-numeric:tabular-nums}
+.pp-statl{font-size:9px;font-weight:700;color:#9aa3ad;letter-spacing:.03em;text-transform:uppercase;margin-top:5px}
+.pp-stats2{font-size:9px;color:#aaa;margin-top:2px}
+@media(max-width:420px){.pp-stats{grid-template-columns:repeat(2,1fr)}}
 .pp-statnote{font-size:10px;color:#aaa;text-align:center;margin-bottom:12px}
 .pp-facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:12px 0}
 .pp-fact{background:#f6f7f9;border-radius:9px;padding:7px 11px}
@@ -1119,12 +1121,25 @@ function ibNational(wt){
   const rows=[];
   for(var i=1;i<=12;i++){
     const tm=ibGet(wt,"nationalteam"+i);if(tm==null)continue;
-    rows.push({team:wikiClean(tm),caps:ibInt(wt,"nationalcaps"+i),goals:ibInt(wt,"nationalgoals"+i)});
+    rows.push({team:wikiClean(tm),caps:ibInt(wt,"nationalcaps"+i),goals:ibInt(wt,"nationalgoals"+i),yrs:wikiClean(ibGet(wt,"nationalyears"+i)||"")});
   }
   const senior=rows.filter(function(r){
     return r.team&&!/u-?\d|under-?\d|youth|olympic|futsal|beach|women|\bb\b/i.test(r.team)&&r.caps!=null;
   }).sort(function(a,b){return (b.caps||0)-(a.caps||0);});
   return senior[0]||null;
+}
+/* Sum every senior club row (incl. loans) for a club-career appearance/goal total. */
+function ibClubTotals(wt){
+  let apps=0,goals=0,any=false,current="";
+  for(var i=1;i<=24;i++){
+    const cl=ibGet(wt,"clubs"+i);if(cl==null)continue;
+    const c=ibInt(wt,"caps"+i),g=ibInt(wt,"goals"+i);
+    if(c!=null){apps+=c;any=true;}
+    if(g!=null)goals+=g;
+    const yrs=ibGet(wt,"years"+i)||"";
+    if(/–\s*$|present/i.test(yrs)&&!/loan/i.test(cl))current=wikiClean(cl);
+  }
+  return any?{apps:apps,goals:goals,current:current}:null;
 }
 
 async function fetchPlayer(name,team){
@@ -1132,7 +1147,7 @@ async function fetchPlayer(name,team){
   const api="https://en.wikipedia.org/w/api.php";
   const q1=api+"?action=query&format=json&formatversion=2&origin=*&redirects=1&generator=search&gsrsearch="+
     encodeURIComponent(name+" "+nat+" footballer")+"&gsrlimit=1&prop=extracts|pageimages|pageprops|revisions"+
-    "&exintro=1&explaintext=1&piprop=thumbnail&pithumbsize=420&rvprop=content&rvslots=main";
+    "&exintro=1&explaintext=1&piprop=thumbnail&pithumbsize=640&rvprop=content&rvslots=main";
   const j1=await (await fetch(q1)).json();
   const out={};
   const page=j1.query&&j1.query.pages&&j1.query.pages[0];
@@ -1154,6 +1169,9 @@ async function fetchPlayer(name,team){
       if(bp)out.birthplace=wikiClean(bp);
       const upd=ibGet(wt,"ntupdate");
       if(upd)out.capsUpdate=wikiClean(upd);
+      const fn=ibGet(wt,"fullname");if(fn)out.fullname=wikiClean(fn);
+      const num=ibGet(wt,"clubnumber");if(num){const nm=/\d+/.exec(wikiClean(num));if(nm)out.number=nm[0];}
+      const ct=ibClubTotals(wt);if(ct){out.clubApps=ct.apps;out.clubGoals=ct.goals;}
     }catch(e){/* no infobox */}
   }
   // Wikidata fallback only for whatever the infobox didn't give us.
@@ -1198,27 +1216,31 @@ function renderPlayer(name,team,meta,d){
     const ph=document.getElementById("pp-photo");
     if(ph){ph.classList.remove("pp-photo-ph");ph.textContent="";ph.style.backgroundImage="url('"+d.thumb+"')";}
   }
-  const fact=function(k,v){return v?('<div class="pp-fact"><div class="pp-fk">'+k+'</div><div class="pp-fv">'+v+'</div></div>'):"";};
+  const fact=function(k,v){return v?('<div class="pp-fact"><div class="pp-fk">'+k+'</div><div class="pp-fv">'+esc(v)+'</div></div>'):"";};
   const a=ageOf(d.born);
   const from=d.birthplace||"";
   const positions=d.positions||(meta.pos?POS_FULL[meta.pos]:"");
-  // stat tiles
-  const statTile=function(v,lab){return '<div class="pp-stat"><div class="pp-statv">'+(v==null||v===""?"&mdash;":v)+'</div><div class="pp-statl">'+lab+'</div></div>';};
+  const clubLine=meta.club+(d.number?(" · #"+d.number):"");
+  // headline stat tiles — international + club career
+  const statTile=function(v,lab,sub){return '<div class="pp-stat"><div class="pp-statv">'+(v==null||v===""?"&mdash;":v)+'</div><div class="pp-statl">'+lab+'</div>'+(sub?'<div class="pp-stats2">'+sub+'</div>':'')+'</div>';};
   const stats='<div class="pp-stats">'+
-    statTile(d.caps!=null?d.caps:null,"Caps")+
-    statTile(d.goals!=null?d.goals:null,"Goals")+
-    statTile(meta.pos||null,"Role")+
+    statTile(d.caps!=null?d.caps:null,"Int'l caps")+
+    statTile(d.goals!=null?d.goals:null,"Int'l goals")+
+    statTile(d.clubApps!=null?d.clubApps:null,"Club apps")+
+    statTile(d.clubGoals!=null?d.clubGoals:null,"Club goals")+
   '</div>';
-  const capsNote=(d.caps!=null&&d.capsTeam)?'<div class="pp-statnote">'+esc(d.capsTeam)+(d.capsUpdate?(' &middot; as of '+esc(d.capsUpdate)):'')+'</div>':'';
+  const capsNote=(d.caps!=null&&d.capsTeam)?'<div class="pp-statnote">International totals for '+esc(d.capsTeam)+(d.capsUpdate?(' &middot; as of '+esc(d.capsUpdate)):'')+'; club totals are career senior appearances</div>':((d.clubApps!=null)?'<div class="pp-statnote">Club totals are career senior appearances (all competitions)</div>':'');
   const facts='<div class="pp-facts">'+
-    fact("Age",a?(a.age+" yrs"):null)+
-    fact("Date of birth",a?a.dateText:null)+
-    fact("From",from)+
-    fact("Positions played",positions)+
+    fact("Full name",(d.fullname&&d.fullname.toLowerCase()!==name.toLowerCase())?d.fullname:null)+
+    fact("Age",a?(a.age+" years"):null)+
+    fact("Born",a?(a.dateText+(from?(" · "+from):"")):(from||null))+
+    fact("Positions",positions)+
     fact("Height",d.height?(d.height+" cm"):null)+
-    fact("Club",meta.club)+
+    fact("Club",clubLine)+
   '</div>';
-  const bio=d.extract?'<div class="pp-bio">'+esc(d.extract.length>620?d.extract.slice(0,620).replace(/\s+\S*$/,"")+"…":d.extract)+'</div>':'';
+  const bioFull=d.extract||"";
+  const bioTxt=bioFull.length>1000?bioFull.slice(0,1000).replace(/\s+\S*$/,"")+"…":bioFull;
+  const bio=bioTxt?'<div class="pp-bio">'+esc(bioTxt)+'</div>':'';
   const nm=encodeURIComponent(name);
   const links='<div class="pp-links">'+
     (d.url?'<a class="pp-link" href="'+d.url+'" target="_blank" rel="noopener">Wikipedia ↗</a>':'')+
