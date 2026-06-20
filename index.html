@@ -2156,7 +2156,44 @@ function bkChampHtml(fin){
   return '<div class="bk-champ"><span class="lbl">Champions</span><span>'+(tr?tr.flag+" ":"")+wname+' 🏆</span></div>';
 }
 
+/* Once a group's 1st/2nd place is secured — the group is complete, or the placing
+   can no longer be overtaken on points — drop those teams into the matching
+   "Winner X" / "2nd X" Round-of-32 slots, ahead of the knockout kicking off.
+   Conservative on purpose: a placing is only filled when it is mathematically
+   guaranteed, so the bracket never shows a team that could still be displaced.
+   An actual team already supplied by the knockout feed is never overwritten. */
+function resolveBracketFromStandings(){
+  const groups=computeStandings();
+  const placed={}; // { "Winner A":name, "2nd A":name, … }
+  Object.keys(groups).forEach(function(key){
+    const G=groups[key];
+    const rows=Object.keys(G.teams).map(function(n){return G.teams[n];});
+    if(rows.length<2)return;
+    const ordered=stSort(rows,G.matches);
+    const complete=rows.every(function(r){return r.p>=3;});
+    if(complete){
+      if(ordered[0]&&ordered[0]._tb!=="lots")placed["Winner "+key]=ordered[0].name;
+      if(ordered[1]&&ordered[1]._tb!=="lots")placed["2nd "+key]=ordered[1].name;
+      return;
+    }
+    // Group still in progress → only fill a placing that is points-secured.
+    const ceiling=function(r){return r.pts+3*Math.max(0,3-r.p);}; // best the team can still reach
+    const lead=ordered[0];
+    const winnerSafe=rows.every(function(r){return r===lead||lead.pts>ceiling(r);});
+    if(!winnerSafe)return;
+    placed["Winner "+key]=lead.name;
+    const second=ordered[1];
+    if(second&&rows.every(function(r){return r===lead||r===second||second.pts>ceiling(r);}))
+      placed["2nd "+key]=second.name;
+  });
+  bracket.forEach(function(m){
+    if(placed[m.h]&&(!m.liveH||isSlotName(m.liveH)))m.liveH=placed[m.h];
+    if(placed[m.a]&&(!m.liveA||isSlotName(m.liveA)))m.liveA=placed[m.a];
+  });
+}
+
 function buildBracket(){
+  resolveBracketFromStandings();
   const cols=document.getElementById("bk-cols");
   if(!cols)return;
   function colHtml(side,rk,title){
