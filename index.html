@@ -1167,8 +1167,8 @@ async function fetchPlayer(name,team){
   const nat=SEARCH_COUNTRY[team]||team;
   const api="https://en.wikipedia.org/w/api.php";
   const q1=api+"?action=query&format=json&formatversion=2&origin=*&redirects=1&generator=search&gsrsearch="+
-    encodeURIComponent(name+" "+nat+" footballer")+"&gsrlimit=1&prop=extracts|pageimages|pageprops|revisions"+
-    "&exintro=1&explaintext=1&piprop=thumbnail&pithumbsize=640&rvprop=content&rvslots=main";
+    encodeURIComponent(name+" "+nat+" footballer")+"&gsrlimit=1&prop=extracts|pageimages|pageprops"+
+    "&exintro=1&explaintext=1&piprop=thumbnail&pithumbsize=640";
   const j1=await (await fetch(q1)).json();
   const out={};
   const page=j1.query&&j1.query.pages&&j1.query.pages[0];
@@ -1179,23 +1179,30 @@ async function fetchPlayer(name,team){
     out.qid=page.pageprops&&page.pageprops.wikibase_item;
     out.url="https://en.wikipedia.org/wiki/"+encodeURIComponent(String(page.title).replace(/ /g,"_"));
     try{
-      const wt=page.revisions[0].slots.main.content;
-      const nt=ibNational(wt);
-      if(nt){out.caps=nt.caps;out.goals=nt.goals;out.capsTeam=nt.team;}
-      out.born=ibBirth(wt);
-      out.height=ibHeight(wt);
-      const pos=ibGet(wt,"position")||ibGet(wt,"position(s)");
-      if(pos)out.positions=wikiClean(pos);
-      const bp=ibGet(wt,"birth_place");
-      if(bp)out.birthplace=wikiClean(bp);
-      const upd=ibGet(wt,"ntupdate");
-      if(upd)out.capsUpdate=wikiClean(upd);
-      const fn=ibGet(wt,"fullname");if(fn)out.fullname=wikiClean(fn);
-      const num=ibGet(wt,"clubnumber");if(num){const nm=/\d+/.exec(wikiClean(num));if(nm)out.number=nm[0];}
-      const car=ibCareer(wt);out.career=car;
-      var _ca=0,_cg=0,_any=false;
-      car.clubs.forEach(function(r){if(r.apps!=null){_ca+=r.apps;_any=true;}if(r.goals!=null)_cg+=r.goals;});
-      if(_any){out.clubApps=_ca;out.clubGoals=_cg;}
+      // Fetch the article wikitext in its own request (reliable even for very
+      // large pages, where bundling it with extracts can drop the content).
+      const wq=api+"?action=query&format=json&formatversion=2&origin=*&prop=revisions&rvprop=content&rvslots=main&titles="+encodeURIComponent(out.title);
+      const jw=await (await fetch(wq)).json();
+      const wp=jw.query&&jw.query.pages&&jw.query.pages[0];
+      const wt=wp&&wp.revisions&&wp.revisions[0]&&wp.revisions[0].slots&&wp.revisions[0].slots.main&&wp.revisions[0].slots.main.content;
+      if(wt){
+        const nt=ibNational(wt);
+        if(nt){out.caps=nt.caps;out.goals=nt.goals;out.capsTeam=nt.team;}
+        out.born=ibBirth(wt);
+        out.height=ibHeight(wt);
+        const pos=ibGet(wt,"position")||ibGet(wt,"position(s)");
+        if(pos)out.positions=wikiClean(pos);
+        const bp=ibGet(wt,"birth_place");
+        if(bp)out.birthplace=wikiClean(bp);
+        const upd=ibGet(wt,"ntupdate");
+        if(upd)out.capsUpdate=wikiClean(upd);
+        const fn=ibGet(wt,"fullname");if(fn)out.fullname=wikiClean(fn);
+        const num=ibGet(wt,"clubnumber");if(num){const nm=/\d+/.exec(wikiClean(num));if(nm)out.number=nm[0];}
+        const car=ibCareer(wt);out.career=car;
+        var _ca=0,_cg=0,_any=false;
+        car.clubs.forEach(function(r){if(r.apps!=null){_ca+=r.apps;_any=true;}if(r.goals!=null)_cg+=r.goals;});
+        if(_any){out.clubApps=_ca;out.clubGoals=_cg;}
+      }
     }catch(e){/* no infobox */}
     // Best-effort season-by-season tables from the "Career statistics" section.
     try{
@@ -1218,6 +1225,13 @@ async function fetchPlayer(name,team){
         }
       }
     }catch(e){/* season tables optional */}
+    // Backstop: if the infobox didn't yield caps, total them from the
+    // year-by-year international table.
+    if(out.caps==null&&out.seasonIntl&&out.seasonIntl.length){
+      var ia=0,ig=0,iany=false;
+      out.seasonIntl.forEach(function(r){if(r.apps!=null){ia+=r.apps;iany=true;}if(r.goals!=null)ig+=r.goals;});
+      if(iany){out.caps=ia;out.goals=ig;if(!out.capsTeam)out.capsTeam=team;}
+    }
   }
   // Wikidata fallback only for whatever the infobox didn't give us.
   if(out.qid&&(out.caps==null||!out.born||!out.birthplace||!out.positions||!out.height)){
