@@ -467,7 +467,18 @@ html[data-theme="dark"] .tm-go{color:#555c66}
 .pp-fact{background:#f6f7f9;border-radius:9px;padding:7px 11px}
 .pp-fk{font-size:9px;font-weight:700;color:#999;letter-spacing:.05em;text-transform:uppercase}
 .pp-fv{font-size:13px;font-weight:600;color:#1a1a1a;margin-top:2px}
-.pp-bio{font-size:13px;line-height:1.5;color:#444;margin:12px 0}
+.pp-sec{font-size:11px;font-weight:700;color:#999;letter-spacing:.05em;text-transform:uppercase;margin:16px 0 8px}
+.pc-title{font-size:11px;font-weight:700;color:#888;margin:8px 0 3px}
+.pc-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:8px}
+.pc-table th{font-size:9px;font-weight:700;color:#aaa;text-transform:uppercase;letter-spacing:.03em;text-align:right;padding:4px 6px;border-bottom:1px solid #eee}
+.pc-table th:first-child,.pc-table th:nth-child(2){text-align:left}
+.pc-table td{padding:5px 6px;text-align:right;border-bottom:1px solid #f4f4f4;font-variant-numeric:tabular-nums;color:#555}
+.pc-table td.pc-yr{text-align:left;color:#8a9099;white-space:nowrap}
+.pc-table td.pc-tm{text-align:left;color:#1a1a1a;font-weight:600}
+.pc-tot td{font-weight:800;color:#1a1a1a;border-top:1px solid #e2e2e2;border-bottom:none}
+.pp-bio{font-size:13px;line-height:1.55;color:#444;margin:8px 0}
+.pp-bio p{margin:0 0 9px}
+.pp-bio p:last-child{margin-bottom:0}
 .pp-bio-warn{color:#8a6d3b;background:#fffaf0;border:1px solid #f0e3c5;border-radius:9px;padding:9px 12px}
 .pp-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .pp-link{font-size:12px;font-weight:700;text-decoration:none;color:#1565c0;background:#eef4fc;border:1px solid #d6e6f8;border-radius:16px;padding:5px 12px}
@@ -479,6 +490,10 @@ html[data-theme="dark"] .pp-stat,html[data-theme="dark"] .pp-fact{background:#23
 html[data-theme="dark"] .pp-statv,html[data-theme="dark"] .pp-fv{color:#e9eaed}
 html[data-theme="dark"] .pp-fk,html[data-theme="dark"] .pp-statl,html[data-theme="dark"] .pp-statnote,html[data-theme="dark"] .pp-foot{color:#9aa0a8}
 html[data-theme="dark"] .pp-bio{color:#c4c9d0}
+html[data-theme="dark"] .pp-sec,html[data-theme="dark"] .pc-title{color:#9aa0a8}
+html[data-theme="dark"] .pc-table th,html[data-theme="dark"] .pc-table td{border-color:#2a2d35;color:#9aa0a8}
+html[data-theme="dark"] .pc-table td.pc-tm,html[data-theme="dark"] .pc-tot td{color:#e9eaed}
+html[data-theme="dark"] .pc-tot td{border-color:#3a3e47}
 html[data-theme="dark"] .pp-bio-warn{color:#d8c48a;background:#262318;border-color:#3d3a25}
 html[data-theme="dark"] .pp-link{color:#7db4ff;background:#1f2733;border-color:#2c3a4d}
 html[data-theme="dark"] .pp-link:hover{background:#263243}
@@ -1128,18 +1143,18 @@ function ibNational(wt){
   }).sort(function(a,b){return (b.caps||0)-(a.caps||0);});
   return senior[0]||null;
 }
-/* Sum every senior club row (incl. loans) for a club-career appearance/goal total. */
-function ibClubTotals(wt){
-  let apps=0,goals=0,any=false,current="";
+/* Full career breakdown from the infobox: club spells + national-team spells. */
+function ibCareer(wt){
+  const clubs=[],nat=[];
   for(var i=1;i<=24;i++){
     const cl=ibGet(wt,"clubs"+i);if(cl==null)continue;
-    const c=ibInt(wt,"caps"+i),g=ibInt(wt,"goals"+i);
-    if(c!=null){apps+=c;any=true;}
-    if(g!=null)goals+=g;
-    const yrs=ibGet(wt,"years"+i)||"";
-    if(/–\s*$|present/i.test(yrs)&&!/loan/i.test(cl))current=wikiClean(cl);
+    clubs.push({yrs:wikiClean(ibGet(wt,"years"+i)||""),team:wikiClean(cl).replace(/^→\s*/,""),apps:ibInt(wt,"caps"+i),goals:ibInt(wt,"goals"+i)});
   }
-  return any?{apps:apps,goals:goals,current:current}:null;
+  for(var j=1;j<=12;j++){
+    const tm=ibGet(wt,"nationalteam"+j);if(tm==null)continue;
+    nat.push({yrs:wikiClean(ibGet(wt,"nationalyears"+j)||""),team:wikiClean(tm),apps:ibInt(wt,"nationalcaps"+j),goals:ibInt(wt,"nationalgoals"+j)});
+  }
+  return {clubs:clubs,nat:nat};
 }
 
 async function fetchPlayer(name,team){
@@ -1171,7 +1186,10 @@ async function fetchPlayer(name,team){
       if(upd)out.capsUpdate=wikiClean(upd);
       const fn=ibGet(wt,"fullname");if(fn)out.fullname=wikiClean(fn);
       const num=ibGet(wt,"clubnumber");if(num){const nm=/\d+/.exec(wikiClean(num));if(nm)out.number=nm[0];}
-      const ct=ibClubTotals(wt);if(ct){out.clubApps=ct.apps;out.clubGoals=ct.goals;}
+      const car=ibCareer(wt);out.career=car;
+      var _ca=0,_cg=0,_any=false;
+      car.clubs.forEach(function(r){if(r.apps!=null){_ca+=r.apps;_any=true;}if(r.goals!=null)_cg+=r.goals;});
+      if(_any){out.clubApps=_ca;out.clubGoals=_cg;}
     }catch(e){/* no infobox */}
   }
   // Wikidata fallback only for whatever the infobox didn't give us.
@@ -1209,6 +1227,26 @@ async function fetchPlayer(name,team){
   return out;
 }
 
+function pcTable(title,rows,teamHdr,capHdr){
+  if(!rows||!rows.length)return "";
+  var ta=0,tg=0,any=false;
+  const body=rows.map(function(r){
+    if(r.apps!=null){ta+=r.apps;any=true;}
+    if(r.goals!=null)tg+=r.goals;
+    return '<tr><td class="pc-yr">'+esc(r.yrs||"")+'</td><td class="pc-tm">'+esc(r.team||"")+'</td>'+
+      '<td>'+(r.apps==null?"&mdash;":r.apps)+'</td><td>'+(r.goals==null?"&mdash;":r.goals)+'</td></tr>';
+  }).join("");
+  const tot=(rows.length>1&&any)?'<tr class="pc-tot"><td colspan="2">Total</td><td>'+ta+'</td><td>'+tg+'</td></tr>':"";
+  return '<div class="pc-title">'+title+'</div><table class="pc-table"><thead><tr>'+
+    '<th>Years</th><th>'+teamHdr+'</th><th>'+capHdr+'</th><th>Goals</th></tr></thead><tbody>'+body+tot+'</tbody></table>';
+}
+function careerSection(c){
+  if(!c||(!c.clubs.length&&!c.nat.length))return "";
+  return '<div class="pp-sec">📊 Career by team &amp; years</div>'+
+    pcTable("Clubs",c.clubs,"Club","Apps")+
+    pcTable("International",c.nat,"Team","Caps");
+}
+
 function renderPlayer(name,team,meta,d){
   d=d||{};
   // photo
@@ -1238,9 +1276,9 @@ function renderPlayer(name,team,meta,d){
     fact("Height",d.height?(d.height+" cm"):null)+
     fact("Club",clubLine)+
   '</div>';
-  const bioFull=d.extract||"";
-  const bioTxt=bioFull.length>1000?bioFull.slice(0,1000).replace(/\s+\S*$/,"")+"…":bioFull;
-  const bio=bioTxt?'<div class="pp-bio">'+esc(bioTxt)+'</div>':'';
+  const career=careerSection(d.career);
+  const bio=d.extract?'<div class="pp-sec">Biography</div><div class="pp-bio">'+
+    d.extract.split(/\n+/).filter(Boolean).map(function(p){return '<p>'+esc(p.trim())+'</p>';}).join("")+'</div>':'';
   const nm=encodeURIComponent(name);
   const links='<div class="pp-links">'+
     (d.url?'<a class="pp-link" href="'+d.url+'" target="_blank" rel="noopener">Wikipedia ↗</a>':'')+
@@ -1252,7 +1290,7 @@ function renderPlayer(name,team,meta,d){
   if(!d.title&&!d.extract&&!d.thumb){
     body.innerHTML=stats+facts+'<div class="pp-bio pp-bio-warn">Couldn\'t load a live profile for this player (you may be offline, on a file:// copy, or the name didn\'t match a Wikipedia article). The links below still open full profiles.</div>'+links+cardNote;
   }else{
-    body.innerHTML=stats+capsNote+facts+bio+links+cardNote;
+    body.innerHTML=stats+capsNote+facts+career+bio+links+cardNote;
   }
 }
 
