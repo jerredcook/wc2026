@@ -1826,7 +1826,10 @@ function buildToday(){
   const items=[];
   stadiums.forEach(function(s){s.m.forEach(function(m){
     const ts=matchInstant(m);
-    if(ts==null||dayKey(ts)!==today)return;
+    if(ts==null)return;
+    // Show today's fixtures, plus any match still in progress even if it kicked
+    // off "yesterday" (a late game running past midnight ET).
+    if(dayKey(ts)!==today && !m.live)return;
     items.push({m:m,ts:ts,city:String(s.city).split(",")[0]});
   });});
   items.sort(function(a,b){return a.ts-b.ts;});
