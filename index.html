@@ -1213,7 +1213,7 @@ async function resolvePlayerPage(api,name,nat,out){
   // 1) exact title — the common case, avoids search picking a sub-article.
   try{
     const p=await fetchFullByTitle(api,name);
-    if(p&&isFootyBio(p)){out.dbg.via="title";return p;}
+    if(p&&isFootyBio(p))return p;
   }catch(e){}
   // 2) search titles, then fetch the best candidate.
   try{
@@ -1224,18 +1224,16 @@ async function resolvePlayerPage(api,name,nat,out){
     let pick=hits.find(function(h){return h.title.toLowerCase()===name.toLowerCase();})
           || hits.find(function(h){return !bad.test(h.title);})
           || hits[0];
-    out.dbg.via="search:"+(pick?pick.title:"none");
     if(pick){const p=await fetchFullByTitle(api,pick.title);if(p)return p;}
-  }catch(e){out.dbg.reserr=String(e&&e.message||e);}
+  }catch(e){}
   return null;
 }
 
 async function fetchPlayer(name,team){
   const nat=SEARCH_COUNTRY[team]||team;
   const api="https://en.wikipedia.org/w/api.php";
-  const out={dbg:{}};
+  const out={};
   const page=await resolvePlayerPage(api,name,nat,out);
-  out.dbg.page=page?("'"+page.title+"'"):"none";
   if(page){
     out.title=page.title;
     out.extract=page.extract||"";
@@ -1244,12 +1242,8 @@ async function fetchPlayer(name,team){
     out.url="https://en.wikipedia.org/wiki/"+encodeURIComponent(String(page.title).replace(/ /g,"_"));
     try{
       const wt=getWt(page);
-      out.dbg.wt=wt?(wt.length+"ch"):"none";
       const ib=wt&&parseInfobox(wt);
-      out.dbg.ib=ib?(Object.keys(ib).length+"f"):"null";
       if(ib){
-        out.dbg.ntkeys=Object.keys(ib).filter(function(k){return /^national(team|caps)/.test(k);}).join(",")||"(none)";
-        out.dbg.nat=[];for(var ni=1;ni<=12;ni++){var ntm=ibGet(ib,"nationalteam"+ni);if(ntm==null)continue;out.dbg.nat.push(wikiClean(ntm)+"="+ibInt(ib,"nationalcaps"+ni));}out.dbg.nat=out.dbg.nat.join("; ");
         const nt=ibNational(ib);
         if(nt){out.caps=nt.caps;out.goals=nt.goals;out.capsTeam=nt.team;}
         out.born=ibBirth(ib);
@@ -1267,7 +1261,7 @@ async function fetchPlayer(name,team){
         car.clubs.forEach(function(r){if(r.apps!=null){_ca+=r.apps;_any=true;}if(r.goals!=null)_cg+=r.goals;});
         if(_any){out.clubApps=_ca;out.clubGoals=_cg;}
       }
-    }catch(e){out.dbg.wterr=String(e&&e.message||e);}
+    }catch(e){/* no infobox */}
     // Best-effort season-by-season tables from the "Career statistics" section.
     try{
       if(typeof DOMParser!=="undefined"){
@@ -1288,8 +1282,7 @@ async function fetchPlayer(name,team){
           }
         }
       }
-    }catch(e){out.dbg.secerr=String(e&&e.message||e);}
-    out.dbg.season=(out.seasonClub?out.seasonClub.length:"-")+"c/"+(out.seasonIntl?out.seasonIntl.length:"-")+"i";
+    }catch(e){/* season tables optional */}
     // Backstop: if the infobox didn't yield caps, total them from the
     // year-by-year international table.
     if(out.caps==null&&out.seasonIntl&&out.seasonIntl.length){
@@ -1328,10 +1321,8 @@ async function fetchPlayer(name,team){
           .sort(function(a,b){return (b.caps||0)-(a.caps||0);});
         if(senior.length){out.caps=senior[0].caps;out.goals=senior[0].goals;out.capsTeam=senior[0].label;}
       }
-    }catch(e){out.dbg.wderr=String(e&&e.message||e);}
+    }catch(e){/* wikidata optional */}
   }
-  out.dbg.caps=out.caps==null?"null":out.caps;
-  out.dbg.club=out.career?(out.career.clubs.length+"c/"+out.career.nat.length+"n"):"nocareer";
   return out;
 }
 
@@ -1469,12 +1460,11 @@ function renderPlayer(name,team,meta,d){
     '<a class="pp-link" href="https://www.transfermarkt.com/schnellsuche/ergebnis/schnellsuche?query='+nm+'" target="_blank" rel="noopener">Transfermarkt ↗</a>'+
   '</div>';
   const cardNote='<div class="pp-foot">Caps &amp; goals are senior international totals from the player&rsquo;s Wikipedia profile (may lag the latest match). Yellow/red cards and full match logs aren\'t in a free open dataset — open FBref or Transfermarkt above for complete, up-to-date stats.</div>';
-  const dbg=d.dbg?'<div class="pp-foot" style="font-family:monospace;color:#b00">diag · '+esc(Object.keys(d.dbg).map(function(k){return k+"="+d.dbg[k];}).join(" · "))+'</div>':'';
   const body=document.getElementById("pp-body");
   if(!d.title&&!d.extract&&!d.thumb){
-    body.innerHTML=stats+facts+'<div class="pp-bio pp-bio-warn">Couldn\'t load a live profile for this player (you may be offline, on a file:// copy, or the name didn\'t match a Wikipedia article). The links below still open full profiles.</div>'+links+cardNote+dbg;
+    body.innerHTML=stats+facts+'<div class="pp-bio pp-bio-warn">Couldn\'t load a live profile for this player (you may be offline, on a file:// copy, or the name didn\'t match a Wikipedia article). The links below still open full profiles.</div>'+links+cardNote;
   }else{
-    body.innerHTML=stats+capsNote+facts+career+bio+links+cardNote+dbg;
+    body.innerHTML=stats+capsNote+facts+career+bio+links+cardNote;
   }
 }
 
