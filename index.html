@@ -562,6 +562,49 @@ html[data-theme="dark"] .pc-wrap .pc-table th{background:#1e2026}
 html[data-theme="dark"] .pp-bio-warn{color:#d8c48a;background:#262318;border-color:#3d3a25}
 html[data-theme="dark"] .pp-link{color:#7db4ff;background:#1f2733;border-color:#2c3a4d}
 html[data-theme="dark"] .pp-link:hover{background:#263243}
+
+/* ── Match-detail popover ── */
+.mrow,.td-row,.bk-m{cursor:pointer}
+.mp-overlay{position:fixed;inset:0;background:rgba(15,17,22,.55);display:none;align-items:flex-start;justify-content:center;padding:30px 14px;z-index:1050;overflow-y:auto;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+.mp-overlay.open{display:flex}
+.mp-card{background:#fff;border-radius:14px;max-width:440px;width:100%;box-shadow:0 12px 40px rgba(0,0,0,.3);padding:18px 18px 20px;position:relative;animation:mpin .16s ease-out;height:max-content}
+@keyframes mpin{0%{transform:translateY(8px);opacity:.4}100%{transform:translateY(0);opacity:1}}
+.mp-close{position:absolute;top:11px;right:11px;width:28px;height:28px;border:none;border-radius:50%;background:#f0f0f0;color:#666;font-size:15px;cursor:pointer;line-height:28px;text-align:center}
+.mp-close:hover{background:#e3e3e3}
+.mp-top{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.mp-date{font-size:12px;color:#888;font-weight:600}
+.mp-status{font-size:10px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:4px;text-transform:uppercase}
+.mp-status.live{color:#fff;background:#d6322c;animation:livepulse 1.3s ease-in-out infinite}
+.mp-status.ft{color:#0d6b52;background:#e2f5ee}
+.mp-status.up{color:#7a5000;background:#fef4dc}
+.mp-teams{display:flex;align-items:center;gap:10px;margin:6px 0 16px}
+.mp-tm{flex:1;font-size:17px;font-weight:700;color:#111;line-height:1.2}
+.mp-tm.a{text-align:right}
+.mp-tm.ph{color:#999;font-style:italic;font-weight:600;font-size:14px}
+.mp-tm.win{color:#0d6b52}
+.mp-sc{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;color:#111;background:#f1f2f4;border-radius:8px;padding:4px 12px;white-space:nowrap}
+.mp-vs{font-size:13px;font-weight:700;color:#aaa}
+.mp-info{border-top:1px solid #eee;padding-top:12px;display:flex;flex-direction:column;gap:9px}
+.mp-row{display:flex;gap:10px;font-size:13px;align-items:baseline}
+.mp-k{flex-shrink:0;width:64px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#aaa;padding-top:1px}
+.mp-v{flex:1;color:#333;line-height:1.35}
+.mp-v .sub{color:#999;font-size:12px}
+.mp-events{margin-top:14px;border-top:1px solid #eee;padding-top:12px}
+.mp-ev-head{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#aaa;margin-bottom:8px}
+.mp-ev-loading{font-size:12px;color:#aaa}
+.mp-ev{display:flex;gap:8px;align-items:baseline;padding:4px 0;font-size:12.5px;line-height:1.35}
+.mp-ev-clk{flex-shrink:0;width:34px;font-weight:700;color:#888;font-variant-numeric:tabular-nums}
+.mp-ev-tx{flex:1;color:#333}
+html[data-theme="dark"] .mp-card{background:#1e2026;box-shadow:0 12px 40px rgba(0,0,0,.6)}
+html[data-theme="dark"] .mp-close{background:#2e313a;color:#cfd3da}
+html[data-theme="dark"] .mp-close:hover{background:#3a3e47}
+html[data-theme="dark"] .mp-tm{color:#e9eaed}
+html[data-theme="dark"] .mp-sc{color:#e9eaed;background:#33373f}
+html[data-theme="dark"] .mp-info,html[data-theme="dark"] .mp-events{border-color:#2c2f36}
+html[data-theme="dark"] .mp-v{color:#cfd3da}
+html[data-theme="dark"] .mp-ev-tx{color:#cfd3da}
+html[data-theme="dark"] .mp-tm.win{color:#34d39a}
+html[data-theme="dark"] .mp-status.ft{color:#34d39a;background:#16271d}
 </style>
 </head>
 <body>
@@ -752,6 +795,11 @@ html[data-theme="dark"] .pp-link:hover{background:#263243}
 <!-- ══════════ PLAYER CARD POPUP ══════════ -->
 <div class="pp-overlay" id="pp-overlay" role="dialog" aria-modal="true">
   <div class="pp-modal" id="pp-modal"></div>
+</div>
+
+<!-- ══════════ MATCH-DETAIL POPOVER ══════════ -->
+<div class="mp-overlay" id="mp-overlay" role="dialog" aria-modal="true" aria-label="Match details">
+  <div class="mp-card" id="mp-card"></div>
 </div>
 
 <script>
@@ -1083,13 +1131,17 @@ document.addEventListener("click",function(e){
   if(prow){openPlayer(prow.getAttribute("data-player"),prow.getAttribute("data-pteam"));return;}
   const link=e.target.closest("[data-team]");
   if(link){openTeam(link.getAttribute("data-team"));return;}
+  const mrow=e.target.closest("[data-match]");        // a team name wins over the row (checked above)
+  if(mrow){openMatch(mrow.getAttribute("data-match"));return;}
   if(e.target.id==="pp-overlay"){closePlayer();return;}
-  if(e.target.id==="tm-overlay")closeTeam();
+  if(e.target.id==="tm-overlay"){closeTeam();return;}
+  if(e.target.id==="mp-overlay")closeMatch();
 });
 document.addEventListener("keydown",function(e){
   if(e.key!=="Escape")return;
   if(document.getElementById("pp-overlay").classList.contains("open"))closePlayer();
-  else closeTeam();
+  else if(document.getElementById("tm-overlay").classList.contains("open"))closeTeam();
+  else if(document.getElementById("mp-overlay").classList.contains("open"))closeMatch();
 });
 
 /* ══════════ PLAYER CARD (live-enriched from Wikipedia + Wikidata) ══════════
@@ -1149,6 +1201,112 @@ function closePlayer(){
   if(ov)ov.classList.remove("open");
   // team modal may still be open underneath; only release scroll if nothing is open
   if(!document.getElementById("tm-overlay").classList.contains("open"))document.body.style.overflow="";
+}
+
+/* ══════════ MATCH-DETAIL POPOVER ══════════
+   Tap any match (schedule, Today bar, or bracket) for teams/score, kickoff,
+   venue and a goals & cards timeline fetched from ESPN's match summary.
+   Team-name clicks inside a row still open the team card (handled first in the
+   delegated click listener); clicking anywhere else opens this. */
+const matchIndex={};
+function buildMatchIndex(){
+  stadiums.forEach(function(s,si){s.m.forEach(function(m,mi){m._id="s"+si+"-"+mi;matchIndex[m._id]={type:"s",m:m,s:s};});});
+  bracket.forEach(function(b){b._id="b-"+b.r+"-"+b.no;matchIndex[b._id]={type:"b",b:b};});
+}
+function escHTML(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"})[c];});}
+function mpRow(k,v){return '<div class="mp-row"><span class="mp-k">'+k+'</span><span class="mp-v">'+v+'</span></div>';}
+
+function openMatch(id){
+  const e=matchIndex[id];if(!e)return;
+  const card=document.getElementById("mp-card");
+  card.innerHTML=matchPopoverHTML(e);
+  card.scrollTop=0;
+  document.getElementById("mp-overlay").classList.add("open");
+  document.body.style.overflow="hidden";
+  const obj=e.type==="s"?e.m:e.b;
+  if(obj._eid)loadMatchEvents(obj._eid);
+}
+function closeMatch(){
+  const ov=document.getElementById("mp-overlay");
+  if(ov)ov.classList.remove("open");
+  document.body.style.overflow="";
+}
+
+function matchPopoverHTML(e){
+  let home,away,sc,live,clock,played,roundR,dateStr,instant,venueLine,locKey,locLine,homePh=false,awayPh=false,etStr="";
+  if(e.type==="s"){
+    const m=e.m,s=e.s;
+    const has=m.g.includes(" vs ");
+    const parts=has?m.g.split(" vs ").map(function(x){return x.trim();}):[m.g,""];
+    home=parts[0];away=parts[1];
+    sc=m.sc;live=!!m.live;clock=m.clock;played=!!m.sc;roundR=m.r;
+    instant=matchInstant(m);dateStr=m.d;
+    etStr=m.t?(m.t+" ET"+(m.xd?(" → "+m.xd+" next day"):"")):"";
+    venueLine=escHTML(s.fifa)+'<span class="sub"> · '+escHTML(s.real)+'</span>';
+    locKey="Location";locLine=escHTML(s.city)+' · cap. '+escHTML(s.cap);
+  }else{
+    const b=e.b;
+    const rh=b.liveH&&!isSlotName(b.liveH),ra=b.liveA&&!isSlotName(b.liveA);
+    home=rh?b.liveH:b.h;away=ra?b.liveA:b.a;homePh=!rh;awayPh=!ra;
+    played=(b.hs!=null&&b.as!=null);sc=played?(b.hs+"-"+b.as):null;live=b.status==="LIVE";clock=b.minute;roundR=b.r;
+    instant=null;dateStr=b.d;
+    venueLine=escHTML(b.ven||b.city);locKey="City";locLine=escHTML(b.city);
+  }
+  let status;
+  if(live)status='<span class="mp-status live">● LIVE'+(clock?" "+String(clock).replace(/['′]/g,"")+"'":"")+'</span>';
+  else if(played)status='<span class="mp-status ft">Full time</span>';
+  else status='<span class="mp-status up">Upcoming</span>';
+
+  let teams;
+  if(!away){
+    teams='<div class="mp-teams"><span class="mp-tm" style="text-align:center">'+escHTML(home)+'</span></div>';
+  }else{
+    let hs=null,as=null;
+    if(played&&sc){var sp=sc.split("-");hs=sp[0];as=sp[1];}
+    const hWin=played&&hs!=null&&Number(hs)>Number(as),aWin=played&&as!=null&&Number(as)>Number(hs);
+    const mid=played?('<span class="mp-sc">'+escHTML(hs)+'–'+escHTML(as)+'</span>'):'<span class="mp-vs">vs</span>';
+    teams='<div class="mp-teams">'+
+      '<span class="mp-tm'+(homePh?" ph":"")+(hWin?" win":"")+'">'+escHTML(home)+'</span>'+mid+
+      '<span class="mp-tm a'+(awayPh?" ph":"")+(aWin?" win":"")+'">'+escHTML(away)+'</span></div>';
+  }
+
+  let kick;
+  if(tzState.mode==="tz"&&instant!=null){
+    const f=fmtInstant(instant);
+    const sub=etStr?('<span class="sub"> · '+escHTML(etStr)+'</span>'):"";
+    kick=mpRow("Kickoff",f.date+' · '+f.time+' '+f.tz+sub);
+  }else if(etStr){
+    kick=mpRow("Kickoff",escHTML(dateStr)+' · '+escHTML(etStr));
+  }else{
+    kick=mpRow("Date",escHTML(dateStr));
+  }
+  const roundBadge='<span class="rbadge '+roundClass(roundR)+'">'+roundLabel(roundR)+'</span>';
+  return '<button class="mp-close" onclick="closeMatch()" aria-label="Close">✕</button>'+
+    '<div class="mp-top">'+roundBadge+'<span class="mp-date">'+escHTML(dateStr)+'</span>'+status+'</div>'+
+    teams+
+    '<div class="mp-info">'+kick+mpRow("Venue",venueLine)+mpRow(locKey,locLine)+'</div>'+
+    '<div class="mp-events" id="mpEvents"></div>';
+}
+
+/* On-demand goals & cards from ESPN's match summary. */
+function loadMatchEvents(eid){
+  const box=document.getElementById("mpEvents");if(!box)return;
+  box.innerHTML='<div class="mp-ev-loading">Loading goals &amp; cards…</div>';
+  fetch("https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event="+encodeURIComponent(eid),{cache:"no-store"})
+   .then(function(r){return r.ok?r.json():null;})
+   .then(function(d){
+     if(!box.isConnected)return;
+     const evs=((d&&d.keyEvents)||[]).filter(function(x){var t=(x.type&&x.type.text)||"";return /goal|card/i.test(t);});
+     if(!evs.length){box.innerHTML="";return;}
+     const rows=evs.map(function(x){
+       var t=(x.type&&x.type.text)||"";
+       var clk=(x.clock&&x.clock.displayValue)||"";
+       var ic=/red card/i.test(t)?"🟥":(/yellow card/i.test(t)?"🟨":(/goal/i.test(t)?"⚽":"•"));
+       return '<div class="mp-ev"><span class="mp-ev-clk">'+escHTML(clk)+'</span><span>'+ic+'</span><span class="mp-ev-tx">'+escHTML(x.text||t)+'</span></div>';
+     }).join("");
+     box.innerHTML='<div class="mp-ev-head">Goals &amp; cards</div>'+rows;
+   })
+   .catch(function(){if(box)box.innerHTML="";});
 }
 
 function wdTime(claims,prop){
@@ -1640,7 +1798,7 @@ function buildGrid(){
       const hl=state.team!=="all"&&teamInMatch(state.team,m.g);
       const played=!!m.sc;
       const cls=(hl?" highlight":"")+(played&&!hl?" played":"")+(m._flash?" scored":"");
-      return`<div class="mrow${cls}">${whenHTML(m)}<span class="mgame">${gameHTML(m)}</span><span class="rbadge ${roundClass(m.r)}">${roundLabel(m.r)}</span></div>`;
+      return`<div class="mrow${cls}" data-match="${m._id}">${whenHTML(m)}<span class="mgame">${gameHTML(m)}</span><span class="rbadge ${roundClass(m.r)}">${roundLabel(m.r)}</span></div>`;
     }).join("");
     return`<div class="card">
       <div class="bar" style="background:${s.bar}"></div>
@@ -1907,7 +2065,7 @@ function buildToday(){
     const goal=m._flash?'<span class="goal-badge">⚽ GOAL</span>':"";
     const when=live?('<span class="td-live">● LIVE'+(m.clock?" "+String(m.clock).replace(/['′]/g,"")+"'":"")+'</span>')
               :(played?'<span class="td-ft">FT</span>':'<span class="td-time">'+f.time+'</span>');
-    return '<div class="td-row'+(live?' td-rowlive':'')+(m._flash?' scored':'')+'"><span class="td-when">'+when+'</span>'+
+    return '<div class="td-row'+(live?' td-rowlive':'')+(m._flash?' scored':'')+'" data-match="'+m._id+'"><span class="td-when">'+when+'</span>'+
       '<span class="td-game">'+mid+goal+'</span><span class="td-meta">'+roundLabel(m.r)+' · '+it.city+'</span></div>';
   }).join("");
 }
@@ -2089,6 +2247,7 @@ function applyBracket(events){
     if(!m)return;
     if(e.home&&!isSlotName(e.home))m.liveH=e.home;
     if(e.away&&!isSlotName(e.away))m.liveA=e.away;
+    if(e.id)m._eid=e.id;
     if(e.hs!=null&&e.as!=null){m.hs=e.hs;m.as=e.as;m.status=e.status;m.minute=e.minute;n++;}
   });
   return n;
@@ -2144,7 +2303,7 @@ function bkCard(m){
   const played=(m.hs!=null&&m.as!=null);
   const badge=live?'<span class="bk-livebadge">●'+(m.minute?" "+String(m.minute).replace(/['′]/g,"")+"'":" LIVE")+'</span>'
             :(played?'<span class="bk-ftbadge">FT</span>':"");
-  return '<div class="bk-m bk-'+m.r.toLowerCase()+(m._flash?" scored":"")+'" data-bk="'+m.r+'-'+m.no+'">'+
+  return '<div class="bk-m bk-'+m.r.toLowerCase()+(m._flash?" scored":"")+'" data-bk="'+m.r+'-'+m.no+'" data-match="'+m._id+'">'+
     '<div class="bk-mdv"><span class="bk-mdate">'+m.d+badge+'</span><span class="bk-mvenue">'+m.city+'</span></div>'+
     bkTeamRow(m.h,m.liveH,played?m.hs:null,played?m.as:null,m._projH)+
     bkTeamRow(m.a,m.liveA,played?m.as:null,played?m.hs:null,m._projA)+
@@ -2431,6 +2590,7 @@ function applyLive(results){
           m.clock=(m.live&&r.minute)?String(r.minute).replace(/['′]/g,""):null;
           const hr=(r.hr!=null?r.hr:0),ar=(r.ar!=null?r.ar:0);
           m.hr=(k1===rk1)?hr:ar;m.ar=(k1===rk1)?ar:hr;
+          if(r.id)m._eid=r.id;
           updated++;
         }
       }
@@ -2480,6 +2640,7 @@ function parseESPNEvents(data,ds){
         hr:hr,ar:ar,
         status:status,
         minute:(status==="LIVE"&&clk)?clk:null,
+        id:ev.id||"",
         date:ds||"",
         venue:(comp.venue&&comp.venue.fullName)||""
       });
@@ -2591,6 +2752,7 @@ async function refreshScores(){
     sel.appendChild(o);
   });
 
+  buildMatchIndex();     // assign match ids so rows/cards open the detail popover
   applySavedFilters();   // restore last country/group/team selection
   applySavedSections();  // restore which sections were collapsed
   buildTzToggle();
