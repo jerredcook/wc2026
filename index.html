@@ -223,6 +223,8 @@ html[data-theme="dark"] .bk-link.lit{stroke:rgba(233,199,103,.85)}
 .bk-tn{flex:1;font-size:11px;color:#d7dae6;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
 .bk-tn.ph{color:#838aa0;font-weight:500}
 .bk-team.win .bk-tn{color:#f7e7ad;font-weight:800;text-shadow:0 0 10px rgba(233,199,103,.3)}
+.bk-tn.projd{color:#c7cbd8}
+.bk-proj{font-size:7px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#cdb978;border:1px dashed rgba(212,175,55,.6);border-radius:3px;padding:0 3px;margin-left:5px;vertical-align:middle;white-space:nowrap}
 .bk-sc{font-size:12px;font-weight:900;font-variant-numeric:tabular-nums;min-width:14px;text-align:right;color:#fff;margin-left:auto}
 .bk-team.win .bk-sc{color:#f7e7ad}
 .bk-r32{border-top-color:#1f9159}.bk-r16{border-top-color:#1f7fd1}.bk-qf{border-top-color:#7d5cf0}.bk-sf{border-top-color:#d2554e}.bk-final{border-top-color:#e9c767}.bk-3rd{border-top-color:#8a8f9e}
@@ -2121,7 +2123,7 @@ function slotShort(slot){
   return slot;
 }
 
-function bkTeamRow(slot,liveName,myScore,oppScore){
+function bkTeamRow(slot,liveName,myScore,oppScore,proj){
   const real=liveName&&!isSlotName(liveName);
   const win=(myScore!=null&&oppScore!=null&&myScore>oppScore);
   const sc=(myScore!=null)?'<span class="bk-sc">'+myScore+'</span>':"";
@@ -2129,7 +2131,8 @@ function bkTeamRow(slot,liveName,myScore,oppScore){
   if(real){
     const tr=teamRecord(liveName);
     lead='<span class="bk-flag">'+(tr?tr.flag:"🏳️")+'</span>';
-    label='<span class="bk-tn">'+(tr?'<span class="tlink" data-team="'+tr.name+'">'+liveName+'</span>':liveName)+'</span>';
+    const tag=proj?'<span class="bk-proj" title="Projected — leads the group and has clinched advancing; the final group game could still swap 1st/2nd">PROJ</span>':"";
+    label='<span class="bk-tn'+(proj?" projd":"")+'">'+(tr?'<span class="tlink" data-team="'+tr.name+'">'+liveName+'</span>':liveName)+tag+'</span>';
   }else{
     lead=slotCode(slot);
     label='<span class="bk-tn ph">'+slotShort(slot)+'</span>';
@@ -2143,8 +2146,8 @@ function bkCard(m){
             :(played?'<span class="bk-ftbadge">FT</span>':"");
   return '<div class="bk-m bk-'+m.r.toLowerCase()+(m._flash?" scored":"")+'" data-bk="'+m.r+'-'+m.no+'">'+
     '<div class="bk-mdv"><span class="bk-mdate">'+m.d+badge+'</span><span class="bk-mvenue">'+m.city+'</span></div>'+
-    bkTeamRow(m.h,m.liveH,played?m.hs:null,played?m.as:null)+
-    bkTeamRow(m.a,m.liveA,played?m.as:null,played?m.hs:null)+
+    bkTeamRow(m.h,m.liveH,played?m.hs:null,played?m.as:null,m._projH)+
+    bkTeamRow(m.a,m.liveA,played?m.as:null,played?m.hs:null,m._projA)+
     '</div>';
 }
 /* Champion line — only once the Final has a finished result. */
@@ -2156,15 +2159,18 @@ function bkChampHtml(fin){
   return '<div class="bk-champ"><span class="lbl">Champions</span><span>'+(tr?tr.flag+" ":"")+wname+' 🏆</span></div>';
 }
 
-/* Once a group's 1st/2nd place is secured — the group is complete, or the placing
-   can no longer be overtaken on points — drop those teams into the matching
-   "Winner X" / "2nd X" Round-of-32 slots, ahead of the knockout kicking off.
-   Conservative on purpose: a placing is only filled when it is mathematically
-   guaranteed, so the bracket never shows a team that could still be displaced.
-   An actual team already supplied by the knockout feed is never overwritten. */
+/* Place group finishers into the "Winner X" / "2nd X" Round-of-32 slots ahead of
+   the knockout kicking off, in two tiers:
+   - CONFIRMED: the group is complete, or the placing is points-locked (no rival
+     can reach the team's total). Shown as a normal, settled team.
+   - PROJECTED: the group is still in progress and the team has clinched a top-2
+     berth (at most one rival can still finish above it), so it is guaranteed to
+     advance — we drop it into its CURRENT position (1st/2nd), which the final
+     matchday could still swap. Flagged so the UI can mark it "PROJ".
+   A real team already supplied by the knockout feed is never overwritten. */
 function resolveBracketFromStandings(){
   const groups=computeStandings();
-  const placed={}; // { "Winner A":name, "2nd A":name, … }
+  const confirmed={},projected={};
   Object.keys(groups).forEach(function(key){
     const G=groups[key];
     const rows=Object.keys(G.teams).map(function(n){return G.teams[n];});
@@ -2172,23 +2178,36 @@ function resolveBracketFromStandings(){
     const ordered=stSort(rows,G.matches);
     const complete=rows.every(function(r){return r.p>=3;});
     if(complete){
-      if(ordered[0]&&ordered[0]._tb!=="lots")placed["Winner "+key]=ordered[0].name;
-      if(ordered[1]&&ordered[1]._tb!=="lots")placed["2nd "+key]=ordered[1].name;
+      if(ordered[0]&&ordered[0]._tb!=="lots")confirmed["Winner "+key]=ordered[0].name;
+      if(ordered[1]&&ordered[1]._tb!=="lots")confirmed["2nd "+key]=ordered[1].name;
       return;
     }
-    // Group still in progress → only fill a placing that is points-secured.
     const ceiling=function(r){return r.pts+3*Math.max(0,3-r.p);}; // best the team can still reach
+    // (1) Position points-locked → confirmed.
     const lead=ordered[0];
-    const winnerSafe=rows.every(function(r){return r===lead||lead.pts>ceiling(r);});
-    if(!winnerSafe)return;
-    placed["Winner "+key]=lead.name;
-    const second=ordered[1];
-    if(second&&rows.every(function(r){return r===lead||r===second||second.pts>ceiling(r);}))
-      placed["2nd "+key]=second.name;
+    if(rows.every(function(r){return r===lead||lead.pts>ceiling(r);})){
+      confirmed["Winner "+key]=lead.name;
+      const second=ordered[1];
+      if(second&&rows.every(function(r){return r===lead||r===second||second.pts>ceiling(r);}))
+        confirmed["2nd "+key]=second.name;
+    }
+    // (2) Clinched a top-2 berth (≤1 rival can still finish above) → projected into
+    //     its current position; tentative until the last group game decides 1st/2nd.
+    [["Winner",ordered[0]],["2nd",ordered[1]]].forEach(function(pair){
+      const slotKey=pair[0]+" "+key,t=pair[1];
+      if(!t||confirmed[slotKey])return;
+      const rivalsAbove=rows.filter(function(r){return r!==t&&ceiling(r)>=t.pts;}).length;
+      if(rivalsAbove<=1)projected[slotKey]=t.name;
+    });
   });
   bracket.forEach(function(m){
-    if(placed[m.h]&&(!m.liveH||isSlotName(m.liveH)))m.liveH=placed[m.h];
-    if(placed[m.a]&&(!m.liveA||isSlotName(m.liveA)))m.liveA=placed[m.a];
+    ["h","a"].forEach(function(side){
+      const slot=m[side],live="live"+side.toUpperCase(),proj="_proj"+side.toUpperCase();
+      const fed=m[live]&&!isSlotName(m[live])&&!m[proj]; // a real team set by the knockout feed
+      if(confirmed[slot]){m[live]=confirmed[slot];m[proj]=false;}
+      else if(projected[slot]&&!fed){m[live]=projected[slot];m[proj]=true;}
+      else if(m[proj]){m[live]="";m[proj]=false;} // was projected, no longer secured → back to placeholder
+    });
   });
 }
 
@@ -2229,11 +2248,14 @@ function buildBracket(){
     if(bkChampHtml(fin))stage="Champions crowned";
     pill.innerHTML='<span class="dot">●</span> '+(anyTeam||anyScore?stage:"Awaiting the draw");
   }
+  const anyProj=bracket.some(function(m){return m._projH||m._projA;});
   const stamp=document.getElementById("bk-updated");
   if(stamp){
     if(anyScore){
       const tm=new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
       stamp.innerHTML='<span class="ok">✓</span> Showing live knockout results &middot; as of '+tm;
+    }else if(anyProj){
+      stamp.innerHTML='<span class="ok">✓</span> Group leaders placed &middot; <span class="bk-proj">PROJ</span> = projected — clinched advancing, but 1st/2nd isn’t mathematically locked yet.';
     }else if(anyTeam){
       stamp.innerHTML='<span class="ok">✓</span> Qualified teams placed &middot; knockout matches haven’t kicked off yet.';
     }else{
