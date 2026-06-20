@@ -475,7 +475,11 @@ html[data-theme="dark"] .tm-go{color:#555c66}
 .pc-table td{padding:5px 6px;text-align:right;border-bottom:1px solid #f4f4f4;font-variant-numeric:tabular-nums;color:#555}
 .pc-table td.pc-yr{text-align:left;color:#8a9099;white-space:nowrap}
 .pc-table td.pc-tm{text-align:left;color:#1a1a1a;font-weight:600}
-.pc-tot td{font-weight:800;color:#1a1a1a;border-top:1px solid #e2e2e2;border-bottom:none}
+.pc-tot td{font-weight:800;color:#1a1a1a;border-top:1px solid #e2e2e2;border-bottom:none;position:sticky;bottom:0;background:#fff}
+.pc-wrap{max-height:300px;overflow:auto;border:1px solid #f0f0f0;border-radius:8px;margin-bottom:8px}
+.pc-wrap .pc-title{padding:6px 8px 0}
+.pc-wrap .pc-table{margin-bottom:0}
+.pc-wrap .pc-table th{position:sticky;top:0;background:#fff;z-index:1}
 .pp-bio{font-size:13px;line-height:1.55;color:#444;margin:8px 0}
 .pp-bio p{margin:0 0 9px}
 .pp-bio p:last-child{margin-bottom:0}
@@ -493,7 +497,9 @@ html[data-theme="dark"] .pp-bio{color:#c4c9d0}
 html[data-theme="dark"] .pp-sec,html[data-theme="dark"] .pc-title{color:#9aa0a8}
 html[data-theme="dark"] .pc-table th,html[data-theme="dark"] .pc-table td{border-color:#2a2d35;color:#9aa0a8}
 html[data-theme="dark"] .pc-table td.pc-tm,html[data-theme="dark"] .pc-tot td{color:#e9eaed}
-html[data-theme="dark"] .pc-tot td{border-color:#3a3e47}
+html[data-theme="dark"] .pc-tot td{border-color:#3a3e47;background:#1e2026}
+html[data-theme="dark"] .pc-wrap{border-color:#2a2d35}
+html[data-theme="dark"] .pc-wrap .pc-table th{background:#1e2026}
 html[data-theme="dark"] .pp-bio-warn{color:#d8c48a;background:#262318;border-color:#3d3a25}
 html[data-theme="dark"] .pp-link{color:#7db4ff;background:#1f2733;border-color:#2c3a4d}
 html[data-theme="dark"] .pp-link:hover{background:#263243}
@@ -1191,6 +1197,27 @@ async function fetchPlayer(name,team){
       car.clubs.forEach(function(r){if(r.apps!=null){_ca+=r.apps;_any=true;}if(r.goals!=null)_cg+=r.goals;});
       if(_any){out.clubApps=_ca;out.clubGoals=_cg;}
     }catch(e){/* no infobox */}
+    // Best-effort season-by-season tables from the "Career statistics" section.
+    try{
+      if(typeof DOMParser!=="undefined"){
+        const sj=await (await fetch(api+"?action=parse&format=json&origin=*&prop=sections&page="+encodeURIComponent(out.title))).json();
+        const secs=(sj.parse&&sj.parse.sections)||[];
+        const sec=secs.find(function(s){return /^(career|club) statistics$/i.test(s.line);})||secs.find(function(s){return /statistics/i.test(s.line);});
+        if(sec){
+          const pj=await (await fetch(api+"?action=parse&format=json&origin=*&disabletoc=1&prop=text&section="+sec.index+"&page="+encodeURIComponent(out.title))).json();
+          const html=pj.parse&&pj.parse.text&&pj.parse.text["*"];
+          if(html){
+            const doc=new DOMParser().parseFromString(html,"text/html");
+            const tables=doc.querySelectorAll("table.wikitable");
+            for(var ti=0;ti<tables.length;ti++){
+              const grid=tableToGrid(tables[ti]);
+              if(!out.seasonClub){const c=parseClubSeasons(grid);if(c)out.seasonClub=c;}
+              if(!out.seasonIntl){const n=parseIntlSeasons(grid);if(n)out.seasonIntl=n;}
+            }
+          }
+        }
+      }
+    }catch(e){/* season tables optional */}
   }
   // Wikidata fallback only for whatever the infobox didn't give us.
   if(out.qid&&(out.caps==null||!out.born||!out.birthplace||!out.positions||!out.height)){
@@ -1227,7 +1254,7 @@ async function fetchPlayer(name,team){
   return out;
 }
 
-function pcTable(title,rows,teamHdr,capHdr){
+function pcTable(title,rows,col1,col2,capHdr){
   if(!rows||!rows.length)return "";
   var ta=0,tg=0,any=false;
   const body=rows.map(function(r){
@@ -1238,13 +1265,79 @@ function pcTable(title,rows,teamHdr,capHdr){
   }).join("");
   const tot=(rows.length>1&&any)?'<tr class="pc-tot"><td colspan="2">Total</td><td>'+ta+'</td><td>'+tg+'</td></tr>':"";
   return '<div class="pc-title">'+title+'</div><table class="pc-table"><thead><tr>'+
-    '<th>Years</th><th>'+teamHdr+'</th><th>'+capHdr+'</th><th>Goals</th></tr></thead><tbody>'+body+tot+'</tbody></table>';
+    '<th>'+col1+'</th><th>'+col2+'</th><th>'+capHdr+'</th><th>Goals</th></tr></thead><tbody>'+body+tot+'</tbody></table>';
 }
-function careerSection(c){
-  if(!c||(!c.clubs.length&&!c.nat.length))return "";
-  return '<div class="pp-sec">📊 Career by team &amp; years</div>'+
-    pcTable("Clubs",c.clubs,"Club","Apps")+
-    pcTable("International",c.nat,"Team","Caps");
+/* Expand an HTML table (with colspan/rowspan) into a normalized grid of texts. */
+function tableToGrid(table){
+  const grid=[],carry={},rows=table.rows;
+  for(var r=0;r<rows.length;r++){
+    const out=[];var col=0;const cells=rows[r].cells;
+    const fill=function(){while(carry[col]&&carry[col].left>0){out[col]=carry[col].text;carry[col].left--;if(!carry[col].left)delete carry[col];col++;}};
+    for(var i=0;i<cells.length;i++){
+      fill();
+      const cell=cells[i];
+      const cs=parseInt((cell.getAttribute&&cell.getAttribute("colspan"))||cell.colSpan||1,10)||1;
+      const rs=parseInt((cell.getAttribute&&cell.getAttribute("rowspan"))||cell.rowSpan||1,10)||1;
+      const txt=(cell.textContent||"").replace(/\[\d+\]/g,"").replace(/ /g," ").replace(/\s+/g," ").trim();
+      for(var k=0;k<cs;k++){out[col]=txt;if(rs>1)carry[col]={text:txt,left:rs-1};col++;}
+    }
+    fill();grid.push(out);
+  }
+  return grid;
+}
+/* Season-by-season club stats: returns [{season,club,apps,goals}] using the
+   rightmost Apps/Goals pair (the per-season all-competitions Total). */
+function parseClubSeasons(grid){
+  var sub=-1;
+  for(var i=0;i<grid.length;i++){if(grid[i].filter(function(x){return /^apps$/i.test(x);}).length>=2){sub=i;break;}}
+  if(sub<0)return null;
+  var seasonCol=-1,clubCol=-1;
+  for(var h=Math.max(0,sub-1);h<=sub;h++)grid[h].forEach(function(x,idx){if(/^season$/i.test(x)&&seasonCol<0)seasonCol=idx;if(/^club$/i.test(x)&&clubCol<0)clubCol=idx;});
+  if(clubCol<0)clubCol=0;if(seasonCol<0)seasonCol=clubCol+1;
+  const aCols=[],gCols=[];
+  grid[sub].forEach(function(x,idx){if(/^apps$/i.test(x))aCols.push(idx);if(/^goals$/i.test(x))gCols.push(idx);});
+  if(!aCols.length||!gCols.length)return null;
+  const aC=aCols[aCols.length-1],gC=gCols[gCols.length-1];
+  const out=[];
+  for(var d=sub+1;d<grid.length;d++){
+    const g=grid[d],season=(g[seasonCol]||"").trim();
+    if(!/\b\d{4}\b/.test(season))continue;
+    const apps=parseInt(String(g[aC]||"").replace(/[^\d]/g,""),10),goals=parseInt(String(g[gC]||"").replace(/[^\d-]/g,""),10);
+    out.push({season:season,club:(g[clubCol]||"").trim(),apps:isNaN(apps)?null:apps,goals:isNaN(goals)?null:goals});
+  }
+  return out.length?out:null;
+}
+/* Season-by-season international stats: returns [{year,team,apps,goals}]. */
+function parseIntlSeasons(grid){
+  var hdr=-1;
+  for(var i=0;i<grid.length;i++){if(grid[i].some(function(x){return /^year$/i.test(x);})&&grid[i].some(function(x){return /^apps$/i.test(x);})){hdr=i;break;}}
+  if(hdr<0)return null;
+  var yC=-1,aC=-1,gC=-1,tC=-1;
+  grid[hdr].forEach(function(x,idx){if(/^year$/i.test(x))yC=idx;if(/^apps$/i.test(x)&&aC<0)aC=idx;if(/^goals$/i.test(x)&&gC<0)gC=idx;if(/national team/i.test(x))tC=idx;});
+  if(yC<0||aC<0)return null;
+  const out=[];
+  for(var d=hdr+1;d<grid.length;d++){
+    const g=grid[d],yr=(g[yC]||"").trim();
+    if(!/\b\d{4}\b/.test(yr))continue;
+    const apps=parseInt(String(g[aC]||"").replace(/[^\d]/g,""),10),goals=parseInt(String(g[gC]||"").replace(/[^\d-]/g,""),10);
+    out.push({year:yr,team:tC>=0?(g[tC]||"").trim():"",apps:isNaN(apps)?null:apps,goals:isNaN(goals)?null:goals});
+  }
+  return out.length?out:null;
+}
+function careerSection(d,team){
+  const sc=d.seasonClub,si=d.seasonIntl,car=d.career;
+  if(sc&&sc.length){
+    let html='<div class="pp-sec">📊 Career stats by season</div>';
+    html+='<div class="pc-wrap">'+pcTable("Club — season by season",sc.map(function(r){return {yrs:r.season,team:r.club,apps:r.apps,goals:r.goals};}),"Season","Club","Apps")+'</div>';
+    if(si&&si.length)html+='<div class="pc-wrap">'+pcTable("International — year by year",si.map(function(r){return {yrs:r.year,team:r.team||d.capsTeam||team,apps:r.apps,goals:r.goals};}),"Year","Team","Apps")+'</div>';
+    else if(car&&car.nat.length)html+=pcTable("International",car.nat,"Years","Team","Caps");
+    return html;
+  }
+  if(car&&(car.clubs.length||car.nat.length))
+    return '<div class="pp-sec">📊 Career by team &amp; years</div>'+
+      pcTable("Clubs",car.clubs,"Years","Club","Apps")+
+      pcTable("International",car.nat,"Years","Team","Caps");
+  return "";
 }
 
 function renderPlayer(name,team,meta,d){
@@ -1276,7 +1369,7 @@ function renderPlayer(name,team,meta,d){
     fact("Height",d.height?(d.height+" cm"):null)+
     fact("Club",clubLine)+
   '</div>';
-  const career=careerSection(d.career);
+  const career=careerSection(d,team);
   const bio=d.extract?'<div class="pp-sec">Biography</div><div class="pp-bio">'+
     d.extract.split(/\n+/).filter(Boolean).map(function(p){return '<p>'+esc(p.trim())+'</p>';}).join("")+'</div>':'';
   const nm=encodeURIComponent(name);
