@@ -1069,60 +1069,123 @@ function ageFrom(iso){
   if(now.getMonth()+1<mo||(now.getMonth()+1===mo&&now.getDate()<d))a--;
   return {age:a,dateText:new Date(Date.UTC(y,(mo||1)-1,d||1)).toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"})};
 }
+function ageOf(b){
+  if(!b||!b.y)return null;
+  const now=new Date();let a=now.getFullYear()-b.y;
+  if(now.getMonth()+1<b.mo||(now.getMonth()+1===b.mo&&now.getDate()<b.d))a--;
+  return {age:a,dateText:new Date(Date.UTC(b.y,(b.mo||1)-1,b.d||1)).toLocaleDateString("en-US",{year:"numeric",month:"long",day:"numeric"})};
+}
+
+/* ── Wikitext / infobox helpers ── */
+function wikiClean(s){
+  if(s==null)return "";
+  s=String(s);
+  s=s.replace(/<ref[^>]*>[\s\S]*?<\/ref>/gi,"").replace(/<ref[^>]*\/>/gi,"");
+  s=s.replace(/<!--[\s\S]*?-->/g,"");
+  s=s.replace(/\{\{flagi?con\|[^{}]*\}\}/gi,"");
+  s=s.replace(/\{\{nowrap\|([^{}]*)\}\}/gi,"$1");
+  s=s.replace(/\[\[(?:[^|\]]*\|)?([^\]]+)\]\]/g,"$1");   // [[A|B]]→B, [[A]]→A
+  s=s.replace(/\{\{[^{}]*\}\}/g,"");                      // drop remaining templates
+  s=s.replace(/<[^>]+>/g,"").replace(/'''?/g,"").replace(/&nbsp;/g," ");
+  return s.replace(/\s+/g," ").trim();
+}
+function ibGet(wt,field){
+  const re=new RegExp("\\n\\s*\\|\\s*"+field+"\\s*=\\s*([\\s\\S]*?)(?=\\n\\s*\\|\\s*[A-Za-z0-9_]+\\s*=|\\n\\}\\}|$)","i");
+  const m=re.exec(wt);return m?m[1].trim():null;
+}
+function ibInt(wt,field){
+  const v=ibGet(wt,field);if(v==null)return null;
+  const m=/-?\d[\d,]*/.exec(wikiClean(v));
+  return m?parseInt(m[0].replace(/,/g,""),10):null;
+}
+function ibBirth(wt){
+  const v=ibGet(wt,"birth_date");if(!v)return null;
+  const nums=(v.match(/\d+/g)||[]).map(Number);
+  const yi=nums.findIndex(function(n){return n>=1900&&n<=2100;});
+  if(yi<0)return null;
+  return {y:nums[yi],mo:nums[yi+1]||1,d:nums[yi+2]||1};
+}
+function ibHeight(wt){
+  const v=ibGet(wt,"height");if(!v)return null;
+  let m=/m\s*=\s*([\d.]+)/i.exec(v);if(m)return Math.round(parseFloat(m[1])*100);
+  m=/ft\s*=\s*(\d+)\s*\|?\s*in\s*=\s*(\d+)/i.exec(v);if(m)return Math.round((parseInt(m[1],10)*12+parseInt(m[2],10))*2.54);
+  const c=wikiClean(v);
+  m=/([\d.]+)\s*m\b/.exec(c);if(m&&parseFloat(m[1])<2.6)return Math.round(parseFloat(m[1])*100);
+  m=/([\d.]+)\s*cm/.exec(c);if(m)return Math.round(parseFloat(m[1]));
+  return null;
+}
+/* Pick the senior national side from the infobox's nationalteam/​caps/​goals rows. */
+function ibNational(wt){
+  const rows=[];
+  for(var i=1;i<=12;i++){
+    const tm=ibGet(wt,"nationalteam"+i);if(tm==null)continue;
+    rows.push({team:wikiClean(tm),caps:ibInt(wt,"nationalcaps"+i),goals:ibInt(wt,"nationalgoals"+i)});
+  }
+  const senior=rows.filter(function(r){
+    return r.team&&!/u-?\d|under-?\d|youth|olympic|futsal|beach|women|\bb\b/i.test(r.team)&&r.caps!=null;
+  }).sort(function(a,b){return (b.caps||0)-(a.caps||0);});
+  return senior[0]||null;
+}
 
 async function fetchPlayer(name,team){
   const nat=SEARCH_COUNTRY[team]||team;
   const api="https://en.wikipedia.org/w/api.php";
-  const q1=api+"?action=query&format=json&origin=*&redirects=1&generator=search&gsrsearch="+
-    encodeURIComponent(name+" "+nat+" footballer")+"&gsrlimit=1&prop=extracts|pageimages|pageprops&exintro=1&explaintext=1&piprop=thumbnail&pithumbsize=420";
+  const q1=api+"?action=query&format=json&formatversion=2&origin=*&redirects=1&generator=search&gsrsearch="+
+    encodeURIComponent(name+" "+nat+" footballer")+"&gsrlimit=1&prop=extracts|pageimages|pageprops|revisions"+
+    "&exintro=1&explaintext=1&piprop=thumbnail&pithumbsize=420&rvprop=content&rvslots=main";
   const j1=await (await fetch(q1)).json();
   const out={};
-  const pages=j1.query&&j1.query.pages;
-  const page=pages?Object.values(pages)[0]:null;
+  const page=j1.query&&j1.query.pages&&j1.query.pages[0];
   if(page){
     out.title=page.title;
     out.extract=page.extract||"";
     out.thumb=page.thumbnail&&page.thumbnail.source;
     out.qid=page.pageprops&&page.pageprops.wikibase_item;
     out.url="https://en.wikipedia.org/wiki/"+encodeURIComponent(String(page.title).replace(/ /g,"_"));
+    try{
+      const wt=page.revisions[0].slots.main.content;
+      const nt=ibNational(wt);
+      if(nt){out.caps=nt.caps;out.goals=nt.goals;out.capsTeam=nt.team;}
+      out.born=ibBirth(wt);
+      out.height=ibHeight(wt);
+      const pos=ibGet(wt,"position")||ibGet(wt,"position(s)");
+      if(pos)out.positions=wikiClean(pos);
+      const bp=ibGet(wt,"birth_place");
+      if(bp)out.birthplace=wikiClean(bp);
+      const upd=ibGet(wt,"ntupdate");
+      if(upd)out.capsUpdate=wikiClean(upd);
+    }catch(e){/* no infobox */}
   }
-  if(out.qid){
+  // Wikidata fallback only for whatever the infobox didn't give us.
+  if(out.qid&&(out.caps==null||!out.born||!out.birthplace||!out.positions||!out.height)){
     try{
       const j2=await (await fetch("https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&origin=*&props=claims&ids="+out.qid)).json();
       const ent=j2.entities[out.qid],cl=(ent&&ent.claims)||{};
-      out.dob=wdTime(cl,"P569");
-      try{out.height=wdAmount(cl.P2048[0].mainsnak);}catch(e){}
-      const need={};
-      function ref(q){if(q)need[q]=1;}
-      try{ref(cl.P19[0].mainsnak.datavalue.value.id);}catch(e){}      // place of birth
-      (cl.P27||[]).forEach(function(s){try{ref(s.mainsnak.datavalue.value.id);}catch(e){}}); // citizenship
-      (cl.P413||[]).forEach(function(s){try{ref(s.mainsnak.datavalue.value.id);}catch(e){}}); // positions
-      // national-team caps/goals: P54 statements carrying a matches qualifier
+      if(!out.born){const t=wdTime(cl,"P569");const m=t&&/([+-]\d+)-(\d\d)-(\d\d)/.exec(t);if(m)out.born={y:parseInt(m[1],10),mo:parseInt(m[2],10),d:parseInt(m[3],10)};}
+      if(out.height==null){try{out.height=wdAmount(cl.P2048[0].mainsnak);}catch(e){}}
+      const need={};const ref=function(q){if(q)need[q]=1;};
+      if(!out.birthplace){try{ref(cl.P19[0].mainsnak.datavalue.value.id);}catch(e){}}
+      if(!out.positions)(cl.P413||[]).forEach(function(s){try{ref(s.mainsnak.datavalue.value.id);}catch(e){}});
       const natTeams=[];
-      (cl.P54||[]).forEach(function(s){
-        try{
-          const tq=s.mainsnak.datavalue.value.id;
-          const caps=s.qualifiers&&s.qualifiers.P1350?wdAmount(s.qualifiers.P1350[0]):null;
-          const goals=s.qualifiers&&s.qualifiers.P1351?wdAmount(s.qualifiers.P1351[0]):null;
-          if(caps!=null||goals!=null){ref(tq);natTeams.push({q:tq,caps:caps,goals:goals});}
-        }catch(e){}
-      });
-      const ids=Object.keys(need);
-      let labels={};
+      if(out.caps==null)(cl.P54||[]).forEach(function(s){try{
+        const tq=s.mainsnak.datavalue.value.id;
+        const caps=s.qualifiers&&s.qualifiers.P1350?wdAmount(s.qualifiers.P1350[0]):null;
+        const goals=s.qualifiers&&s.qualifiers.P1351?wdAmount(s.qualifiers.P1351[0]):null;
+        if(caps!=null||goals!=null){ref(tq);natTeams.push({q:tq,caps:caps,goals:goals});}
+      }catch(e){}});
+      const ids=Object.keys(need);let labels={};
       if(ids.length){
         const lj=await (await fetch("https://www.wikidata.org/w/api.php?action=wbgetentities&format=json&origin=*&props=labels&languages=en&ids="+ids.join("|"))).json();
-        Object.keys(lj.entities||{}).forEach(function(q){
-          const e2=lj.entities[q];labels[q]=e2.labels&&e2.labels.en?e2.labels.en.value:null;
-        });
+        Object.keys(lj.entities||{}).forEach(function(q){const e2=lj.entities[q];labels[q]=e2.labels&&e2.labels.en?e2.labels.en.value:null;});
       }
-      try{out.birthplace=labels[cl.P19[0].mainsnak.datavalue.value.id];}catch(e){}
-      out.citizenship=(cl.P27||[]).map(function(s){try{return labels[s.mainsnak.datavalue.value.id];}catch(e){return null;}}).filter(Boolean);
-      out.positions=(cl.P413||[]).map(function(s){try{return labels[s.mainsnak.datavalue.value.id];}catch(e){return null;}}).filter(Boolean);
-      // pick the senior national team: label has "national" + not youth/B/Olympic; prefer most caps
-      const senior=natTeams.map(function(n){return {label:labels[n.q]||"",caps:n.caps,goals:n.goals};})
-        .filter(function(n){return /national (association )?football team|national team/i.test(n.label)&&!/under-?\d|U-?\d|youth|olympic|\bB\b|futsal|women/i.test(n.label);})
-        .sort(function(a,b){return (b.caps||0)-(a.caps||0);});
-      if(senior.length){out.caps=senior[0].caps;out.goals=senior[0].goals;out.capsTeam=senior[0].label;}
+      if(!out.birthplace){try{out.birthplace=labels[cl.P19[0].mainsnak.datavalue.value.id];}catch(e){}}
+      if(!out.positions){const ps=(cl.P413||[]).map(function(s){try{return labels[s.mainsnak.datavalue.value.id];}catch(e){return null;}}).filter(Boolean);if(ps.length)out.positions=ps.join(", ");}
+      if(out.caps==null){
+        const senior=natTeams.map(function(n){return {label:labels[n.q]||"",caps:n.caps,goals:n.goals};})
+          .filter(function(n){return /national/i.test(n.label)&&!/under-?\d|u-?\d|youth|olympic|\bb\b|futsal|women/i.test(n.label);})
+          .sort(function(a,b){return (b.caps||0)-(a.caps||0);});
+        if(senior.length){out.caps=senior[0].caps;out.goals=senior[0].goals;out.capsTeam=senior[0].label;}
+      }
     }catch(e){/* wikidata optional */}
   }
   return out;
@@ -1136,9 +1199,9 @@ function renderPlayer(name,team,meta,d){
     if(ph){ph.classList.remove("pp-photo-ph");ph.textContent="";ph.style.backgroundImage="url('"+d.thumb+"')";}
   }
   const fact=function(k,v){return v?('<div class="pp-fact"><div class="pp-fk">'+k+'</div><div class="pp-fv">'+v+'</div></div>'):"";};
-  const a=ageFrom(d.dob);
-  const from=[d.birthplace,(d.citizenship&&d.citizenship.length?d.citizenship.join(", "):null)].filter(Boolean).join(" · ");
-  const positions=(d.positions&&d.positions.length)?d.positions.join(", "):(meta.pos?POS_FULL[meta.pos]:"");
+  const a=ageOf(d.born);
+  const from=d.birthplace||"";
+  const positions=d.positions||(meta.pos?POS_FULL[meta.pos]:"");
   // stat tiles
   const statTile=function(v,lab){return '<div class="pp-stat"><div class="pp-statv">'+(v==null||v===""?"&mdash;":v)+'</div><div class="pp-statl">'+lab+'</div></div>';};
   const stats='<div class="pp-stats">'+
@@ -1146,7 +1209,7 @@ function renderPlayer(name,team,meta,d){
     statTile(d.goals!=null?d.goals:null,"Goals")+
     statTile(meta.pos||null,"Role")+
   '</div>';
-  const capsNote=(d.caps!=null&&d.capsTeam)?'<div class="pp-statnote">International totals for '+esc(d.capsTeam)+' (Wikidata)</div>':'';
+  const capsNote=(d.caps!=null&&d.capsTeam)?'<div class="pp-statnote">'+esc(d.capsTeam)+(d.capsUpdate?(' &middot; as of '+esc(d.capsUpdate)):'')+'</div>':'';
   const facts='<div class="pp-facts">'+
     fact("Age",a?(a.age+" yrs"):null)+
     fact("Date of birth",a?a.dateText:null)+
@@ -1162,7 +1225,7 @@ function renderPlayer(name,team,meta,d){
     '<a class="pp-link" href="https://fbref.com/en/search/search.fcgi?search='+nm+'" target="_blank" rel="noopener">FBref stats ↗</a>'+
     '<a class="pp-link" href="https://www.transfermarkt.com/schnellsuche/ergebnis/schnellsuche?query='+nm+'" target="_blank" rel="noopener">Transfermarkt ↗</a>'+
   '</div>';
-  const cardNote='<div class="pp-foot">Caps &amp; goals are international totals from Wikidata where available (may lag the latest match). Yellow/red cards and full match logs aren\'t in a free open dataset — open FBref or Transfermarkt above for complete, up-to-date stats.</div>';
+  const cardNote='<div class="pp-foot">Caps &amp; goals are senior international totals from the player&rsquo;s Wikipedia profile (may lag the latest match). Yellow/red cards and full match logs aren\'t in a free open dataset — open FBref or Transfermarkt above for complete, up-to-date stats.</div>';
   const body=document.getElementById("pp-body");
   if(!d.title&&!d.extract&&!d.thumb){
     body.innerHTML=stats+facts+'<div class="pp-bio pp-bio-warn">Couldn\'t load a live profile for this player (you may be offline, on a file:// copy, or the name didn\'t match a Wikipedia article). The links below still open full profiles.</div>'+links+cardNote;
