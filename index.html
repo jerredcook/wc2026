@@ -1249,6 +1249,7 @@ async function fetchPlayer(name,team){
       out.dbg.ib=ib?(Object.keys(ib).length+"f"):"null";
       if(ib){
         out.dbg.ntkeys=Object.keys(ib).filter(function(k){return /^national(team|caps)/.test(k);}).join(",")||"(none)";
+        out.dbg.nat=[];for(var ni=1;ni<=12;ni++){var ntm=ibGet(ib,"nationalteam"+ni);if(ntm==null)continue;out.dbg.nat.push(wikiClean(ntm)+"="+ibInt(ib,"nationalcaps"+ni));}out.dbg.nat=out.dbg.nat.join("; ");
         const nt=ibNational(ib);
         if(nt){out.caps=nt.caps;out.goals=nt.goals;out.capsTeam=nt.team;}
         out.born=ibBirth(ib);
