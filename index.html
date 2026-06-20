@@ -172,7 +172,7 @@ h1{font-size:22px;font-weight:600;margin-bottom:4px}
 .st-legend .sw{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:middle}
 .st-foot{font-size:10.5px;color:#9a9a9a;margin-top:9px;line-height:1.55}
 
-/* ── Knockout bracket ── */
+/* ── Knockout bracket — "Bracket · Live" (dark / gold, trophy-centered, mirrored) ── */
 .bk-section{background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
 .bk-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:10px}
 .bk-titlewrap{flex:1}
@@ -180,29 +180,69 @@ h1{font-size:22px;font-weight:600;margin-bottom:4px}
 .bk-sub{font-size:11px;color:#888;margin-top:1px}
 .bk-toggle{font-size:12px;font-weight:600;color:#555;border:1px solid #ddd;border-radius:14px;padding:3px 11px;background:#fafafa;white-space:nowrap}
 .bk-toggle:hover{background:#f0f0f0}
-.bk-updated{font-size:11px;color:#888;margin:12px 0 2px}
-.bk-updated .ok{color:#0d6b52;font-weight:700}
-.bk-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:6px 2px 8px}
-.bk-cols{display:flex;gap:13px;min-width:880px;position:relative}
-.bk-col{display:flex;flex-direction:column;justify-content:space-around;flex:1;min-width:148px;gap:7px;position:relative;z-index:1}
+
+/* The dark "stage" the bracket lives on — premium black-gold look, both themes */
+.bk-stage{margin-top:12px;border-radius:16px;padding:16px 8px 16px;position:relative;overflow:hidden;
+  background:radial-gradient(125% 95% at 50% -5%,#222637 0%,#15171f 46%,#0b0c11 100%);
+  border:1px solid #2b2f3e;box-shadow:inset 0 1px 0 rgba(255,255,255,.05),0 10px 30px rgba(0,0,0,.4)}
+.bk-stage::before{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(58% 42% at 50% 44%,rgba(212,175,55,.12),transparent 70%)}
+.bk-stagehead{display:flex;align-items:center;justify-content:center;gap:9px;flex-wrap:wrap;position:relative;z-index:2}
+.bk-brand{font-size:13px;font-weight:900;letter-spacing:.16em;text-transform:uppercase;
+  background:linear-gradient(180deg,#f7e7ad,#d4af37 58%,#a9842a);-webkit-background-clip:text;background-clip:text;color:transparent}
+.bk-stagepill{font-size:10px;font-weight:800;letter-spacing:.03em;color:#0b0c11;white-space:nowrap;
+  background:linear-gradient(180deg,#f7e7ad,#d4af37);border-radius:20px;padding:3px 11px;display:inline-flex;align-items:center;gap:5px}
+.bk-stagepill .dot{color:#1a7a44;font-size:9px}
+
+.bk-updated{font-size:11px;color:#9aa0b3;margin:9px 0 2px;text-align:center;position:relative;z-index:2}
+.bk-updated .ok{color:#e9c767;font-weight:800}
+.bk-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch;padding:10px 2px 4px;position:relative;z-index:1}
+.bk-cols{display:flex;gap:0;min-width:1260px;position:relative;align-items:stretch}
 #bk-svg{position:absolute;top:0;left:0;z-index:0;pointer-events:none;overflow:visible}
-.bk-link{fill:none;stroke:#d2d5da;stroke-width:1.5}
-html[data-theme="dark"] .bk-link{stroke:#3a3e47}
-.bk-coltitle{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#aaa;text-align:center;padding-bottom:2px}
-.bk-m{border:1px solid #eee;border-left:4px solid #bbb;border-radius:8px;padding:6px 9px;background:#fff}
-.bk-mdv{font-size:8.5px;font-weight:700;color:#aaa;letter-spacing:.03em;text-transform:uppercase;margin-bottom:4px;display:flex;justify-content:space-between;gap:6px}
-.bk-mvenue{font-weight:600;text-align:right;text-transform:none;letter-spacing:0;color:#bbb;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.bk-team{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:2px 0}
-.bk-team+.bk-team{border-top:1px solid #f5f5f5}
-.bk-tn{flex:1;font-size:11.5px;color:#222;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bk-tn.ph{color:#aaa;font-style:italic;font-size:10.5px}
-.bk-tn.win{font-weight:800;color:#0d6b52}
-.bk-sc{font-size:11.5px;font-weight:800;font-variant-numeric:tabular-nums;min-width:13px;text-align:right;color:#1a1a1a}
-.bk-r32{border-left-color:#0d8a4f}.bk-r16{border-left-color:#0c66c4}.bk-qf{border-left-color:#5a3fd0}.bk-sf{border-left-color:#c0392b}.bk-final{border-left-color:#d4a900}.bk-3rd{border-left-color:#aaa}
-.bk-livebadge{font-size:8px;font-weight:800;color:#fff;background:#d6322c;border-radius:3px;padding:1px 4px;margin-left:5px;letter-spacing:.04em;animation:livepulse 1.3s ease-in-out infinite}
-.bk-ftbadge{font-size:8px;font-weight:700;color:#0d6b52;background:#e2f5ee;border-radius:3px;padding:1px 4px;margin-left:5px;letter-spacing:.04em}
-.bk-extra{margin-top:12px;display:flex;flex-wrap:wrap;gap:12px;align-items:stretch}
-.bk-3rdcard{flex:1;min-width:220px;max-width:340px}
+.bk-link{fill:none;stroke:rgba(212,175,55,.32);stroke-width:1.5}
+.bk-link.lit{stroke:rgba(233,199,103,.85);stroke-width:2}
+html[data-theme="dark"] .bk-link{stroke:rgba(212,175,55,.32)}
+html[data-theme="dark"] .bk-link.lit{stroke:rgba(233,199,103,.85)}
+
+.bk-col{display:flex;flex-direction:column;justify-content:space-around;flex:1;min-width:122px;gap:8px;position:relative;z-index:1;padding:0 6px}
+.bk-col.center{min-width:172px;justify-content:center;flex:0 0 auto}
+.bk-coltitle{font-size:9px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:#7b8198;text-align:center;padding-bottom:3px}
+.bk-m{border:1px solid #2c3042;border-top:2px solid #5a5f72;border-radius:10px;padding:6px 8px;
+  background:linear-gradient(180deg,#222637,#191c27)}
+.bk-m.scored{animation:bkflash 2s ease}
+@keyframes bkflash{0%,100%{box-shadow:0 0 0 0 rgba(233,199,103,0)}30%{box-shadow:0 0 0 3px rgba(233,199,103,.55)}}
+.bk-mdv{font-size:8px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;margin-bottom:5px;display:flex;justify-content:space-between;gap:6px;align-items:center}
+.bk-mdate{color:#9aa0b3;display:flex;align-items:center;gap:4px}
+.bk-mvenue{font-weight:600;text-align:right;text-transform:none;letter-spacing:0;color:#6f7488;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bk-team{display:flex;align-items:center;gap:6px;padding:3px 0}
+.bk-team+.bk-team{border-top:1px solid rgba(255,255,255,.05)}
+.bk-code{font-size:10px;font-weight:900;color:#e9c767;background:rgba(212,175,55,.13);border:1px solid rgba(212,175,55,.32);
+  border-radius:6px;min-width:30px;height:23px;display:inline-flex;align-items:center;justify-content:center;gap:1px;flex-shrink:0;padding:0 4px;line-height:1}
+.bk-code .g{font-size:7px;font-weight:700;color:#bda860;letter-spacing:.01em}
+.bk-flag{font-size:15px;line-height:1;flex-shrink:0;width:21px;text-align:center}
+.bk-tn{flex:1;font-size:11px;color:#d7dae6;line-height:1.2;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-weight:600}
+.bk-tn.ph{color:#838aa0;font-weight:500}
+.bk-team.win .bk-tn{color:#f7e7ad;font-weight:800;text-shadow:0 0 10px rgba(233,199,103,.3)}
+.bk-sc{font-size:12px;font-weight:900;font-variant-numeric:tabular-nums;min-width:14px;text-align:right;color:#fff;margin-left:auto}
+.bk-team.win .bk-sc{color:#f7e7ad}
+.bk-r32{border-top-color:#1f9159}.bk-r16{border-top-color:#1f7fd1}.bk-qf{border-top-color:#7d5cf0}.bk-sf{border-top-color:#d2554e}.bk-final{border-top-color:#e9c767}.bk-3rd{border-top-color:#8a8f9e}
+.bk-livebadge{font-size:8px;font-weight:800;color:#fff;background:#d6322c;border-radius:4px;padding:1px 5px;letter-spacing:.04em;animation:livepulse 1.3s ease-in-out infinite}
+.bk-ftbadge{font-size:8px;font-weight:800;color:#0b0c11;background:#e9c767;border-radius:4px;padding:1px 5px;letter-spacing:.04em}
+
+/* center column: trophy + final + champion */
+.bk-center{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:9px;text-align:center}
+.bk-trophy{font-size:46px;line-height:1;filter:drop-shadow(0 6px 16px rgba(212,175,55,.5));animation:bktrophy 4.5s ease-in-out infinite}
+@keyframes bktrophy{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+.bk-finallabel{font-size:13px;font-weight:900;letter-spacing:.24em;
+  background:linear-gradient(180deg,#f7e7ad,#d4af37);-webkit-background-clip:text;background-clip:text;color:transparent}
+.bk-finalsub{font-size:8.5px;font-weight:700;letter-spacing:.06em;color:#8d93a6;text-transform:uppercase;margin-top:-4px}
+.bk-finalcard{width:100%}
+.bk-champ{margin-top:2px;font-size:12px;font-weight:800;color:#f7e7ad;display:flex;flex-direction:column;align-items:center;gap:2px}
+.bk-champ .lbl{font-size:8px;font-weight:800;letter-spacing:.14em;color:#9aa0b3;text-transform:uppercase}
+
+.bk-extra{margin-top:14px;display:flex;justify-content:center;position:relative;z-index:1}
+.bk-3rdcard{width:100%;max-width:300px}
+.bk-3rdcard .bk-coltitle{text-align:center;margin-bottom:6px}
 .bk-foot{font-size:10.5px;color:#9a9a9a;margin-top:11px;line-height:1.55}
 
 /* ── Stadiums & matches section ── */
@@ -611,18 +651,24 @@ html[data-theme="dark"] .pp-link:hover{background:#263243}
 <div class="bk-section">
   <div class="bk-head" onclick="toggleBracket()">
     <div class="bk-titlewrap">
-      <div class="bk-title">🏆 Knockout Bracket</div>
-      <div class="bk-sub">Round of 32 → Final &middot; official 2026 slotting &middot; teams &amp; scores fill in from the live feed</div>
+      <div class="bk-title">🏆 Bracket · Live</div>
+      <div class="bk-sub">Round of 32 → Final &middot; both halves close on the trophy &middot; fills in as teams qualify and updates after every match</div>
     </div>
     <span class="bk-toggle" id="bk-toggle">▼ Show</span>
   </div>
   <div id="bk-body" style="display:none">
-    <div class="bk-updated" id="bk-updated">Bracket positions are fixed; team names appear as groups finish and the knockout rounds are played. Pull the latest scores to fill them in.</div>
-    <div class="bk-scroll">
-      <div class="bk-cols" id="bk-cols"></div>
+    <div class="bk-stage">
+      <div class="bk-stagehead">
+        <span class="bk-brand">Bracket · Live</span>
+        <span class="bk-stagepill" id="bk-stagepill"><span class="dot">●</span> Round of 32</span>
+      </div>
+      <div class="bk-updated" id="bk-updated">Bracket positions are fixed; team names appear as groups finish and the knockout rounds are played. Pull the latest scores to fill them in.</div>
+      <div class="bk-scroll">
+        <div class="bk-cols" id="bk-cols"></div>
+      </div>
+      <div class="bk-extra" id="bk-extra"></div>
     </div>
-    <div class="bk-extra" id="bk-extra"></div>
-    <div class="bk-foot">Slot labels show the official 2026 path: <strong>Winner A</strong> / <strong>2nd A</strong> are the Group A finishers; <strong>3rd C/E/F/H/I</strong> is the best-third-placed team assigned to that slot (which of the eight qualifying thirds lands where is set by a FIFA lookup table after the group stage). <strong>Winner R32-1</strong> means the winner of Round-of-32 match 1, and so on up the tree. Scroll sideways to follow the bracket through to the Final.</div>
+    <div class="bk-foot">The code chips show the official 2026 path: <strong>1·C</strong> / <strong>2·C</strong> are the Group&nbsp;C winner and runner-up; <strong>3·ABCDF</strong> is the best-third-placed team assigned to that slot (which of the eight qualifying thirds lands where is set by a FIFA lookup table after the group stage). <strong>W·1</strong> on a later round means the winner of the feeding match. The two sides of the draw close inward on the Final and the trophy in the centre — scroll sideways to follow either half.</div>
   </div>
 </div>
 
@@ -2046,45 +2092,108 @@ function applyBracket(events){
   return n;
 }
 
+/* The mirrored draw: left half flows right, right half flows left, both close on
+   the Final. Vertical order keeps every match between the two it feeds. */
+const bkLeft ={R32:[1,3,2,5,11,12,9,10],R16:[1,2,5,6],QF:[1,2],SF:[1]};
+const bkRight={R32:[4,6,7,8,13,15,14,16],R16:[3,4,7,8],QF:[3,4],SF:[2]};
+const bkSideCols=[["R32","Round of 32"],["R16","Round of 16"],["QF","Quarterfinals"],["SF","Semifinals"]];
+
+/* Compact "Al Momento" code chip for an unresolved slot: a big number + small
+   group letters — 1·C (winner C), 2·F (runner-up F), 3·ABCDF (best third),
+   W·1 (winner of the feeding knockout match), L·1 (semifinal loser). */
+function slotCode(slot){
+  slot=String(slot||"");let m;
+  if(m=/^Winner ([A-L])$/.exec(slot))                 return '<span class="bk-code">1<span class="g">'+m[1]+'</span></span>';
+  if(m=/^2nd ([A-L])$/.exec(slot))                    return '<span class="bk-code">2<span class="g">'+m[1]+'</span></span>';
+  if(m=/^3rd (.+)$/.exec(slot))                        return '<span class="bk-code">3<span class="g">'+m[1].replace(/[^A-L]/g,"")+'</span></span>';
+  if(m=/^Winner (?:R32|R16|QF|SF)-(\d+)$/.exec(slot)) return '<span class="bk-code">W<span class="g">'+m[1]+'</span></span>';
+  if(m=/^Loser SF-(\d+)$/.exec(slot))                 return '<span class="bk-code">L<span class="g">'+m[1]+'</span></span>';
+  return '<span class="bk-code">·</span>';
+}
+/* Short human-readable descriptor for an unresolved slot. */
+function slotShort(slot){
+  slot=String(slot||"");let m;
+  if(m=/^Winner ([A-L])$/.exec(slot))return"Winner Grp "+m[1];
+  if(m=/^2nd ([A-L])$/.exec(slot))   return"Runner-up "+m[1];
+  if(/^3rd /.test(slot))             return"Best 3rd place";
+  if(m=/^Winner (R32|R16|QF|SF)-(\d+)$/.exec(slot))return"Winner "+m[1]+"-"+m[2];
+  if(m=/^Loser SF-(\d+)$/.exec(slot))return"Loser SF-"+m[1];
+  return slot;
+}
+
 function bkTeamRow(slot,liveName,myScore,oppScore){
   const real=liveName&&!isSlotName(liveName);
-  const name=real?liveName:slot;
-  const cls="bk-tn"+(real?"":" ph")+((myScore!=null&&oppScore!=null&&myScore>oppScore)?" win":"");
+  const win=(myScore!=null&&oppScore!=null&&myScore>oppScore);
   const sc=(myScore!=null)?'<span class="bk-sc">'+myScore+'</span>':"";
-  const tr=real?teamRecord(name):null;
-  const label=tr?'<span class="tlink" data-team="'+tr.name+'">'+name+'<span class="trank" title="FIFA World Ranking">#'+tr.rank+'</span></span>':name;
-  return '<div class="bk-team"><span class="'+cls+'">'+label+'</span>'+sc+'</div>';
+  let lead,label;
+  if(real){
+    const tr=teamRecord(liveName);
+    lead='<span class="bk-flag">'+(tr?tr.flag:"🏳️")+'</span>';
+    label='<span class="bk-tn">'+(tr?'<span class="tlink" data-team="'+tr.name+'">'+liveName+'</span>':liveName)+'</span>';
+  }else{
+    lead=slotCode(slot);
+    label='<span class="bk-tn ph">'+slotShort(slot)+'</span>';
+  }
+  return '<div class="bk-team'+(win?" win":"")+'">'+lead+label+sc+'</div>';
 }
 function bkCard(m){
   const live=m.status==="LIVE";
   const played=(m.hs!=null&&m.as!=null);
   const badge=live?'<span class="bk-livebadge">●'+(m.minute?" "+String(m.minute).replace(/['′]/g,"")+"'":" LIVE")+'</span>'
             :(played?'<span class="bk-ftbadge">FT</span>':"");
-  const label=m.r==="Final"?"Final":(m.r==="3rd"?"3rd place":(m.r+"-"+m.no));
   return '<div class="bk-m bk-'+m.r.toLowerCase()+(m._flash?" scored":"")+'" data-bk="'+m.r+'-'+m.no+'">'+
-    '<div class="bk-mdv"><span>'+label+' &middot; '+m.d+badge+'</span><span class="bk-mvenue">'+m.city+'</span></div>'+
+    '<div class="bk-mdv"><span class="bk-mdate">'+m.d+badge+'</span><span class="bk-mvenue">'+m.city+'</span></div>'+
     bkTeamRow(m.h,m.liveH,played?m.hs:null,played?m.as:null)+
     bkTeamRow(m.a,m.liveA,played?m.as:null,played?m.hs:null)+
     '</div>';
+}
+/* Champion line — only once the Final has a finished result. */
+function bkChampHtml(fin){
+  if(fin.hs==null||fin.as==null||fin.status==="LIVE"||fin.hs===fin.as)return"";
+  const wname=fin.hs>fin.as?fin.liveH:fin.liveA;
+  if(!wname||isSlotName(wname))return"";
+  const tr=teamRecord(wname);
+  return '<div class="bk-champ"><span class="lbl">Champions</span><span>'+(tr?tr.flag+" ":"")+wname+' 🏆</span></div>';
 }
 
 function buildBracket(){
   const cols=document.getElementById("bk-cols");
   if(!cols)return;
-  cols.innerHTML=bkRounds.map(function(rd){
-    const cards=bkOrder[rd[0]].map(function(no){return bkCard(bkGet(rd[0],no));}).join("");
-    return '<div class="bk-col"><div class="bk-coltitle">'+rd[1]+'</div>'+cards+'</div>';
-  }).join("");
+  function colHtml(side,rk,title){
+    const cards=side[rk].map(function(no){return bkCard(bkGet(rk,no));}).join("");
+    return '<div class="bk-col"><div class="bk-coltitle">'+title+'</div>'+cards+'</div>';
+  }
+  const fin=bkGet("Final",1);
+  const center='<div class="bk-col center"><div class="bk-center">'+
+      '<div class="bk-trophy">🏆</div>'+
+      '<div class="bk-finallabel">FINAL</div>'+
+      '<div class="bk-finalsub">'+fin.d+' &middot; '+fin.city+'</div>'+
+      '<div class="bk-finalcard">'+bkCard(fin)+'</div>'+
+      bkChampHtml(fin)+
+    '</div></div>';
+  cols.innerHTML=
+    bkSideCols.map(function(c){return colHtml(bkLeft,c[0],c[1]);}).join("")+
+    center+
+    bkSideCols.slice().reverse().map(function(c){return colHtml(bkRight,c[0],c[1]);}).join("");
   // Third-place play-off sits outside the tree.
   const extra=document.getElementById("bk-extra");
   if(extra){
     const t=bkGet("3rd",1);
-    extra.innerHTML='<div class="bk-3rdcard"><div class="bk-coltitle" style="text-align:left">Third-Place Play-off</div>'+bkCard(t)+'</div>';
+    extra.innerHTML='<div class="bk-3rdcard"><div class="bk-coltitle">Third-Place Play-off</div>'+bkCard(t)+'</div>';
+  }
+  // Stage pill: deepest round that has a result yet.
+  const anyTeam=bracket.some(function(m){return m.liveH&&!isSlotName(m.liveH);});
+  const anyScore=bracket.some(function(m){return m.hs!=null;});
+  const pill=document.getElementById("bk-stagepill");
+  if(pill){
+    let stage="Round of 32";
+    [["R32","Round of 32"],["R16","Round of 16"],["QF","Quarterfinals"],["SF","Semifinals"],["Final","Final"]]
+      .forEach(function(s){if(bracket.some(function(m){return m.r===s[0]&&m.hs!=null;}))stage=s[1];});
+    if(bkChampHtml(fin))stage="Champions crowned";
+    pill.innerHTML='<span class="dot">●</span> '+(anyTeam||anyScore?stage:"Awaiting the draw");
   }
   const stamp=document.getElementById("bk-updated");
   if(stamp){
-    const anyTeam=bracket.some(function(m){return m.liveH&&!isSlotName(m.liveH);});
-    const anyScore=bracket.some(function(m){return m.hs!=null;});
     if(anyScore){
       const tm=new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
       stamp.innerHTML='<span class="ok">✓</span> Showing live knockout results &middot; as of '+tm;
@@ -2138,17 +2247,23 @@ function drawBracketConnectors(){
   const svg=document.createElementNS(NS,"svg");
   svg.setAttribute("id","bk-svg");
   svg.setAttribute("width",cols.offsetWidth);svg.setAttribute("height",cols.offsetHeight);
-  function pt(el,side){const r=el.getBoundingClientRect();return {x:(side==="right"?r.right:r.left)-base.left,y:r.top-base.top+r.height/2};}
+  function box(el){const r=el.getBoundingClientRect();return {l:r.left-base.left,r:r.right-base.left,cx:(r.left+r.right)/2-base.left,y:r.top-base.top+r.height/2};}
+  // The draw is mirrored, so connect the edges that face each other: a feeder on
+  // the left of its target joins right→left; a feeder on the right joins left→right.
+  // This also lets both semifinals close inward on the centred Final.
   ["R16","QF","SF","Final"].forEach(function(rnd){
     bracket.filter(function(m){return m.r===rnd;}).forEach(function(m){
-      const tgt=cols.querySelector('[data-bk="'+m.r+'-'+m.no+'"]');if(!tgt)return;
-      const b=pt(tgt,"left");
+      const tgtEl=cols.querySelector('[data-bk="'+m.r+'-'+m.no+'"]');if(!tgtEl)return;
+      const t=box(tgtEl);
       bkFeeders(m).forEach(function(f){
-        const src=cols.querySelector('[data-bk="'+f.r+'-'+f.no+'"]');if(!src)return;
-        const a=pt(src,"right"),midx=(a.x+b.x)/2;
+        const srcEl=cols.querySelector('[data-bk="'+f.r+'-'+f.no+'"]');if(!srcEl)return;
+        const s=box(srcEl);
+        const a=(s.cx<t.cx)?{x:s.r,y:s.y}:{x:s.l,y:s.y};
+        const b=(s.cx<t.cx)?{x:t.l,y:t.y}:{x:t.r,y:t.y};
+        const midx=(a.x+b.x)/2;
         const p=document.createElementNS(NS,"path");
         p.setAttribute("d","M"+a.x+" "+a.y+" H"+midx.toFixed(1)+" V"+b.y.toFixed(1)+" H"+b.x.toFixed(1));
-        p.setAttribute("class","bk-link");
+        p.setAttribute("class","bk-link"+(bkGet(f.r,f.no).hs!=null?" lit":""));
         svg.appendChild(p);
       });
     });
