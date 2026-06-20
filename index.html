@@ -1342,6 +1342,14 @@ function careerSection(d,team){
 
 function renderPlayer(name,team,meta,d){
   d=d||{};
+  // When we have season-by-season data, derive the headline club totals from it
+  // (all competitions) so the tile matches the detailed table. The infobox sum
+  // is league-only, which otherwise looks inconsistent.
+  if(d.seasonClub&&d.seasonClub.length){
+    var sa=0,sg=0,sany=false;
+    d.seasonClub.forEach(function(r){if(r.apps!=null){sa+=r.apps;sany=true;}if(r.goals!=null)sg+=r.goals;});
+    if(sany){d.clubApps=sa;d.clubGoals=sg;d.clubAllComp=true;}
+  }
   // photo
   if(d.thumb){
     const ph=document.getElementById("pp-photo");
@@ -1360,7 +1368,8 @@ function renderPlayer(name,team,meta,d){
     statTile(d.clubApps!=null?d.clubApps:null,"Club apps")+
     statTile(d.clubGoals!=null?d.clubGoals:null,"Club goals")+
   '</div>';
-  const capsNote=(d.caps!=null&&d.capsTeam)?'<div class="pp-statnote">International totals for '+esc(d.capsTeam)+(d.capsUpdate?(' &middot; as of '+esc(d.capsUpdate)):'')+'; club totals are career senior appearances</div>':((d.clubApps!=null)?'<div class="pp-statnote">Club totals are career senior appearances (all competitions)</div>':'');
+  const clubBasis=d.clubApps!=null?('club totals are career '+(d.clubAllComp?'appearances, all competitions':'league appearances')):'';
+  const capsNote=(d.caps!=null&&d.capsTeam)?'<div class="pp-statnote">International totals for '+esc(d.capsTeam)+(d.capsUpdate?(' &middot; as of '+esc(d.capsUpdate)):'')+(clubBasis?('; '+clubBasis):'')+'</div>':(clubBasis?'<div class="pp-statnote">'+clubBasis.charAt(0).toUpperCase()+clubBasis.slice(1)+'</div>':'');
   const facts='<div class="pp-facts">'+
     fact("Full name",(d.fullname&&d.fullname.toLowerCase()!==name.toLowerCase())?d.fullname:null)+
     fact("Age",a?(a.age+" years"):null)+
