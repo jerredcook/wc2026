@@ -109,6 +109,8 @@ h1{font-size:22px;font-weight:600;margin-bottom:4px}
 .live-status .spin{color:#0d6b52;font-weight:700}
 .live-badge{font-size:9px;font-weight:800;color:#fff;background:#d6322c;border-radius:3px;padding:1px 6px;margin-left:5px;letter-spacing:.04em;white-space:nowrap;animation:livepulse 1.3s ease-in-out infinite}
 @keyframes livepulse{0%,100%{opacity:1}50%{opacity:.4}}
+.rc-wrap{display:inline-flex;gap:2px;vertical-align:middle;margin:0 4px;cursor:help}
+.rc-card{display:inline-block;width:8px;height:11px;background:#e0242f;border-radius:1.5px;box-shadow:0 0 0 .5px rgba(0,0,0,.25)}
 
 /* ── Warm-up friendlies section ── */
 .fr-section{background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
@@ -1538,9 +1540,16 @@ function gameHTML(m){
     const homeEl=teamLink(home,state.team!=="all"&&home===state.team,false);
     const awayEl=teamLink(away,state.team!=="all"&&away===state.team,false);
     const tag=m.live?`<span class="live-badge">● LIVE</span>`+(m.clock?`<span class="live-min">${m.clock}'</span>`:``):`<span class="ft">FT</span>`;
-    return `${homeEl}<span class="mscore"><span class="${hCls}">${hs}</span>–<span class="${aCls}">${as_}</span></span>${awayEl}${tag}`;
+    return `${homeEl}${rcMark(m.hr)}<span class="mscore"><span class="${hCls}">${hs}</span>–<span class="${aCls}">${as_}</span></span>${rcMark(m.ar)}${awayEl}${tag}`;
   }
   return highlightGame(m.g);
+}
+/* Red-card marker: one red rectangle per sending-off, with a "down to N" tooltip. */
+function rcMark(n){
+  n=parseInt(n,10)||0;
+  if(n<=0)return "";
+  let boxes="";for(let i=0;i<n;i++)boxes+='<span class="rc-card"></span>';
+  return `<span class="rc-wrap" title="${n} red card${n>1?"s":""} — down to ${11-n} players">${boxes}</span>`;
 }
 
 /* Renders the stacked date + kickoff time. In ET mode, midnight crossers (xd)
@@ -1844,7 +1853,7 @@ function buildToday(){
       if(played){
         const p=m.g.split(" vs ").map(function(x){return x.trim();});
         const sp=m.sc.split("-");
-        mid=teamLink(p[0],false,false)+' <b>'+sp[0]+'–'+sp[1]+'</b> '+teamLink(p[1],false,false);
+        mid=teamLink(p[0],false,false)+rcMark(m.hr)+' <b>'+sp[0]+'–'+sp[1]+'</b> '+rcMark(m.ar)+teamLink(p[1],false,false);
       }else mid=m.g.split(" vs ").map(function(x){return teamLink(x.trim(),false,false);}).join(" vs ");
     }else mid=m.g;
     const goal=m._flash?'<span class="goal-badge">⚽ GOAL</span>':"";
@@ -2211,7 +2220,7 @@ function canon(name){
 }
 
 async function fetchLiveScores(){
-  const prompt='Use web search to find the live or most recent scores for 2026 FIFA World Cup matches being played today. Reply with ONLY a JSON array, no markdown fences and no commentary. Each item must be {"home":string,"away":string,"hs":number|null,"as":number|null,"status":"LIVE"|"FT"|"UPCOMING","minute":string|null}. Use short English team names such as USA, South Korea, Ivory Coast, Turkiye, Curacao, DR Congo, Cape Verde, Bosnia. hs and as are goals scored so far (null if the match has not started). minute is the current match minute for LIVE games (e.g. "67" or "90+2"), otherwise null. If no matches are on today, reply with [].';
+  const prompt='Use web search to find the live or most recent scores for 2026 FIFA World Cup matches being played today. Reply with ONLY a JSON array, no markdown fences and no commentary. Each item must be {"home":string,"away":string,"hs":number|null,"as":number|null,"hr":number,"ar":number,"status":"LIVE"|"FT"|"UPCOMING","minute":string|null}. Use short English team names such as USA, South Korea, Ivory Coast, Turkiye, Curacao, DR Congo, Cape Verde, Bosnia. hs and as are goals scored so far (null if the match has not started). hr and ar are the number of red cards shown to the home and away team so far (0 if none). minute is the current match minute for LIVE games (e.g. "67" or "90+2"), otherwise null. If no matches are on today, reply with [].';
   const res=await fetch("https://api.anthropic.com/v1/messages",{
     method:"POST",
     headers:{"Content-Type":"application/json"},
@@ -2246,6 +2255,8 @@ function applyLive(results){
           m.sc=((k1===rk1)?r.hs:r.as)+"-"+((k1===rk1)?r.as:r.hs);
           m.live=(r.status==="LIVE");
           m.clock=(m.live&&r.minute)?String(r.minute).replace(/['′]/g,""):null;
+          const hr=(r.hr!=null?r.hr:0),ar=(r.ar!=null?r.ar:0);
+          m.hr=(k1===rk1)?hr:ar;m.ar=(k1===rk1)?ar:hr;
           updated++;
         }
       }
@@ -2275,11 +2286,24 @@ function parseESPNEvents(data,ds){
       const hs=status==="UPCOMING"?null:parseInt(home.score,10);
       const as=status==="UPCOMING"?null:parseInt(away.score,10);
       const clk=(ev.status||comp.status||{}).displayClock;
+      // Red cards: prefer the competitor field, else tally from play details.
+      let hr=parseInt(home.redCards,10);if(isNaN(hr))hr=0;
+      let ar=parseInt(away.redCards,10);if(isNaN(ar))ar=0;
+      if(hr===0&&ar===0&&Array.isArray(comp.details)){
+        comp.details.forEach(function(d){
+          const tx=((d.type&&(d.type.text||d.type.name))||"")+"";
+          if(!(d.redCard===true||/red card|second yellow|sent off|ejection/i.test(tx)))return;
+          const tid=d.team&&d.team.id;
+          if(tid&&home.id&&String(tid)===String(home.id))hr++;
+          else if(tid&&away.id&&String(tid)===String(away.id))ar++;
+        });
+      }
       out.push({
         home:(home.team&&(home.team.displayName||home.team.shortDisplayName||home.team.name))||"",
         away:(away.team&&(away.team.displayName||away.team.shortDisplayName||away.team.name))||"",
         hs:isNaN(hs)?null:hs,
         as:isNaN(as)?null:as,
+        hr:hr,ar:ar,
         status:status,
         minute:(status==="LIVE"&&clk)?clk:null,
         date:ds||"",
