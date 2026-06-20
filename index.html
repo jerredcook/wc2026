@@ -1196,15 +1196,45 @@ function ibCareer(ib){
   return {clubs:clubs,nat:nat};
 }
 
+/* Resolve the player's MAIN biography article (not a sub-article like
+   "Career of …"/"List of …"). Tries the exact title first — which is where
+   most player bios live — then falls back to search, preferring an exact
+   name match and skipping sub-article titles. */
+function getWt(p){try{return p.revisions[0].slots.main.content;}catch(e){return null;}}
+function isFootyBio(p){const wt=getWt(p);return !!(wt&&/\{\{\s*infobox\s+football\s+biography/i.test(wt));}
+async function fetchFullByTitle(api,title){
+  const url=api+"?action=query&format=json&formatversion=2&origin=*&redirects=1&titles="+encodeURIComponent(title)+
+    "&prop=extracts|pageimages|pageprops|revisions&exintro=1&explaintext=1&piprop=thumbnail&pithumbsize=640&rvprop=content&rvslots=main&rvsection=0";
+  const j=await (await fetch(url)).json();
+  const p=j.query&&j.query.pages&&j.query.pages[0];
+  return (p&&!p.missing)?p:null;
+}
+async function resolvePlayerPage(api,name,nat,out){
+  // 1) exact title — the common case, avoids search picking a sub-article.
+  try{
+    const p=await fetchFullByTitle(api,name);
+    if(p&&isFootyBio(p)){out.dbg.via="title";return p;}
+  }catch(e){}
+  // 2) search titles, then fetch the best candidate.
+  try{
+    const sj=await (await fetch(api+"?action=query&format=json&formatversion=2&origin=*&list=search&srlimit=6&srsearch="+
+      encodeURIComponent(name+" "+nat+" footballer"))).json();
+    const hits=(sj.query&&sj.query.search)||[];
+    const bad=/^(career|international career|list of|history of|timeline of)\b|\bstatistics\b|\brecords\b|in international football/i;
+    let pick=hits.find(function(h){return h.title.toLowerCase()===name.toLowerCase();})
+          || hits.find(function(h){return !bad.test(h.title);})
+          || hits[0];
+    out.dbg.via="search:"+(pick?pick.title:"none");
+    if(pick){const p=await fetchFullByTitle(api,pick.title);if(p)return p;}
+  }catch(e){out.dbg.reserr=String(e&&e.message||e);}
+  return null;
+}
+
 async function fetchPlayer(name,team){
   const nat=SEARCH_COUNTRY[team]||team;
   const api="https://en.wikipedia.org/w/api.php";
-  const q1=api+"?action=query&format=json&formatversion=2&origin=*&redirects=1&generator=search&gsrsearch="+
-    encodeURIComponent(name+" "+nat+" footballer")+"&gsrlimit=1&prop=extracts|pageimages|pageprops"+
-    "&exintro=1&explaintext=1&piprop=thumbnail&pithumbsize=640";
   const out={dbg:{}};
-  const j1=await (await fetch(q1)).json();
-  const page=j1.query&&j1.query.pages&&j1.query.pages[0];
+  const page=await resolvePlayerPage(api,name,nat,out);
   out.dbg.page=page?("'"+page.title+"'"):"none";
   if(page){
     out.title=page.title;
@@ -1213,12 +1243,7 @@ async function fetchPlayer(name,team){
     out.qid=page.pageprops&&page.pageprops.wikibase_item;
     out.url="https://en.wikipedia.org/wiki/"+encodeURIComponent(String(page.title).replace(/ /g,"_"));
     try{
-      // Fetch only the lead section's wikitext (rvsection=0) — small and always
-      // reliable, even for huge pages; it contains the infobox.
-      const wq=api+"?action=query&format=json&formatversion=2&origin=*&prop=revisions&rvprop=content&rvslots=main&rvsection=0&titles="+encodeURIComponent(out.title);
-      const jw=await (await fetch(wq)).json();
-      const wp=jw.query&&jw.query.pages&&jw.query.pages[0];
-      const wt=wp&&wp.revisions&&wp.revisions[0]&&wp.revisions[0].slots&&wp.revisions[0].slots.main&&wp.revisions[0].slots.main.content;
+      const wt=getWt(page);
       out.dbg.wt=wt?(wt.length+"ch"):"none";
       const ib=wt&&parseInfobox(wt);
       out.dbg.ib=ib?(Object.keys(ib).length+"f"):"null";
