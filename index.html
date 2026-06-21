@@ -271,6 +271,8 @@ html[data-theme="dark"] .bk-link.lit{stroke:rgba(233,199,103,.85)}
 .td-game{flex:1;color:#1a1a1a;line-height:1.25}
 .td-game b{font-weight:800}
 .td-meta{font-size:10px;color:#aaa;font-weight:600;text-transform:uppercase;letter-spacing:.03em;text-align:right;white-space:nowrap;flex-shrink:0}
+.td-xd{font-size:9px;font-weight:700;color:#b8860b;background:#fdf3d6;border-radius:3px;padding:0 4px;margin-left:2px;white-space:nowrap}
+html[data-theme="dark"] .td-xd{color:#e9c767;background:#33301f}
 .td-empty{font-size:12px;color:#aaa;padding:2px 0}
 
 /* ── Time-zone toggle + auto-refresh (in the live bar) ── */
@@ -827,6 +829,14 @@ function matchInstant(m){
   let h=parseInt(mt[1],10);const min=parseInt(mt[2],10);const ap=mt[3].toUpperCase();
   if(ap==="PM"&&h!==12)h+=12;if(ap==="AM"&&h===12)h=0;
   return Date.UTC(2026,mo,day,h+ET_TO_UTC_H,min);
+}
+/* ET calendar-date key (MM/DD/YYYY) a fixture is *listed under* — m.d, the
+   evening slate, which for a midnight-crosser differs from the post-midnight
+   instant date in m.xd. Computed at noon ET to stay clear of any DST edge. */
+function etSlateKey(dStr){
+  const ds=String(dStr).split(" "),mo=MONTHS[ds[0]],day=parseInt(ds[1],10);
+  if(mo==null||isNaN(day))return "";
+  return new Date(Date.UTC(2026,mo,day,16,0)).toLocaleDateString("en-US",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"});
 }
 /* Format an instant in the active display zone → {date,time,tz}. */
 function fmtInstant(ts){
@@ -2054,13 +2064,19 @@ function buildToday(){
   const zone=tzState.mode==='tz'?tzState.zone:'America/New_York';
   const dayKey=function(ts){return new Date(ts).toLocaleDateString("en-US",{timeZone:zone,year:"numeric",month:"2-digit",day:"2-digit"});};
   const today=new Date().toLocaleDateString("en-US",{timeZone:zone,year:"numeric",month:"2-digit",day:"2-digit"});
+  // A midnight-crossing late game (kicks off 12:00 AM ET) is listed under the
+  // previous evening's slate (m.d). Surface it on that evening too, by its ET
+  // slate date, so it appears as an upcoming game before it actually kicks off.
+  const todayET=new Date().toLocaleDateString("en-US",{timeZone:"America/New_York",year:"numeric",month:"2-digit",day:"2-digit"});
   const items=[];
   stadiums.forEach(function(s){s.m.forEach(function(m){
     const ts=matchInstant(m);
     if(ts==null)return;
-    // Show today's fixtures, plus any match still in progress even if it kicked
-    // off "yesterday" (a late game running past midnight ET).
-    if(dayKey(ts)!==today && !m.live)return;
+    // Show today's fixtures, the tonight-after-midnight late game, plus any match
+    // still in progress even if it kicked off "yesterday" (running past midnight).
+    const onToday=dayKey(ts)===today;
+    const crosserTonight=!!m.xd && etSlateKey(m.d)===todayET;
+    if(!onToday && !crosserTonight && !m.live)return;
     items.push({m:m,ts:ts,city:String(s.city).split(",")[0]});
   });});
   items.sort(function(a,b){return a.ts-b.ts;});
@@ -2079,10 +2095,11 @@ function buildToday(){
       }else mid=m.g.split(" vs ").map(function(x){return teamLink(x.trim(),false,false);}).join(" vs ");
     }else mid=m.g;
     const goal=m._flash?'<span class="goal-badge">⚽ GOAL</span>':"";
+    const xdTag=(!live&&!played&&m.xd)?' <span class="td-xd" title="kicks off after midnight ET">'+m.xd+'</span>':"";
     const when=live?('<span class="td-live">● LIVE'+(m.clock?" "+String(m.clock).replace(/['′]/g,"")+"'":"")+'</span>')
               :(played?'<span class="td-ft">FT</span>':'<span class="td-time">'+f.time+'</span>');
     return '<div class="td-row'+(live?' td-rowlive':'')+(m._flash?' scored':'')+'" data-match="'+m._id+'"><span class="td-when">'+when+'</span>'+
-      '<span class="td-game">'+mid+goal+'</span><span class="td-meta">'+roundLabel(m.r)+' · '+it.city+'</span></div>';
+      '<span class="td-game">'+mid+xdTag+goal+'</span><span class="td-meta">'+roundLabel(m.r)+' · '+it.city+'</span></div>';
   }).join("");
 }
 
