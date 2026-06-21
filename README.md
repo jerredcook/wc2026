@@ -22,6 +22,7 @@ The whole app is [`index.html`](index.html) — HTML, CSS, and vanilla JavaScrip
 - **Time-zone toggle** — view kickoff times in ET, your local zone, or any picked zone.
 - **Dark mode** (respects your system preference) and **persistent preferences** — theme, time zone, filters, open/closed sections, and auto-refresh are remembered across visits.
 - **Installable** — add it to your phone's home screen for a full-screen, app-like experience (see below).
+- **World Cup history** — every champion since 1930; tap any tournament to expand the final (venue + score), the top-four finishers, the Golden Boot winner, and key stats (teams · matches · goals) plus a notable fact.
 - **Pre-tournament warm-up friendlies** played across the host nations (collapsible).
 
 ## Installing it (add to home screen)

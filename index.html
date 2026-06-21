@@ -715,6 +715,46 @@ html[data-theme="dark"] .fb-unfollow{background:#2a1f22;color:#ef8a8a;border-col
 html[data-theme="dark"] .site-foot{color:#80868f}
 html[data-theme="dark"] .site-foot a{color:#34d39a;border-color:#2c5a48}
 
+/* ── World Cup history ── */
+.hx-section{background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.hx-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:10px}
+.hx-titlewrap{flex:1}.hx-title{font-size:15px;font-weight:700;color:#111}.hx-sub{font-size:11px;color:#888;margin-top:1px}
+.hx-toggle{font-size:12px;font-weight:600;color:#555;border:1px solid #ddd;border-radius:14px;padding:3px 11px;background:#fafafa;white-space:nowrap}
+.hx-toggle:hover{background:#f0f0f0}
+.hx-foot{font-size:10.5px;color:#9a9a9a;margin-top:11px;line-height:1.5}
+#hx-grid{margin-top:8px}
+.hx-item{border-bottom:1px solid #f0f0f0}.hx-item:last-child{border-bottom:none}
+.hx-row{display:flex;align-items:center;gap:9px;padding:9px 6px;cursor:pointer;flex-wrap:wrap}
+.hx-row:hover{background:#f7f7f8}
+.hx-y{font-size:14px;font-weight:800;color:#1a1a1a;width:40px;flex-shrink:0;font-variant-numeric:tabular-nums}
+.hx-host{font-size:12px;color:#888;width:120px;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hx-final{flex:1;display:flex;align-items:center;gap:7px;font-size:13px;min-width:120px;flex-wrap:wrap}
+.hx-champ{font-weight:700;color:#0d6b52}.hx-ru{color:#888}
+.hx-sc,.hx-finsc{font-weight:800;font-variant-numeric:tabular-nums;color:#555;background:#f1f2f4;border-radius:5px;padding:1px 7px}
+.hx-caret{font-size:9px;color:#bbb;margin-left:auto;flex-shrink:0}
+.hx-detail{padding:2px 8px 14px}
+.hx-fin{font-size:11px;color:#999;font-weight:600;margin-bottom:10px;text-transform:uppercase;letter-spacing:.03em}
+.hx-finrow{display:flex;align-items:center;gap:8px;font-size:15px;color:#1a1a1a;margin-top:5px;text-transform:none;letter-spacing:0;flex-wrap:wrap}
+.hx-finsc{font-size:15px;padding:2px 9px}
+.hx-podium{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:11px}
+.hx-pod{font-size:12px;color:#333;background:#f7f7f8;border-radius:7px;padding:4px 9px;display:flex;align-items:center;gap:5px}
+.hx-pod4 .hx-medal{font-size:9px;font-weight:800;color:#aaa}
+.hx-stats{display:flex;flex-wrap:wrap;gap:5px 18px;font-size:12px;color:#666;margin-bottom:11px}
+.hx-stats b{color:#1a1a1a}
+.hx-fact{font-size:12.5px;line-height:1.5;color:#5a4a1a;background:#fffdf2;border:1px solid #f1e6b8;border-radius:9px;padding:9px 12px}
+html[data-theme="dark"] .hx-section{background:#1e2026;box-shadow:0 1px 3px rgba(0,0,0,.45)}
+html[data-theme="dark"] .hx-title{color:#f2f3f5}
+html[data-theme="dark"] .hx-sub,html[data-theme="dark"] .hx-host,html[data-theme="dark"] .hx-foot,html[data-theme="dark"] .hx-stats{color:#9aa0a8}
+html[data-theme="dark"] .hx-toggle{background:#2a2d35;border-color:#3a3e47;color:#cfd3da}
+html[data-theme="dark"] .hx-toggle:hover{background:#343843}
+html[data-theme="dark"] .hx-item{border-color:#2a2d35}
+html[data-theme="dark"] .hx-row:hover{background:#262931}
+html[data-theme="dark"] .hx-y,html[data-theme="dark"] .hx-finrow,html[data-theme="dark"] .hx-stats b{color:#e9eaed}
+html[data-theme="dark"] .hx-champ{color:#34d39a}html[data-theme="dark"] .hx-ru{color:#9aa0a8}
+html[data-theme="dark"] .hx-sc,html[data-theme="dark"] .hx-finsc{background:#33373f;color:#cfd3da}
+html[data-theme="dark"] .hx-pod{background:#262931;color:#cfd3da}
+html[data-theme="dark"] .hx-fact{background:#262318;border-color:#3d3a25;color:#d8cfae}
+
 /* ── Reduced motion: calm all the pulses/flashes/spins ── */
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
@@ -879,6 +919,21 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
   </div>
 </div>
 
+<!-- ══════════ WORLD CUP HISTORY ══════════ -->
+<div class="hx-section">
+  <div class="hx-head" tabindex="0" role="button" onclick="toggleHistorySection()">
+    <div class="hx-titlewrap">
+      <div class="hx-title">🏆 World Cup History</div>
+      <div class="hx-sub">Every champion since 1930 &middot; tap a tournament for the final, top 4, Golden Boot &amp; stats</div>
+    </div>
+    <span class="hx-toggle" id="hx-toggle">▼ Show</span>
+  </div>
+  <div id="hx-body" style="display:none">
+    <div id="hx-grid"></div>
+    <div class="hx-foot">Historical facts compiled for reference. Defunct nations show their closest modern flag. In 1930–1950 there was no third-place match (and 1950 was decided by a final group), so 3rd/4th reflect FIFA's official final ranking.</div>
+  </div>
+</div>
+
 <!-- ══════════ STADIUMS & MATCHES ══════════ -->
 <div class="sd-section">
   <div class="sd-head" tabindex="0" role="button" onclick="toggleStadiums()">
@@ -1015,6 +1070,7 @@ const SECTIONS=[
   {key:"rankings",body:"rk-body",tog:"rk-toggle"},
   {key:"bracket",body:"bk-body",tog:"bk-toggle"},
   {key:"friendlies",body:"fr-body",tog:"fr-toggle"},
+  {key:"history",body:"hx-body",tog:"hx-toggle"},
   {key:"stadiums",body:"sd-body",tog:"sd-toggle"}
 ];
 function toggleSection(bodyId,togId,key){
@@ -2913,6 +2969,65 @@ function frFilter(host,btn){
 
 function toggleFriendlies(){toggleSection("fr-body","fr-toggle","friendlies");}
 
+/* ══════════ WORLD CUP HISTORY ══════════
+   Every past champion (1930–2022), with the final, top-4, Golden Boot and key
+   stats. Static historical fact (defunct nations use their closest modern flag;
+   1930–50 third/fourth use FIFA's official final ranking — there was no 3rd-place
+   match then, and 1950 was decided by a final round-robin, not a one-off final). */
+const HISTORY=[
+ {y:2022,host:"Qatar",hf:"🇶🇦",c:"Argentina",cf:"🇦🇷",r:"France",rf:"🇫🇷",sc:"3–3 (4–2 pens)",p3:"Croatia",p3f:"🇭🇷",p4:"Morocco",p4f:"🇲🇦",boot:"Kylian Mbappé",bf:"🇫🇷",bg:8,tm:32,ma:64,go:172,v:"Lusail Stadium, Lusail",fact:"Messi's crowning glory in an all-time final; Mbappé's hat-trick wasn't enough. Morocco became the first African semifinalist."},
+ {y:2018,host:"Russia",hf:"🇷🇺",c:"France",cf:"🇫🇷",r:"Croatia",rf:"🇭🇷",sc:"4–2",p3:"Belgium",p3f:"🇧🇪",p4:"England",p4f:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",boot:"Harry Kane",bf:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",bg:6,tm:32,ma:64,go:169,v:"Luzhniki Stadium, Moscow",fact:"A young France lifted the trophy; Croatia's fairy-tale run reached a first final, and a teenage Mbappé announced himself."},
+ {y:2014,host:"Brazil",hf:"🇧🇷",c:"Germany",cf:"🇩🇪",r:"Argentina",rf:"🇦🇷",sc:"1–0 (a.e.t.)",p3:"Netherlands",p3f:"🇳🇱",p4:"Brazil",p4f:"🇧🇷",boot:"James Rodríguez",bf:"🇨🇴",bg:6,tm:32,ma:64,go:171,v:"Maracanã, Rio de Janeiro",fact:"Götze's extra-time winner — and Germany's 7–1 demolition of host Brazil in the semfinal."},
+ {y:2010,host:"South Africa",hf:"🇿🇦",c:"Spain",cf:"🇪🇸",r:"Netherlands",rf:"🇳🇱",sc:"1–0 (a.e.t.)",p3:"Germany",p3f:"🇩🇪",p4:"Uruguay",p4f:"🇺🇾",boot:"Thomas Müller",bf:"🇩🇪",bg:5,tm:32,ma:64,go:145,v:"Soccer City, Johannesburg",fact:"The first World Cup in Africa; Iniesta's extra-time goal gave Spain its first title."},
+ {y:2006,host:"Germany",hf:"🇩🇪",c:"Italy",cf:"🇮🇹",r:"France",rf:"🇫🇷",sc:"1–1 (5–3 pens)",p3:"Germany",p3f:"🇩🇪",p4:"Portugal",p4f:"🇵🇹",boot:"Miroslav Klose",bf:"🇩🇪",bg:5,tm:32,ma:64,go:147,v:"Olympiastadion, Berlin",fact:"Zidane's headbutt in his final match; Italy won the shootout for a fourth star."},
+ {y:2002,host:"South Korea / Japan",hf:"🇰🇷",c:"Brazil",cf:"🇧🇷",r:"Germany",rf:"🇩🇪",sc:"2–0",p3:"Turkey",p3f:"🇹🇷",p4:"South Korea",p4f:"🇰🇷",boot:"Ronaldo",bf:"🇧🇷",bg:8,tm:32,ma:64,go:161,v:"Int'l Stadium, Yokohama",fact:"The first World Cup in Asia and first co-hosted; Ronaldo's redemption, and South Korea's stunning run to the semis."},
+ {y:1998,host:"France",hf:"🇫🇷",c:"France",cf:"🇫🇷",r:"Brazil",rf:"🇧🇷",sc:"3–0",p3:"Croatia",p3f:"🇭🇷",p4:"Netherlands",p4f:"🇳🇱",boot:"Davor Šuker",bf:"🇭🇷",bg:6,tm:32,ma:64,go:171,v:"Stade de France, Saint-Denis",fact:"The first 32-team World Cup; Zidane's two headers won France its first title on home soil."},
+ {y:1994,host:"United States",hf:"🇺🇸",c:"Brazil",cf:"🇧🇷",r:"Italy",rf:"🇮🇹",sc:"0–0 (3–2 pens)",p3:"Sweden",p3f:"🇸🇪",p4:"Bulgaria",p4f:"🇧🇬",boot:"Salenko & Stoichkov",bf:"🇧🇬",bg:6,tm:24,ma:52,go:141,v:"Rose Bowl, Pasadena",fact:"The first final settled on penalties — Baggio skied the decisive kick. Still the best-attended World Cup ever."},
+ {y:1990,host:"Italy",hf:"🇮🇹",c:"West Germany",cf:"🇩🇪",r:"Argentina",rf:"🇦🇷",sc:"1–0",p3:"Italy",p3f:"🇮🇹",p4:"England",p4f:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",boot:"Salvatore Schillaci",bf:"🇮🇹",bg:6,tm:24,ma:52,go:115,v:"Stadio Olimpico, Rome",fact:"A dour final decided by a late Brehme penalty gave West Germany a third star; Schillaci's summer for the hosts."},
+ {y:1986,host:"Mexico",hf:"🇲🇽",c:"Argentina",cf:"🇦🇷",r:"West Germany",rf:"🇩🇪",sc:"3–2",p3:"France",p3f:"🇫🇷",p4:"Belgium",p4f:"🇧🇪",boot:"Gary Lineker",bf:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",bg:6,tm:24,ma:52,go:132,v:"Estadio Azteca, Mexico City",fact:"Maradona's tournament — the 'Hand of God' and the Goal of the Century against England in the same quarter-final."},
+ {y:1982,host:"Spain",hf:"🇪🇸",c:"Italy",cf:"🇮🇹",r:"West Germany",rf:"🇩🇪",sc:"3–1",p3:"Poland",p3f:"🇵🇱",p4:"France",p4f:"🇫🇷",boot:"Paolo Rossi",bf:"🇮🇹",bg:6,tm:24,ma:52,go:146,v:"Santiago Bernabéu, Madrid",fact:"The first 24-team finals; Paolo Rossi's redemption arc carried Italy to a third title."},
+ {y:1978,host:"Argentina",hf:"🇦🇷",c:"Argentina",cf:"🇦🇷",r:"Netherlands",rf:"🇳🇱",sc:"3–1 (a.e.t.)",p3:"Brazil",p3f:"🇧🇷",p4:"Italy",p4f:"🇮🇹",boot:"Mario Kempes",bf:"🇦🇷",bg:6,tm:16,ma:38,go:102,v:"Estadio Monumental, Buenos Aires",fact:"Kempes drove the hosts to glory amid a charged tournament; the Netherlands lost a second straight final."},
+ {y:1974,host:"West Germany",hf:"🇩🇪",c:"West Germany",cf:"🇩🇪",r:"Netherlands",rf:"🇳🇱",sc:"2–1",p3:"Poland",p3f:"🇵🇱",p4:"Brazil",p4f:"🇧🇷",boot:"Grzegorz Lato",bf:"🇵🇱",bg:7,tm:16,ma:38,go:97,v:"Olympiastadion, Munich",fact:"The hosts beat Cruyff's 'Total Football' Dutch; the current World Cup trophy was lifted for the first time."},
+ {y:1970,host:"Mexico",hf:"🇲🇽",c:"Brazil",cf:"🇧🇷",r:"Italy",rf:"🇮🇹",sc:"4–1",p3:"West Germany",p3f:"🇩🇪",p4:"Uruguay",p4f:"🇺🇾",boot:"Gerd Müller",bf:"🇩🇪",bg:10,tm:16,ma:32,go:95,v:"Estadio Azteca, Mexico City",fact:"Pelé's Brazil — often called the greatest team ever — won a third title and kept the Jules Rimet trophy."},
+ {y:1966,host:"England",hf:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",c:"England",cf:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",r:"West Germany",rf:"🇩🇪",sc:"4–2 (a.e.t.)",p3:"Portugal",p3f:"🇵🇹",p4:"Soviet Union",p4f:"🇷🇺",boot:"Eusébio",bf:"🇵🇹",bg:9,tm:16,ma:32,go:89,v:"Wembley, London",fact:"England's only title; Geoff Hurst's hat-trick included the famous 'ghost goal' off the crossbar."},
+ {y:1962,host:"Chile",hf:"🇨🇱",c:"Brazil",cf:"🇧🇷",r:"Czechoslovakia",rf:"🇨🇿",sc:"3–1",p3:"Chile",p3f:"🇨🇱",p4:"Yugoslavia",p4f:"🇷🇸",boot:"6 players tied",bf:"🇧🇷",bg:4,tm:16,ma:32,go:89,v:"Estadio Nacional, Santiago",fact:"With Pelé injured early, Garrincha inspired Brazil to a second consecutive title."},
+ {y:1958,host:"Sweden",hf:"🇸🇪",c:"Brazil",cf:"🇧🇷",r:"Sweden",rf:"🇸🇪",sc:"5–2",p3:"France",p3f:"🇫🇷",p4:"West Germany",p4f:"🇩🇪",boot:"Just Fontaine",bf:"🇫🇷",bg:13,tm:16,ma:35,go:126,v:"Råsunda, Solna",fact:"A 17-year-old Pelé arrived; Fontaine's 13 goals in one tournament is a record that still stands."},
+ {y:1954,host:"Switzerland",hf:"🇨🇭",c:"West Germany",cf:"🇩🇪",r:"Hungary",rf:"🇭🇺",sc:"3–2",p3:"Austria",p3f:"🇦🇹",p4:"Uruguay",p4f:"🇺🇾",boot:"Sándor Kocsis",bf:"🇭🇺",bg:11,tm:16,ma:26,go:140,v:"Wankdorf, Bern",fact:"The 'Miracle of Bern' — West Germany upset the seemingly unbeatable Mighty Magyars of Puskás."},
+ {y:1950,host:"Brazil",hf:"🇧🇷",c:"Uruguay",cf:"🇺🇾",r:"Brazil",rf:"🇧🇷",sc:"2–1 decider",p3:"Sweden",p3f:"🇸🇪",p4:"Spain",p4f:"🇪🇸",boot:"Ademir",bf:"🇧🇷",bg:8,tm:13,ma:22,go:88,v:"Maracanã, Rio de Janeiro",fact:"The 'Maracanazo' — Uruguay silenced ~200,000 fans by beating Brazil in the deciding match of a final group."},
+ {y:1938,host:"France",hf:"🇫🇷",c:"Italy",cf:"🇮🇹",r:"Hungary",rf:"🇭🇺",sc:"4–2",p3:"Brazil",p3f:"🇧🇷",p4:"Sweden",p4f:"🇸🇪",boot:"Leônidas",bf:"🇧🇷",bg:7,tm:15,ma:18,go:84,v:"Stade de Colombes, Paris",fact:"Italy became the first nation to retain the World Cup."},
+ {y:1934,host:"Italy",hf:"🇮🇹",c:"Italy",cf:"🇮🇹",r:"Czechoslovakia",rf:"🇨🇿",sc:"2–1 (a.e.t.)",p3:"Germany",p3f:"🇩🇪",p4:"Austria",p4f:"🇦🇹",boot:"Oldřich Nejedlý",bf:"🇨🇿",bg:5,tm:16,ma:17,go:70,v:"Stadio Nazionale PNF, Rome",fact:"The first World Cup decided in extra time, and the first won by a host nation in Europe."},
+ {y:1930,host:"Uruguay",hf:"🇺🇾",c:"Uruguay",cf:"🇺🇾",r:"Argentina",rf:"🇦🇷",sc:"4–2",p3:"United States",p3f:"🇺🇸",p4:"Yugoslavia",p4f:"🇷🇸",boot:"Guillermo Stábile",bf:"🇦🇷",bg:8,tm:13,ma:18,go:70,v:"Estadio Centenario, Montevideo",fact:"The very first World Cup — 13 invited teams, and host Uruguay crowned the inaugural champion."}
+];
+const hxOpen={}; // which tournaments are expanded
+function toggleHistory(y){hxOpen[y]=!hxOpen[y];buildHistory();}
+function buildHistory(){
+  const grid=document.getElementById("hx-grid");if(!grid)return;
+  grid.innerHTML=HISTORY.map(function(h){
+    const open=!!hxOpen[h.y];
+    const head='<div class="hx-row" tabindex="0" role="button" aria-expanded="'+open+'" onclick="toggleHistory('+h.y+')">'+
+      '<span class="hx-y">'+h.y+'</span>'+
+      '<span class="hx-host">'+h.hf+' '+escHTML(h.host)+'</span>'+
+      '<span class="hx-final"><span class="hx-champ">'+h.cf+' '+escHTML(h.c)+'</span><span class="hx-sc">'+h.sc.replace(/ \(.*/,'')+'</span><span class="hx-ru">'+h.rf+' '+escHTML(h.r)+'</span></span>'+
+      '<span class="hx-caret">'+(open?'▲':'▼')+'</span></div>';
+    if(!open)return '<div class="hx-item">'+head+'</div>';
+    const detail='<div class="hx-detail">'+
+      '<div class="hx-fin">🏆 Final · '+escHTML(h.v)+'<div class="hx-finrow"><b>'+h.cf+' '+escHTML(h.c)+'</b><span class="hx-finsc">'+escHTML(h.sc)+'</span>'+h.rf+' '+escHTML(h.r)+'</div></div>'+
+      '<div class="hx-podium">'+
+        '<span class="hx-pod"><span class="hx-medal">🥇</span>'+h.cf+' '+escHTML(h.c)+'</span>'+
+        '<span class="hx-pod"><span class="hx-medal">🥈</span>'+h.rf+' '+escHTML(h.r)+'</span>'+
+        '<span class="hx-pod"><span class="hx-medal">🥉</span>'+h.p3f+' '+escHTML(h.p3)+'</span>'+
+        '<span class="hx-pod hx-pod4"><span class="hx-medal">4th</span>'+h.p4f+' '+escHTML(h.p4)+'</span>'+
+      '</div>'+
+      '<div class="hx-stats">'+
+        '<span><b>⚽ Golden Boot</b> '+h.bf+' '+escHTML(h.boot)+' · '+h.bg+' goals</span>'+
+        '<span><b>'+h.tm+'</b> teams · <b>'+h.ma+'</b> matches · <b>'+h.go+'</b> goals</span>'+
+      '</div>'+
+      '<div class="hx-fact">'+escHTML(h.fact)+'</div></div>';
+    return '<div class="hx-item hx-on">'+head+detail+'</div>';
+  }).join("");
+}
+function toggleHistorySection(){toggleSection("hx-body","hx-toggle","history");}
+
 /* ══════════ TOP SCORERS (Golden Boot) ══════════
    Aggregated from the scoring plays already in the scoreboard feed — no extra
    requests. Own goals are excluded; penalties are counted and flagged. */
@@ -3213,6 +3328,7 @@ async function refreshScores(){
   buildToday();
   buildFollowBar();
   buildFriendlies();
+  buildHistory();
   buildStandings();
   buildThirds();
   buildScorers();
