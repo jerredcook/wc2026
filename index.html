@@ -13,6 +13,20 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="WC 2026">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<!-- Search + social share preview -->
+<meta name="description" content="Live scores, group standings, the Golden Boot race, team &amp; player profiles, and the full knockout bracket for the 2026 FIFA World Cup across the USA, Canada and Mexico — all 16 stadiums, updating live.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="World Cup 2026 Live Tracker">
+<meta property="og:title" content="FIFA World Cup 2026 — Live Tracker">
+<meta property="og:description" content="Live scores, standings, the Golden Boot race, team &amp; player cards, and the full knockout bracket — live across all 16 stadiums.">
+<meta property="og:url" content="https://jerredcook.github.io/wc2026/">
+<meta property="og:image" content="https://jerredcook.github.io/wc2026/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="FIFA World Cup 2026 — Live Tracker">
+<meta name="twitter:description" content="Live scores, standings, Golden Boot, team &amp; player cards, and the full knockout bracket — live across all 16 stadiums.">
+<meta name="twitter:image" content="https://jerredcook.github.io/wc2026/og-image.png">
 <script>
 /* Apply the saved (or system) theme before first paint to avoid a flash. */
 (function(){try{var p=JSON.parse(localStorage.getItem("wc2026.prefs.v1")||"{}");var t=p.theme;
@@ -692,6 +706,28 @@ html[data-theme="dark"] .fb-team,html[data-theme="dark"] .fb-next b{color:#f2f3f
 html[data-theme="dark"] .fb-next{color:#aab0b8}
 html[data-theme="dark"] .fb-only{color:#9aa0a8}
 html[data-theme="dark"] .fb-unfollow{background:#2a1f22;color:#ef8a8a;border-color:#5a3338}
+
+/* ── Site footer (credits / disclaimer) ── */
+.site-foot{max-width:780px;margin:6px auto 30px;padding:14px 16px;font-size:11.5px;line-height:1.65;color:#9a9a9a;text-align:center}
+.site-foot p{margin-bottom:6px}
+.site-foot a{color:#0d6b52;text-decoration:none;border-bottom:1px dotted #9ec9b8}
+.site-foot a:hover{color:#0a5a44;border-bottom-style:solid}
+html[data-theme="dark"] .site-foot{color:#80868f}
+html[data-theme="dark"] .site-foot a{color:#34d39a;border-color:#2c5a48}
+
+/* ── Reduced motion: calm all the pulses/flashes/spins ── */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+}
+
+/* ── Keyboard focus indicator for the clickable rows/cards/heads ── */
+.mrow:focus-visible,.td-row:focus-visible,.bk-m:focus-visible,.tsch-row:focus-visible,.rk-row:focus-visible,
+.tm-plk:focus-visible,.st-head:focus-visible,.th-head:focus-visible,.sc-head:focus-visible,.rk-head:focus-visible,
+.bk-head:focus-visible,.fr-head:focus-visible,.sd-head:focus-visible,.tlink:focus-visible,[role="button"]:focus-visible{
+  outline:2px solid #0d8a4f;outline-offset:1px;border-radius:6px}
+html[data-theme="dark"] .mrow:focus-visible,html[data-theme="dark"] .td-row:focus-visible,html[data-theme="dark"] .bk-m:focus-visible,
+html[data-theme="dark"] .tsch-row:focus-visible,html[data-theme="dark"] .rk-row:focus-visible,html[data-theme="dark"] .tm-plk:focus-visible,
+html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
 </style>
 </head>
 <body>
@@ -727,7 +763,7 @@ html[data-theme="dark"] .fb-unfollow{background:#2a1f22;color:#ef8a8a;border-col
 
 <!-- ══════════ GROUP STANDINGS ══════════ -->
 <div class="st-section">
-  <div class="st-head" onclick="toggleStandings()">
+  <div class="st-head" tabindex="0" role="button" onclick="toggleStandings()">
     <div class="st-titlewrap">
       <div class="st-title">📊 Group Standings — Live</div>
       <div class="st-sub">All 12 groups &middot; top 2 advance, plus the 8 best 3rd-place teams &middot; built from the live scores above</div>
@@ -749,7 +785,7 @@ html[data-theme="dark"] .fb-unfollow{background:#2a1f22;color:#ef8a8a;border-col
 
 <!-- ══════════ BEST THIRD-PLACED TEAMS ══════════ -->
 <div class="th-section">
-  <div class="th-head" onclick="toggleThirds()">
+  <div class="th-head" tabindex="0" role="button" onclick="toggleThirds()">
     <div class="th-titlewrap">
       <div class="th-title">🥉 Best Third-Placed Teams</div>
       <div class="th-sub">The 8 best of the 12 group thirds also reach the Round of 32 &middot; live race</div>
@@ -765,7 +801,7 @@ html[data-theme="dark"] .fb-unfollow{background:#2a1f22;color:#ef8a8a;border-col
 
 <!-- ══════════ TOP SCORERS ══════════ -->
 <div class="sc-section">
-  <div class="sc-head" onclick="toggleScorers()">
+  <div class="sc-head" tabindex="0" role="button" onclick="toggleScorers()">
     <div class="sc-titlewrap">
       <div class="sc-title">⚽ Top Scorers — Golden Boot race</div>
       <div class="sc-sub">Most goals in the tournament &middot; built live from the match feed (own goals excluded)</div>
@@ -781,7 +817,7 @@ html[data-theme="dark"] .fb-unfollow{background:#2a1f22;color:#ef8a8a;border-col
 
 <!-- ══════════ FIFA WORLD RANKINGS ══════════ -->
 <div class="rk-section">
-  <div class="rk-head" onclick="toggleRankings()">
+  <div class="rk-head" tabindex="0" role="button" onclick="toggleRankings()">
     <div class="rk-titlewrap">
       <div class="rk-title">🏅 Team Rankings</div>
       <div class="rk-sub">All 48 qualified nations by FIFA World Ranking &middot; tap any team for its roster &amp; profile</div>
@@ -800,7 +836,7 @@ html[data-theme="dark"] .fb-unfollow{background:#2a1f22;color:#ef8a8a;border-col
 
 <!-- ══════════ KNOCKOUT BRACKET ══════════ -->
 <div class="bk-section">
-  <div class="bk-head" onclick="toggleBracket()">
+  <div class="bk-head" tabindex="0" role="button" onclick="toggleBracket()">
     <div class="bk-titlewrap">
       <div class="bk-title">🏆 Bracket · Live</div>
       <div class="bk-sub">Round of 32 → Final &middot; both halves close on the trophy &middot; fills in as teams qualify and updates after every match</div>
@@ -825,7 +861,7 @@ html[data-theme="dark"] .fb-unfollow{background:#2a1f22;color:#ef8a8a;border-col
 
 <!-- ══════════ WARM-UP FRIENDLIES ══════════ -->
 <div class="fr-section">
-  <div class="fr-head" onclick="toggleFriendlies()">
+  <div class="fr-head" tabindex="0" role="button" onclick="toggleFriendlies()">
     <div class="fr-titlewrap">
       <div class="fr-title">⚽ Pre-Tournament Warm-up Friendlies</div>
       <div class="fr-sub">Tune-up matches played across North America &middot; May 22 – Jun 10, 2026</div>
@@ -845,7 +881,7 @@ html[data-theme="dark"] .fb-unfollow{background:#2a1f22;color:#ef8a8a;border-col
 
 <!-- ══════════ STADIUMS & MATCHES ══════════ -->
 <div class="sd-section">
-  <div class="sd-head" onclick="toggleStadiums()">
+  <div class="sd-head" tabindex="0" role="button" onclick="toggleStadiums()">
     <div class="sd-titlewrap">
       <div class="sd-title">🏟️ Stadiums &amp; Matches</div>
       <div class="sd-sub">All 16 venues, every fixture by date &middot; filter by country, group, or team</div>
@@ -892,6 +928,11 @@ html[data-theme="dark"] .fb-unfollow{background:#2a1f22;color:#ef8a8a;border-col
   <br><br>
   The <strong>Refresh latest scores</strong> button pulls current scores — including matches in progress (red LIVE badge + live minute) — from a public scoreboard when the page is served over http(s), or via Claude when open in Claude's view. A file opened straight from disk (file://) is blocked by the browser from making web requests, so it keeps the saved scores; the status line always tells you which it is.
 </p>
+
+<footer class="site-foot">
+  <p><strong>Unofficial fan project</strong> — not affiliated with FIFA, FOX, or Telemundo. Live scores &amp; match data from <a href="https://www.espn.com/soccer/" target="_blank" rel="noopener noreferrer">ESPN</a>’s public scoreboard; team rosters and player profiles from <a href="https://www.wikipedia.org/" target="_blank" rel="noopener noreferrer">Wikipedia</a> &amp; Wikidata. Kickoff times follow the FOX / Telemundo broadcast schedule. Squads, rankings and trivia were compiled for the 2026 tournament and may contain errors.</p>
+  <p>Open project · <a href="https://github.com/jerredcook/wc2026" target="_blank" rel="noopener noreferrer">source on GitHub</a></p>
+</footer>
 
 <!-- ══════════ TEAM INFO POPUP ══════════ -->
 <div class="tm-overlay" id="tm-overlay" role="dialog" aria-modal="true">
@@ -1189,7 +1230,7 @@ function buildRankings(){
   if(rkState.conf!=="all")rows=rows.filter(function(r){return r.conf===rkState.conf;});
   rows.sort(function(a,b){return a.rank-b.rank;});
   tb.innerHTML=rows.map(function(r){
-    return '<tr class="rk-row" data-team="'+r.name+'">'+
+    return '<tr class="rk-row" tabindex="0" role="button" data-team="'+r.name+'">'+
       '<td class="rc rk-rank">'+r.rank+'</td>'+
       '<td><span class="tflag">'+r.flag+'</span><span class="rk-tn">'+r.name+'</span></td>'+
       '<td class="rc"><span class="rk-conf">'+r.conf+'</span></td>'+
@@ -1235,7 +1276,7 @@ function teamScheduleHTML(name){
       const when=(x.ts!=null&&tzState.mode==="tz")?(fmtInstant(x.ts).time+" "+fmtInstant(x.ts).tz):(x.t?(x.t+" ET"):"TBD");
       mid='<span class="tsch-when">'+escHTML(when)+'</span>';
     }
-    return '<div class="tsch-row" data-match="'+x.id+'">'+
+    return '<div class="tsch-row" tabindex="0" role="button" data-match="'+x.id+'">'+
       '<span class="tsch-d">'+escHTML(x.d)+'</span>'+
       '<span class="tsch-opp">'+(x.isHome?'<span class="tsch-ha">vs</span> ':'<span class="tsch-ha">@</span> ')+teamLink(x.opp,false,true)+'</span>'+
       '<span class="tsch-mid">'+mid+'</span>'+
@@ -1256,7 +1297,7 @@ function openTeam(name){
     fact("World Cup apps",t.apps+(t.apps===1?" (incl. 2026)":""))+fact("Best finish",t.best)+
     fact("Head coach",t.coach)+fact("Capital",t.capital);
   const squad=t.players.map(function(p){
-    return '<div class="tm-pl tm-plk" data-player="'+p[0]+'" data-pteam="'+t.name+'">'+
+    return '<div class="tm-pl tm-plk" tabindex="0" role="button" data-player="'+p[0]+'" data-pteam="'+t.name+'">'+
       '<span class="tm-pos '+p[1]+'">'+p[1]+'</span>'+
       '<span class="tm-pinfo"><span class="tm-pn">'+p[0]+'</span><span class="tm-club">'+p[2]+'</span></span>'+
       statusBadge(p[3])+
@@ -1367,6 +1408,44 @@ document.addEventListener("keydown",function(e){
   if(document.getElementById("pp-overlay").classList.contains("open"))closePlayer();
   else if(document.getElementById("mp-overlay").classList.contains("open"))closeMatch();
   else if(document.getElementById("tm-overlay").classList.contains("open"))closeTeam();
+});
+
+/* ══════════ KEYBOARD ACCESSIBILITY ══════════
+   The interactive content (team rows, match rows, player rows, section heads)
+   opens via a delegated click listener. Make it keyboard-operable: Enter/Space
+   on a focused role=button / data-* element triggers the same action. */
+document.addEventListener("keydown",function(e){
+  if(e.key!=="Enter"&&e.key!==" "&&e.key!=="Spacebar")return;
+  const el=e.target;if(!el||!el.tagName)return;
+  const tag=el.tagName;
+  if(tag==="BUTTON"||tag==="A"||tag==="INPUT"||tag==="SELECT"||tag==="TEXTAREA")return; // native handles itself
+  const target=el.closest&&el.closest("[data-team],[data-player],[data-match]");
+  if(target||el.getAttribute("role")==="button"){e.preventDefault();(target||el).click();}
+});
+/* Modal focus management: pull focus into a modal when it opens, trap Tab inside
+   it, and restore focus to the trigger when it closes (handles nested modals via
+   a stack). Driven off the .open class so no open/close fn needs editing. */
+const _focusStack=[];
+function _modalFocusable(ov){return ov.querySelectorAll("button:not([disabled]),[href],input:not([type=hidden]),select,textarea,[tabindex='0']");}
+["tm-overlay","pp-overlay","mp-overlay"].forEach(function(id){
+  const ov=document.getElementById(id);if(!ov)return;ov._aOpen=false;
+  new MutationObserver(function(){
+    const open=ov.classList.contains("open");
+    if(open&&!ov._aOpen){ov._aOpen=true;_focusStack.push(document.activeElement);
+      setTimeout(function(){const f=_modalFocusable(ov);if(f.length)try{f[0].focus();}catch(e){}},30);}
+    else if(!open&&ov._aOpen){ov._aOpen=false;const p=_focusStack.pop();
+      if(p&&p.focus)setTimeout(function(){try{p.focus();}catch(e){}},0);}
+  }).observe(ov,{attributes:true,attributeFilter:["class"]});
+});
+document.addEventListener("keydown",function(e){
+  if(e.key!=="Tab")return;
+  const ov=[document.getElementById("pp-overlay"),document.getElementById("mp-overlay"),document.getElementById("tm-overlay")]
+    .filter(function(o){return o&&o.classList.contains("open");})[0];
+  if(!ov)return;
+  const f=_modalFocusable(ov);if(!f.length)return;
+  const first=f[0],last=f[f.length-1];
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}
 });
 
 /* ══════════ PLAYER CARD (live-enriched from Wikipedia + Wikidata) ══════════
@@ -2036,7 +2115,7 @@ function buildGrid(){
       const hl=state.team!=="all"&&teamInMatch(state.team,m.g);
       const played=!!m.sc;
       const cls=(hl?" highlight":"")+(played&&!hl?" played":"")+(m._flash?" scored":"");
-      return`<div class="mrow${cls}" data-match="${m._id}">${whenHTML(m)}<span class="mgame">${gameHTML(m)}</span><span class="rbadge ${roundClass(m.r)}">${roundLabel(m.r)}</span></div>`;
+      return`<div class="mrow${cls}" tabindex="0" role="button" data-match="${m._id}">${whenHTML(m)}<span class="mgame">${gameHTML(m)}</span><span class="rbadge ${roundClass(m.r)}">${roundLabel(m.r)}</span></div>`;
     }).join("");
     return`<div class="card">
       <div class="bar" style="background:${s.bar}"></div>
@@ -2326,7 +2405,7 @@ function buildToday(){
     const xdTag=(!live&&!played&&m.xd)?' <span class="td-xd" title="kicks off after midnight ET">'+m.xd+'</span>':"";
     const when=live?('<span class="td-live">● LIVE'+(m.clock?" "+String(m.clock).replace(/['′]/g,"")+"'":"")+'</span>')
               :(played?'<span class="td-ft">FT</span>':'<span class="td-time">'+f.time+'</span>');
-    return '<div class="td-row'+(live?' td-rowlive':'')+(m._flash?' scored':'')+'" data-match="'+m._id+'"><span class="td-when">'+when+'</span>'+
+    return '<div class="td-row'+(live?' td-rowlive':'')+(m._flash?' scored':'')+'" tabindex="0" role="button" data-match="'+m._id+'"><span class="td-when">'+when+'</span>'+
       '<span class="td-game">'+mid+xdTag+goal+'</span><span class="td-meta">'+roundLabel(m.r)+' · '+it.city+'</span></div>';
   }).join("");
 }
@@ -2568,7 +2647,7 @@ function bkCard(m){
   const played=(m.hs!=null&&m.as!=null);
   const badge=live?'<span class="bk-livebadge">●'+(m.minute?" "+String(m.minute).replace(/['′]/g,"")+"'":" LIVE")+'</span>'
             :(played?'<span class="bk-ftbadge">FT</span>':"");
-  return '<div class="bk-m bk-'+m.r.toLowerCase()+(m._flash?" scored":"")+'" data-bk="'+m.r+'-'+m.no+'" data-match="'+m._id+'">'+
+  return '<div class="bk-m bk-'+m.r.toLowerCase()+(m._flash?" scored":"")+'" tabindex="0" role="button" data-bk="'+m.r+'-'+m.no+'" data-match="'+m._id+'">'+
     '<div class="bk-mdv"><span class="bk-mdate">'+m.d+badge+'</span><span class="bk-mvenue">'+m.city+'</span></div>'+
     bkTeamRow(m.h,m.liveH,played?m.hs:null,played?m.as:null,m._projH)+
     bkTeamRow(m.a,m.liveA,played?m.as:null,played?m.hs:null,m._projA)+
