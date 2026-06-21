@@ -597,6 +597,18 @@ html[data-theme="dark"] .pp-link:hover{background:#263243}
 .mp-ev{display:flex;gap:8px;align-items:baseline;padding:4px 0;font-size:12.5px;line-height:1.35}
 .mp-ev-clk{flex-shrink:0;width:34px;font-weight:700;color:#888;font-variant-numeric:tabular-nums}
 .mp-ev-tx{flex:1;color:#333}
+.mp-comm{margin-top:12px}
+.mp-comm-tog{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#888;background:#f4f5f6;border:1px solid #eee;border-radius:8px;padding:6px 10px;cursor:pointer;width:100%;text-align:left}
+.mp-comm-tog:hover{background:#eef0f2}
+.mp-comm-list{display:none;margin-top:8px;max-height:280px;overflow-y:auto}
+.mp-comm.open .mp-comm-list{display:block}
+.mp-cm{display:flex;gap:8px;align-items:baseline;padding:4px 0;font-size:12px;line-height:1.35;border-bottom:1px solid #f6f6f6}
+.mp-cm-t{flex-shrink:0;width:40px;font-weight:700;color:#999;font-variant-numeric:tabular-nums}
+.mp-cm-x{flex:1;color:#444}
+html[data-theme="dark"] .mp-comm-tog{background:#2a2d35;border-color:#3a3e47;color:#9aa0a8}
+html[data-theme="dark"] .mp-comm-tog:hover{background:#343843}
+html[data-theme="dark"] .mp-cm{border-color:#2a2d35}
+html[data-theme="dark"] .mp-cm-x{color:#aab0b8}
 html[data-theme="dark"] .mp-card{background:#1e2026;box-shadow:0 12px 40px rgba(0,0,0,.6)}
 html[data-theme="dark"] .mp-close{background:#2e313a;color:#cfd3da}
 html[data-theme="dark"] .mp-close:hover{background:#3a3e47}
@@ -607,6 +619,63 @@ html[data-theme="dark"] .mp-v{color:#cfd3da}
 html[data-theme="dark"] .mp-ev-tx{color:#cfd3da}
 html[data-theme="dark"] .mp-tm.win{color:#34d39a}
 html[data-theme="dark"] .mp-status.ft{color:#34d39a;background:#16271d}
+
+/* ── Top scorers (Golden Boot) ── */
+.sc-section{background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.sc-head{display:flex;align-items:center;justify-content:space-between;cursor:pointer;gap:10px}
+.sc-titlewrap{flex:1}
+.sc-title{font-size:15px;font-weight:700;color:#111}
+.sc-sub{font-size:11px;color:#888;margin-top:1px}
+.sc-toggle{font-size:12px;font-weight:600;color:#555;border:1px solid #ddd;border-radius:14px;padding:3px 11px;background:#fafafa;white-space:nowrap}
+.sc-toggle:hover{background:#f0f0f0}
+.sc-updated{font-size:11px;color:#888;margin:12px 0 6px}
+.sc-updated .ok{color:#0d6b52;font-weight:700}
+.sc-empty{font-size:12px;color:#aaa;padding:4px 0}
+.sc-row{display:flex;align-items:center;gap:11px;padding:7px 2px;border-bottom:1px solid #f4f4f4;max-width:560px}
+.sc-row:last-child{border-bottom:none}
+.sc-rank{width:20px;text-align:center;font-weight:800;color:#aaa;font-variant-numeric:tabular-nums;flex-shrink:0}
+.sc-who{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.sc-name{font-size:13.5px;font-weight:700;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sc-team{font-size:11px;color:#888}
+.sc-pen{font-size:9px;font-weight:700;color:#7a5000;background:#fef4dc;border-radius:3px;padding:0 4px;margin-left:6px;white-space:nowrap}
+.sc-goalwrap{display:flex;align-items:center;gap:8px;width:128px;flex-shrink:0}
+.sc-track{flex:1;height:7px;background:#eef0f2;border-radius:4px;overflow:hidden}
+.sc-bar{display:block;height:100%;background:#0d8a4f;border-radius:4px}
+.sc-goals{font-size:15px;font-weight:800;color:#0d6b52;font-variant-numeric:tabular-nums;width:16px;text-align:right;flex-shrink:0}
+.sc-foot{font-size:10.5px;color:#9a9a9a;margin-top:11px;line-height:1.5;max-width:560px}
+html[data-theme="dark"] .sc-section{background:#1e2026;box-shadow:0 1px 3px rgba(0,0,0,.45)}
+html[data-theme="dark"] .sc-title{color:#f2f3f5}
+html[data-theme="dark"] .sc-sub,html[data-theme="dark"] .sc-updated,html[data-theme="dark"] .sc-team,html[data-theme="dark"] .sc-foot,html[data-theme="dark"] .sc-empty{color:#9aa0a8}
+html[data-theme="dark"] .sc-toggle{background:#2a2d35;border-color:#3a3e47;color:#cfd3da}
+html[data-theme="dark"] .sc-toggle:hover{background:#343843}
+html[data-theme="dark"] .sc-name{color:#e9eaed}
+html[data-theme="dark"] .sc-row{border-color:#2a2d35}
+html[data-theme="dark"] .sc-track{background:#33373f}
+html[data-theme="dark"] .sc-bar{background:#34d39a}
+html[data-theme="dark"] .sc-goals{color:#34d39a}
+
+/* ── Follow a team ── */
+.followed{background:#fff7df;border-radius:5px;padding:0 4px;box-shadow:inset 0 0 0 1px #f0d68a}
+.folstar{color:#e0a500;margin-right:3px}
+.tm-follow{margin-top:11px;display:inline-block;font-size:12px;font-weight:700;border:1px solid rgba(255,255,255,.6);color:#fff;background:rgba(255,255,255,.18);border-radius:14px;padding:4px 13px;cursor:pointer}
+.tm-follow:hover{background:rgba(255,255,255,.3)}
+.tm-follow.on{background:#fff;color:#1a1a1a;border-color:#fff}
+.follow-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:#fffdf4;border:1px solid #f0e3b8;border-radius:12px;padding:9px 14px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.07);font-size:13px}
+.fb-star{color:#e0a500;font-size:15px}
+.fb-team{font-weight:700;color:#1a1a1a}
+.fb-next{color:#555}
+.fb-next b{color:#1a1a1a}
+.fb-next.fb-none{color:#aaa;font-style:italic}
+.fb-live{font-size:9px;font-weight:800;color:#fff;background:#d6322c;border-radius:3px;padding:1px 5px;margin-left:6px;letter-spacing:.04em;animation:livepulse 1.3s ease-in-out infinite}
+.fb-only{margin-left:auto;font-size:11px;color:#777;display:flex;align-items:center;gap:4px;cursor:pointer;white-space:nowrap}
+.fb-unfollow{font-size:11px;font-weight:600;color:#c0392b;border:1px solid #f0c8c2;border-radius:12px;padding:3px 10px;background:#fff;cursor:pointer;white-space:nowrap}
+.fb-unfollow:hover{background:#fff5f4}
+html[data-theme="dark"] .followed{background:#2d2710;box-shadow:inset 0 0 0 1px #5a4d1f}
+html[data-theme="dark"] .follow-bar{background:#23210f;border-color:#4a431f;box-shadow:0 1px 3px rgba(0,0,0,.45)}
+html[data-theme="dark"] .fb-team,html[data-theme="dark"] .fb-next b{color:#f2f3f5}
+html[data-theme="dark"] .fb-next{color:#aab0b8}
+html[data-theme="dark"] .fb-only{color:#9aa0a8}
+html[data-theme="dark"] .fb-unfollow{background:#2a1f22;color:#ef8a8a;border-color:#5a3338}
 </style>
 </head>
 <body>
@@ -620,6 +689,9 @@ html[data-theme="dark"] .mp-status.ft{color:#34d39a;background:#16271d}
   <div class="today-head"><span class="today-title">📅 Today &amp; Live</span><span class="today-date" id="today-date"></span></div>
   <div id="today-body"></div>
 </div>
+
+<!-- ══════════ FOLLOWING ══════════ -->
+<div class="follow-bar" id="followBar" style="display:none"></div>
 
 <div class="live-bar" id="liveBar">
   <button class="live-refresh" id="liveRefreshBtn" onclick="refreshScores()">↻ Refresh latest scores</button>
@@ -672,6 +744,22 @@ html[data-theme="dark"] .mp-status.ft{color:#34d39a;background:#16271d}
     <div class="th-updated" id="th-updated">Fills in as group matches are played — the 8 best third-placed teams reach the Round of 32.</div>
     <div id="th-grid"></div>
     <div class="th-foot">Ranked by points, then goal difference, then goals scored across each team's three group games. FIFA then applies fair-play/disciplinary points and a drawing of lots to break any remaining ties — not modeled here — and uses a fixed table to assign which thirds land in which Round-of-32 slot. Provisional until all 12 groups finish.</div>
+  </div>
+</div>
+
+<!-- ══════════ TOP SCORERS ══════════ -->
+<div class="sc-section">
+  <div class="sc-head" onclick="toggleScorers()">
+    <div class="sc-titlewrap">
+      <div class="sc-title">⚽ Top Scorers — Golden Boot race</div>
+      <div class="sc-sub">Most goals in the tournament &middot; built live from the match feed (own goals excluded)</div>
+    </div>
+    <span class="sc-toggle" id="sc-toggle">▲ Hide</span>
+  </div>
+  <div id="sc-body">
+    <div class="sc-updated" id="sc-updated"></div>
+    <div id="sc-grid"></div>
+    <div class="sc-foot">Penalties count and are flagged; own goals do not. Tap a scorer's country to open its profile. Ties share a rank, ordered by fewer penalties then name.</div>
   </div>
 </div>
 
@@ -866,6 +954,7 @@ function toggleTheme(){const next=curTheme()==="dark"?"light":"dark";applyTheme(
 const SECTIONS=[
   {key:"standings",body:"st-body",tog:"st-toggle"},
   {key:"thirds",body:"th-body",tog:"th-toggle"},
+  {key:"scorers",body:"sc-body",tog:"sc-toggle"},
   {key:"rankings",body:"rk-body",tog:"rk-toggle"},
   {key:"bracket",body:"bk-body",tog:"bk-toggle"},
   {key:"friendlies",body:"fr-body",tog:"fr-toggle"},
@@ -1059,7 +1148,8 @@ function teamLink(name,hl,withFlag){
   const t=teamRecord(name);
   if(!t)return hl?'<span class="hl">'+name+'</span>':name;
   const flag=withFlag?'<span class="tflag">'+t.flag+'</span>':'';
-  return '<span class="tlink'+(hl?' hl':'')+'" data-team="'+t.name+'">'+flag+name+'<span class="trank" title="FIFA World Ranking">#'+t.rank+'</span></span>';
+  const fol=(prefs.follow&&t.name===prefs.follow);
+  return '<span class="tlink'+(hl?' hl':'')+(fol?' followed':'')+'" data-team="'+t.name+'">'+(fol?'<span class="folstar">★</span>':'')+flag+name+'<span class="trank" title="FIFA World Ranking">#'+t.rank+'</span></span>';
 }
 
 /* ══════════ FIFA RANKINGS TABLE ══════════ */
@@ -1093,10 +1183,13 @@ function buildRankings(){
 function toggleRankings(){toggleSection("rk-body","rk-toggle","rankings");}
 
 /* ══════════ TEAM INFO POPUP ══════════ */
+let tmCurrent=null;
 function openTeam(name){
   const t=teamRecord(name);
   if(!t)return;
+  tmCurrent=t.name;
   const hd=CONF_COLOR[t.conf]||"#333";
+  const fol=(prefs.follow===t.name);
   const fact=function(k,v){return '<div class="tm-fact"><div class="tm-fk">'+k+'</div><div class="tm-fv">'+v+'</div></div>';};
   const facts=fact("Group","Group "+t.group)+fact("Confederation",t.conf)+
     fact("World Cup apps",t.apps+(t.apps===1?" (incl. 2026)":""))+fact("Best finish",t.best)+
@@ -1115,6 +1208,7 @@ function openTeam(name){
       '<div class="tm-name">'+t.name+'</div>'+
       '<div class="tm-nick">'+t.nick+'</div>'+
       '<span class="tm-rankpill">FIFA Rank #'+t.rank+'</span>'+
+      '<button class="tm-follow'+(fol?' on':'')+'" onclick="setFollow(\''+t.name.replace(/'/g,"\\'")+'\')">'+(fol?'★ Following':'☆ Follow')+'</button>'+
     '</div>'+
     '<div class="tm-body">'+
       '<div class="tm-facts">'+facts+'</div>'+
@@ -1132,6 +1226,54 @@ function closeTeam(){
   const ov=document.getElementById("tm-overlay");
   if(ov)ov.classList.remove("open");
   document.body.style.overflow="";
+}
+
+/* ══════════ FOLLOW A TEAM ══════════
+   prefs.follow holds the followed nation; it's starred everywhere (via
+   teamLink), pinned in a bar with its next match, and can scope goal alerts. */
+function setFollow(name){
+  const t=teamRecord(name),nm=t?t.name:name;
+  prefs.follow=(prefs.follow===nm)?null:nm;
+  savePrefs();
+  buildFollowBar();
+  buildToday();buildGrid();buildStandings();buildThirds();buildScorers();buildRankings();buildBracket();
+  if(document.getElementById("tm-overlay").classList.contains("open")&&tmCurrent)openTeam(tmCurrent); // refresh card button
+}
+function setFollowOnly(v){prefs.followOnly=!!v;savePrefs();}
+/* Earliest not-yet-finished group match for a team (knockout slots are TBD). */
+function nextMatchFor(name){
+  const t=teamRecord(name);if(!t)return null;
+  const key=canon(t.name);let best=null;
+  stadiums.forEach(function(s){s.m.forEach(function(m){
+    if(!m.g.includes(" vs "))return;
+    const ks=m.g.split(" vs ").map(function(x){return canon(x.trim());});
+    if(ks.indexOf(key)<0)return;
+    if(m.sc&&!m.live)return; // finished
+    const ts=matchInstant(m);if(ts==null)return;
+    if(!best||ts<best.ts)best={m:m,ts:ts};
+  });});
+  return best;
+}
+function buildFollowBar(){
+  const bar=document.getElementById("followBar");if(!bar)return;
+  const t=prefs.follow?teamRecord(prefs.follow):null;
+  if(!t){bar.style.display="none";bar.innerHTML="";return;}
+  bar.style.display="";
+  const nx=nextMatchFor(t.name);
+  let nextHtml;
+  if(nx){
+    const m=nx.m;
+    const opp=m.g.split(" vs ").map(function(x){return x.trim();}).filter(function(x){return canon(x)!==canon(t.name);})[0]||"";
+    const f=(tzState.mode==="tz")?fmtInstant(nx.ts):null;
+    const when=f?(f.date+' · '+f.time+' '+f.tz):(m.d+' · '+m.t+' ET');
+    const liveTag=m.live?'<span class="fb-live">● LIVE'+(m.clock?" "+m.clock+"'":"")+'</span>':'';
+    nextHtml='<span class="fb-next">'+(m.live?'Now':'Next')+': <b>'+escHTML(opp?("vs "+opp):m.g)+'</b> · '+when+liveTag+'</span>';
+  }else nextHtml='<span class="fb-next fb-none">No upcoming group match</span>';
+  bar.innerHTML='<span class="fb-star">★</span>'+
+    '<span class="tlink fb-team" data-team="'+t.name+'">'+t.flag+' '+t.name+'</span>'+
+    nextHtml+
+    '<label class="fb-only"><input type="checkbox"'+(prefs.followOnly?' checked':'')+' onchange="setFollowOnly(this.checked)"> alerts: only '+t.name+'</label>'+
+    '<button class="fb-unfollow" onclick="setFollow(\''+t.name.replace(/'/g,"\\'")+'\')">✕ Unfollow</button>';
 }
 /* Delegated: a [data-player] row opens the player card; any other element
    carrying data-team opens that team's popup; clicking a dimmed backdrop or
@@ -1301,20 +1443,32 @@ function matchPopoverHTML(e){
 /* On-demand goals & cards from ESPN's match summary. */
 function loadMatchEvents(eid){
   const box=document.getElementById("mpEvents");if(!box)return;
-  box.innerHTML='<div class="mp-ev-loading">Loading goals &amp; cards…</div>';
+  box.innerHTML='<div class="mp-ev-loading">Loading match events…</div>';
   fetch("https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event="+encodeURIComponent(eid),{cache:"no-store"})
    .then(function(r){return r.ok?r.json():null;})
    .then(function(d){
      if(!box.isConnected)return;
+     let html="";
+     // Goals & cards (key events)
      const evs=((d&&d.keyEvents)||[]).filter(function(x){var t=(x.type&&x.type.text)||"";return /goal|card/i.test(t);});
-     if(!evs.length){box.innerHTML="";return;}
-     const rows=evs.map(function(x){
-       var t=(x.type&&x.type.text)||"";
-       var clk=(x.clock&&x.clock.displayValue)||"";
-       var ic=/red card/i.test(t)?"🟥":(/yellow card/i.test(t)?"🟨":(/goal/i.test(t)?"⚽":"•"));
-       return '<div class="mp-ev"><span class="mp-ev-clk">'+escHTML(clk)+'</span><span>'+ic+'</span><span class="mp-ev-tx">'+escHTML(x.text||t)+'</span></div>';
-     }).join("");
-     box.innerHTML='<div class="mp-ev-head">Goals &amp; cards</div>'+rows;
+     if(evs.length){
+       html+='<div class="mp-ev-head">Goals &amp; cards</div>'+evs.map(function(x){
+         var t=(x.type&&x.type.text)||"";
+         var clk=(x.clock&&x.clock.displayValue)||"";
+         var ic=/red card/i.test(t)?"🟥":(/yellow card/i.test(t)?"🟨":(/goal/i.test(t)?"⚽":"•"));
+         return '<div class="mp-ev"><span class="mp-ev-clk">'+escHTML(clk)+'</span><span>'+ic+'</span><span class="mp-ev-tx">'+escHTML(x.text||t)+'</span></div>';
+       }).join("");
+     }
+     // Full play-by-play commentary (collapsible, latest first)
+     const c=(d&&d.commentary)||[];
+     if(c.length){
+       const crows=c.slice().reverse().map(function(x){
+         var tm=(x.time&&x.time.displayValue)||"";
+         return '<div class="mp-cm"><span class="mp-cm-t">'+escHTML(tm)+'</span><span class="mp-cm-x">'+escHTML(x.text||"")+'</span></div>';
+       }).join("");
+       html+='<div class="mp-comm"><button class="mp-comm-tog" onclick="this.parentNode.classList.toggle(\'open\')">Full commentary &middot; '+c.length+' &#9662;</button><div class="mp-comm-list">'+crows+'</div></div>';
+     }
+     box.innerHTML=html;
    })
    .catch(function(){if(box)box.innerHTML="";});
 }
@@ -2210,6 +2364,10 @@ function toggleNotify(){
 }
 function fireGoalNotifications(goals){
   if(!notifyState.on||!notifySupported()||Notification.permission!=="granted")return;
+  if(prefs.followOnly&&prefs.follow){ // scope alerts to the followed team
+    const fk=canon(prefs.follow);
+    goals=goals.filter(function(g){return g.g.split(" vs ").map(function(x){return canon(x.trim());}).indexOf(fk)>=0;});
+  }
   goals.forEach(function(g){
     if(!g.g.includes(" vs "))return;
     try{
@@ -2602,6 +2760,46 @@ function frFilter(host,btn){
 
 function toggleFriendlies(){toggleSection("fr-body","fr-toggle","friendlies");}
 
+/* ══════════ TOP SCORERS (Golden Boot) ══════════
+   Aggregated from the scoring plays already in the scoreboard feed — no extra
+   requests. Own goals are excluded; penalties are counted and flagged. */
+let scorerData=[];
+function aggregateScorers(events){
+  const tally={},seen={};
+  (events||[]).forEach(function(e){
+    if(e.id){if(seen[e.id])return;seen[e.id]=1;} // de-dupe an event seen on multiple day-queries
+    (e.goals||[]).forEach(function(g){
+      const key=g.scorer+"|"+g.team;
+      if(!tally[key])tally[key]={scorer:g.scorer,team:g.team,goals:0,pens:0};
+      tally[key].goals++;if(g.pen)tally[key].pens++;
+    });
+  });
+  scorerData=Object.keys(tally).map(function(k){return tally[k];})
+    .sort(function(a,b){return (b.goals-a.goals)||(a.pens-b.pens)||a.scorer.localeCompare(b.scorer);});
+}
+function buildScorers(){
+  const grid=document.getElementById("sc-grid");
+  if(!grid)return;
+  const st=document.getElementById("sc-updated");
+  if(!scorerData.length){
+    grid.innerHTML='<div class="sc-empty">No goals yet — the race opens with the first goal of the tournament.</div>';
+    if(st)st.innerHTML="";return;
+  }
+  const top=scorerData.slice(0,20),maxG=top[0].goals;
+  let rank=0,prevG=null;
+  grid.innerHTML=top.map(function(s,i){
+    if(s.goals!==prevG){rank=i+1;prevG=s.goals;}
+    const tr=teamRecord(s.team);
+    const tname=tr?'<span class="tlink" data-team="'+tr.name+'">'+tr.flag+' '+escHTML(s.team)+'</span>':escHTML(s.team||"");
+    const pen=s.pens?'<span class="sc-pen">'+s.pens+' pen</span>':'';
+    return '<div class="sc-row"><span class="sc-rank">'+rank+'</span>'+
+      '<span class="sc-who"><span class="sc-name">'+escHTML(s.scorer)+'</span><span class="sc-team">'+tname+pen+'</span></span>'+
+      '<span class="sc-goalwrap"><span class="sc-track"><span class="sc-bar" style="width:'+Math.round(s.goals/maxG*100)+'%"></span></span><span class="sc-goals">'+s.goals+'</span></span></div>';
+  }).join("");
+  if(st){const t=new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});st.innerHTML='<span class="ok">✓</span> '+scorerData.length+' scorer'+(scorerData.length!==1?"s":"")+' &middot; as of '+t;}
+}
+function toggleScorers(){toggleSection("sc-body","sc-toggle","scorers");}
+
 /* ══════════ LIVE SCORE UPDATING ══════════
    While this page runs inside Claude's artifact view, its script can ask
    Claude (via the Anthropic API) to web-search current World Cup scores and
@@ -2711,12 +2909,29 @@ function parseESPNEvents(data,ds){
           else if(tid&&away.id&&String(tid)===String(away.id))ar++;
         });
       }
+      const homeName=(home.team&&(home.team.displayName||home.team.shortDisplayName||home.team.name))||"";
+      const awayName=(away.team&&(away.team.displayName||away.team.shortDisplayName||away.team.name))||"";
+      // Goal scorers (for the Golden Boot leaderboard) — own goals excluded.
+      const goals=[];
+      if(Array.isArray(comp.details)){
+        comp.details.forEach(function(d){
+          const tx=((d.type&&(d.type.text||d.type.name))||"")+"";
+          if(!d.scoringPlay||/own goal/i.test(tx))return;
+          const ath=(d.athletesInvolved&&d.athletesInvolved[0])||null;
+          const name=ath&&(ath.displayName||ath.shortName);
+          if(!name)return;
+          const tid=(ath.team&&ath.team.id)||(d.team&&d.team.id);
+          const team=(String(tid)===String(home.id))?homeName:((String(tid)===String(away.id))?awayName:"");
+          goals.push({scorer:name,team:team,pen:/penalt/i.test(tx)});
+        });
+      }
       out.push({
-        home:(home.team&&(home.team.displayName||home.team.shortDisplayName||home.team.name))||"",
-        away:(away.team&&(away.team.displayName||away.team.shortDisplayName||away.team.name))||"",
+        home:homeName,
+        away:awayName,
         hs:isNaN(hs)?null:hs,
         as:isNaN(as)?null:as,
         hr:hr,ar:ar,
+        goals:goals,
         status:status,
         minute:(status==="LIVE"&&clk)?clk:null,
         id:ev.id||"",
@@ -2785,11 +3000,14 @@ async function refreshScores(){
     applyBracket(espnEvents);
     const goals=detectGoals();
     const bgoals=detectBracketGoals();
+    aggregateScorers(espnEvents);
     buildGrid();
     buildStandings();
     buildThirds();
+    buildScorers();
     buildBracket();
     buildToday();
+    buildFollowBar();
     fireGoalNotifications(goals.concat(bgoals));
     if(goals.length||bgoals.length)setTimeout(function(){clearFlash();clearBracketFlash();buildGrid();buildToday();buildBracket();},2200); // clear pulse after it plays
     if(n>0)setLiveStatus('<span class="ok">✓ Updated</span> '+n+' match'+(n!==1?"es":"")+' &middot; last checked '+t);
@@ -2836,9 +3054,11 @@ async function refreshScores(){
   applySavedSections();  // restore which sections were collapsed
   buildTzToggle();
   buildToday();
+  buildFollowBar();
   buildFriendlies();
   buildStandings();
   buildThirds();
+  buildScorers();
   buildRankingsControls();
   buildRankings();
   buildBracket();
