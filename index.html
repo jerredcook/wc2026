@@ -448,6 +448,22 @@ html[data-theme="dark"] .trank{color:#7e858f}
 .tm-fv{font-size:13px;font-weight:600;color:#1a1a1a;margin-top:2px}
 .tm-blurb{font-size:13px;line-height:1.5;color:#5a4a1a;background:#fffdf2;border:1px solid #f1e6b8;border-radius:10px;padding:10px 13px;margin-bottom:16px}
 .tm-sec{font-size:11px;font-weight:700;color:#999;letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px}
+.tsch{margin-bottom:18px}
+.tsch-row{display:flex;align-items:center;gap:9px;padding:7px 6px;border-bottom:1px solid #f0f0f0;cursor:pointer;border-radius:6px}
+.tsch-row:hover{background:#f7f7f8}
+.tsch-row:last-child{border-bottom:none}
+.tsch-d{width:46px;flex-shrink:0;font-size:11px;font-weight:700;color:#999;font-variant-numeric:tabular-nums}
+.tsch-opp{flex:1;min-width:0;font-size:13px;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tsch-ha{color:#aaa;font-weight:600;font-size:11px}
+.tsch-mid{display:flex;align-items:center;gap:6px;flex-shrink:0;justify-content:flex-end;min-width:56px}
+.tsch-sc{font-weight:800;font-variant-numeric:tabular-nums;color:#1a1a1a;font-size:13px}
+.tsch-when{font-size:12px;font-weight:600;color:#888;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tsch-res{font-size:9px;font-weight:800;width:15px;height:15px;line-height:15px;text-align:center;border-radius:4px;color:#fff}
+.tsch-W{background:#0d8a4f}.tsch-D{background:#9a9a9a}.tsch-L{background:#c0392b}
+.tsch-live{font-size:9px;font-weight:800;color:#fff;background:#d6322c;border-radius:3px;padding:1px 4px;letter-spacing:.03em;animation:livepulse 1.3s ease-in-out infinite}
+html[data-theme="dark"] .tsch-row{border-color:#2a2d35}
+html[data-theme="dark"] .tsch-row:hover{background:#262931}
+html[data-theme="dark"] .tsch-opp,html[data-theme="dark"] .tsch-sc{color:#e9eaed}
 .tm-squad{display:flex;flex-direction:column}
 .tm-pl{display:flex;align-items:center;gap:9px;padding:7px 2px;border-bottom:1px solid #f2f2f2}
 .tm-pl:last-child{border-bottom:none}
@@ -1183,6 +1199,51 @@ function buildRankings(){
 function toggleRankings(){toggleSection("rk-body","rk-toggle","rankings");}
 
 /* ══════════ TEAM INFO POPUP ══════════ */
+/* A team's fixtures: group matches (from the venues) plus any resolved knockout
+   matches (from the bracket), sorted by date, each clickable into the popover. */
+function isoToMs(iso){return Date.UTC(2026,parseInt(String(iso).slice(4,6),10)-1,parseInt(String(iso).slice(6,8),10));}
+function teamMatches(name){
+  const t=teamRecord(name),key=canon(t?t.name:name),out=[];
+  stadiums.forEach(function(s){s.m.forEach(function(m){
+    if(!m.g.includes(" vs "))return;
+    const parts=m.g.split(" vs ").map(function(x){return x.trim();});
+    const i=parts.map(canon).indexOf(key);
+    if(i<0)return;
+    const ts=matchInstant(m);
+    out.push({id:m._id,r:m.r,d:m.d,t:m.t,ts:ts,sortk:(ts!=null?ts:0),isHome:i===0,opp:parts[1-i],sc:m.sc,live:!!m.live,clock:m.clock,played:!!m.sc});
+  });});
+  bracket.forEach(function(b){
+    const hh=(b.liveH&&!isSlotName(b.liveH))?b.liveH:null,aa=(b.liveA&&!isSlotName(b.liveA))?b.liveA:null;
+    const isHome=hh&&canon(hh)===key,isAway=aa&&canon(aa)===key;
+    if(!isHome&&!isAway)return;
+    out.push({id:b._id,r:b.r,d:b.d,t:null,ts:null,sortk:isoToMs(b.iso),isHome:!!isHome,opp:isHome?(aa||b.a):(hh||b.h),
+      sc:(b.hs!=null&&b.as!=null)?(b.hs+"-"+b.as):null,live:b.status==="LIVE",clock:b.minute,played:(b.hs!=null&&b.as!=null)});
+  });
+  out.sort(function(a,b){return a.sortk-b.sortk;});
+  return out;
+}
+function teamScheduleHTML(name){
+  const ms=teamMatches(name);if(!ms.length)return "";
+  const rows=ms.map(function(x){
+    let mid;
+    if(x.played&&x.sc){
+      const sp=x.sc.split("-"),own=x.isHome?+sp[0]:+sp[1],opp=x.isHome?+sp[1]:+sp[0];
+      const res=own>opp?"W":(own<opp?"L":"D");
+      const live=x.live?'<span class="tsch-live">'+(x.clock?String(x.clock).replace(/['′]/g,"")+"'":"LIVE")+'</span>':'';
+      mid='<span class="tsch-sc">'+own+'–'+opp+'</span><span class="tsch-res tsch-'+res+'">'+res+'</span>'+live;
+    }else{
+      const when=(x.ts!=null&&tzState.mode==="tz")?(fmtInstant(x.ts).time+" "+fmtInstant(x.ts).tz):(x.t?(x.t+" ET"):"TBD");
+      mid='<span class="tsch-when">'+escHTML(when)+'</span>';
+    }
+    return '<div class="tsch-row" data-match="'+x.id+'">'+
+      '<span class="tsch-d">'+escHTML(x.d)+'</span>'+
+      '<span class="tsch-opp">'+(x.isHome?'<span class="tsch-ha">vs</span> ':'<span class="tsch-ha">@</span> ')+teamLink(x.opp,false,true)+'</span>'+
+      '<span class="tsch-mid">'+mid+'</span>'+
+      '<span class="rbadge '+roundClass(x.r)+'">'+roundLabel(x.r)+'</span></div>';
+  }).join("");
+  return '<div class="tm-sec">Schedule &amp; results</div><div class="tsch">'+rows+'</div>';
+}
+
 let tmCurrent=null;
 function openTeam(name){
   const t=teamRecord(name);
@@ -1213,6 +1274,7 @@ function openTeam(name){
     '<div class="tm-body">'+
       '<div class="tm-facts">'+facts+'</div>'+
       '<div class="tm-blurb">💡 '+t.fact+'</div>'+
+      teamScheduleHTML(t.name)+
       '<div class="tm-sec">Squad &middot; final 26-player roster</div>'+
       '<div class="tm-squad">'+squad+'</div>'+
       '<div class="tm-foot">Official 26-player squad named for the 2026 FIFA World Cup (rosters locked at FIFA&rsquo;s June 1 deadline). GK goalkeeper &middot; DF defender &middot; MF midfielder &middot; FW forward. The coloured tag is each player&rsquo;s current role at their club (Starter / Rotation / Sub / Reserve / Injured / On loan), as of the tournament.</div>'+
@@ -1291,9 +1353,10 @@ document.addEventListener("click",function(e){
 });
 document.addEventListener("keydown",function(e){
   if(e.key!=="Escape")return;
+  // close the topmost modal first (player 1100 > match 1050 > team 1000)
   if(document.getElementById("pp-overlay").classList.contains("open"))closePlayer();
-  else if(document.getElementById("tm-overlay").classList.contains("open"))closeTeam();
   else if(document.getElementById("mp-overlay").classList.contains("open"))closeMatch();
+  else if(document.getElementById("tm-overlay").classList.contains("open"))closeTeam();
 });
 
 /* ══════════ PLAYER CARD (live-enriched from Wikipedia + Wikidata) ══════════
@@ -1381,7 +1444,8 @@ function openMatch(id){
 function closeMatch(){
   const ov=document.getElementById("mp-overlay");
   if(ov)ov.classList.remove("open");
-  document.body.style.overflow="";
+  // a team/player card may still be open underneath — keep scroll locked if so
+  if(!document.getElementById("tm-overlay").classList.contains("open")&&!document.getElementById("pp-overlay").classList.contains("open"))document.body.style.overflow="";
 }
 
 function matchPopoverHTML(e){
