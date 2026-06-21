@@ -47,20 +47,24 @@ The standings and the bracket both recompute from the live scores every refresh.
 
 ## Group standings & FIFA tiebreakers
 
-Tables are derived from completed group matches. In-progress matches are listed under their group as provisional and counted once they finish. Teams are ranked by FIFA's official 2026 criteria, in order:
+Tables are derived from completed group matches. In-progress matches are listed under their group as provisional and counted once they finish. Teams are ranked by FIFA's official **2026** criteria, in order:
 
 1. Points
-2. Goal difference (all group matches)
-3. Goals scored (all group matches)
-4. Head-to-head points among the tied teams
-5. Head-to-head goal difference among the tied teams
-6. Head-to-head goals scored among the tied teams
+2. Head-to-head points among the tied teams
+3. Head-to-head goal difference among the tied teams
+4. Head-to-head goals scored among the tied teams
+5. Goal difference (all group matches)
+6. Goals scored (all group matches)
+7. Disciplinary record (fewest cards)
+8. FIFA World Ranking
 
-Criteria 4–6 are applied only to the matches between the still-tied teams, and re-applied recursively to any sub-group that remains level — matching FIFA's procedure. The only criteria **not** modeled are fair-play/disciplinary points and the final drawing of lots; a table that is still dead level after head-to-head is tagged `tied`. Rows whose order was decided by head-to-head are tagged `h2h`. These tags appear only once a group is complete, when the final ordering matters.
+**Note the 2026 change:** head-to-head is now applied **before** overall goal difference — the reverse of 2018/2022 — so a team can finish above another it beat head-to-head even with a worse overall goal difference. Criteria 2–4 are applied only to the matches between the still-tied teams, and re-applied recursively to any sub-group that stays level — matching FIFA's procedure. The drawing of lots was removed for 2026 and replaced by the FIFA World Ranking, so ties are always broken. The one criterion **not** modeled is disciplinary points (criterion 7); a table separated by the ranking is tagged `rank`, and rows whose order was decided by head-to-head are tagged `h2h`. These tags appear only once a group is complete.
 
 ## Knockout bracket
 
 The bracket structure (which group winners / runners-up / best-third-placed teams meet in each Round-of-32 slot, and how every winner flows up to the Final) is fixed by the official 2026 schedule and verified against it. It is drawn as a **mirrored tree** — the left half flows right, the right half flows left, and both close on the centred **Final** beneath the trophy, with orthogonal connector lines (drawn from the real card positions, so they stay aligned across resize/scroll) lighting up gold once a feeding match is decided. Each match carries its date and venue, and live results are matched to the correct slot by **date + venue** — stable whether a slot still shows a placeholder (rendered as a gold code chip) or has resolved to a real team with its flag. The third-place play-off is shown beneath the main tree, and the champion is crowned in the centre once the Final is decided.
+
+Group finishers drop into the Round-of-32 slots as soon as their place is mathematically secured — using the **2026 tiebreakers**, so a head-to-head sweep counts. A placing is **confirmed** (shown settled) when no remaining result can dislodge it — e.g. a team that has beaten everyone who could draw level on points has *won the group* outright, even before the final matchday. A current group leader that has only clinched a top-2 **berth** is shown in its slot tagged **`PROJ`** (projected) and auto-corrects if the last games swap 1st/2nd. The clinch test enumerates every remaining result and, because head-to-head points is the first tiebreaker, treats a team as secure over a rival only when it strictly leads that rival on head-to-head points (deeper, goal-margin-based criteria are taken as adversarial).
 
 ## Running it
 

@@ -1890,16 +1890,20 @@ function computeStandings(){
   return groups;
 }
 
-/* FIFA 2026 group ranking. Overall criteria first: 1) points, 2) goal
-   difference, 3) goals scored. Teams still level on all three are separated by
-   head-to-head among only the tied teams: 4) H2H points, 5) H2H goal
-   difference, 6) H2H goals. FIFA re-applies 4-6 to any sub-group that stays
-   tied; we recurse to match that. What we can't model — fair-play/disciplinary
-   points and the final drawing of lots — leaves a residual tie, flagged 'lots'.
-   Teams whose order came from the head-to-head step are flagged 'h2h'. */
-function cmpOverall(a,b){
-  return (b.pts-a.pts)||((b.gf-b.ga)-(a.gf-a.ga))||(b.gf-a.gf)||0;
+/* FIFA 2026 group ranking. Points first; teams level on points are separated by
+   HEAD-TO-HEAD among only those teams — 1) H2H points, 2) H2H goal difference,
+   3) H2H goals — re-applied recursively to any still-level subgroup. Teams that
+   head-to-head still can't separate fall to overall criteria — 4) overall goal
+   difference, 5) overall goals — and anything still dead level is ordered by
+   6) FIFA World Ranking (which replaced the drawing of lots for 2026). NOTE: this
+   is the NEW 2026 order, where head-to-head outranks overall goal difference —
+   the reverse of 2018/2022. Disciplinary points (between overall goals and the
+   ranking) aren't modelled. Rows decided by head-to-head are flagged 'h2h';
+   rows that came down to the ranking are flagged 'rank'. */
+function rankByOverall(a,b){
+  return ((b.gf-b.ga)-(a.gf-a.ga))||(b.gf-a.gf)||0;
 }
+function teamRankOf(name){const t=teamRecord(name);return t?t.rank:999;}
 
 /* Mini-table over only the completed matches played between `names`. */
 function h2hStats(names,matches){
@@ -1916,9 +1920,12 @@ function h2hStats(names,matches){
   return out;
 }
 
-/* Order a cluster already tied on overall pts/GD/GF via head-to-head (4-6),
-   recursing into sub-groups that stay tied. */
-function breakTie(cluster,matches){
+/* Order a cluster already tied on POINTS, per 2026: head-to-head (points, GD,
+   goals) among the tied teams, recursing into any sub-group that stays level;
+   teams head-to-head can't split fall to overall GD, overall goals, then FIFA
+   World Ranking. */
+function breakPointsTie(cluster,matches){
+  if(cluster.length===1)return cluster.slice();
   const h=h2hStats(cluster.map(function(r){return r.name;}),matches);
   const ranked=cluster.slice().sort(function(a,b){
     const x=h[a.name],y=h[b.name];
@@ -1930,24 +1937,33 @@ function breakTie(cluster,matches){
     while(j<ranked.length){const b=h[ranked[j].name];
       if(a.pts!==b.pts||a.gd!==b.gd||a.gf!==b.gf)break;j++;}
     const sub=ranked.slice(i,j);
-    if(sub.length===1)out.push(sub[0]);
-    else if(sub.length<cluster.length)breakTie(sub,matches).forEach(function(r){out.push(r);}); // smaller subset → re-apply H2H
-    else sub.sort(function(a,b){return a.name.localeCompare(b.name);}).forEach(function(r){r._tb="lots";out.push(r);}); // no separation → fair play / lots
+    if(sub.length===cluster.length){
+      // Head-to-head identical across the whole cluster → overall GD, goals, ranking.
+      sub.sort(function(a,b){return rankByOverall(a,b)||(teamRankOf(a.name)-teamRankOf(b.name));});
+      sub.forEach(function(r,idx){
+        const lvl=function(o){return o&&rankByOverall(r,o)===0;};
+        r._tb=(lvl(sub[idx-1])||lvl(sub[idx+1]))?"rank":"gd";
+        out.push(r);
+      });
+    }else if(sub.length===1){
+      sub[0]._tb="h2h";out.push(sub[0]);
+    }else{
+      breakPointsTie(sub,matches).forEach(function(r){if(!r._tb)r._tb="h2h";out.push(r);}); // smaller still-tied subset → reapply H2H
+    }
     i=j;
   }
-  out.forEach(function(r){if(!r._tb)r._tb="h2h";});
   return out;
 }
 
 function stSort(rows,matches){
   matches=matches||[];
-  const sorted=rows.slice().sort(cmpOverall);
+  const byPts=rows.slice().sort(function(a,b){return b.pts-a.pts;});
   const out=[];let i=0;
-  while(i<sorted.length){
+  while(i<byPts.length){
     let j=i+1;
-    while(j<sorted.length&&cmpOverall(sorted[i],sorted[j])===0)j++;
-    if(j-i===1)out.push(sorted[i]);
-    else breakTie(sorted.slice(i,j),matches).forEach(function(r){out.push(r);});
+    while(j<byPts.length&&byPts[j].pts===byPts[i].pts)j++;
+    if(j-i===1)out.push(byPts[i]);
+    else breakPointsTie(byPts.slice(i,j),matches).forEach(function(r){out.push(r);});
     i=j;
   }
   return out;
@@ -1969,8 +1985,8 @@ function buildStandings(){
       const pos=i+1, gdv=r.gf-r.ga;
       const gdCls=gdv>0?"st-gd-pos":(gdv<0?"st-gd-neg":"");
       const gdTxt=(gdv>0?"+":"")+gdv;
-      const tb=!gComplete?"":r._tb==="h2h"?"<span class=\"st-tb\" title=\"order decided by head-to-head\">h2h</span>"
-              :r._tb==="lots"?"<span class=\"st-tb st-tb-lots\" title=\"level on all criteria — falls to fair play / drawing of lots\">tied</span>":"";
+      const tb=!gComplete?"":r._tb==="h2h"?"<span class=\"st-tb\" title=\"order decided by head-to-head (which outranks goal difference in 2026)\">h2h</span>"
+              :r._tb==="rank"?"<span class=\"st-tb st-tb-lots\" title=\"level on all results — separated by FIFA World Ranking (replaced the drawing of lots for 2026)\">rank</span>":"";
       return "<tr class=\"st-q"+pos+"\">"+
         "<td class=\"tl\"><span class=\"st-pos\">"+pos+"</span>"+teamLink(r.name,false,false)+tb+"</td>"+
         "<td>"+r.p+"</td><td>"+r.w+"</td><td>"+r.d+"</td><td>"+r.l+"</td>"+
@@ -2320,17 +2336,18 @@ function bkChampHtml(fin){
 
 /* Place group finishers into the "Winner X" / "2nd X" Round-of-32 slots ahead of
    the knockout kicking off, in two tiers:
-   - CONFIRMED: the group is complete, or the placing is points-locked (no rival
-     can reach the team's total). Shown as a normal, settled team.
+   - CONFIRMED: the group is complete, or the placing is mathematically locked —
+     no result of the remaining games can move the team out of it. Shown settled.
    - PROJECTED: the group is still in progress and the team has clinched a top-2
-     berth (at most one rival can still finish above it), so it is guaranteed to
-     advance — we drop it into its CURRENT position (1st/2nd), which the final
-     matchday could still swap. Flagged so the UI can mark it "PROJ".
-   A real team already supplied by the knockout feed is never overwritten. */
+     berth, so it WILL advance — we drop it into its CURRENT position (1st/2nd),
+     which the final matchday could still swap. Flagged so the UI can mark it
+     "PROJ". A real team supplied by the knockout feed is never overwritten.
+   Both tiers honour the 2026 tiebreakers (head-to-head before goal difference);
+   see clinchInfo(). */
 function resolveBracketFromStandings(){
   const groups=computeStandings();
-  // Remaining (not-yet-final) group fixtures, so the clinch math can account for
-  // rivals that still play each other and therefore can't all reach their max.
+  // Remaining (not-yet-final) group fixtures, so clinch math can account for the
+  // schedule — rivals that still play each other, and head-to-head outcomes.
   const remain={};
   stadiums.forEach(function(s){s.m.forEach(function(m){
     if(m.r.indexOf("Group")!==0||m.g.indexOf(" vs ")<0)return;
@@ -2344,30 +2361,22 @@ function resolveBracketFromStandings(){
     const rows=Object.keys(G.teams).map(function(n){return G.teams[n];});
     if(rows.length<2)return;
     const ordered=stSort(rows,G.matches);
-    const complete=rows.every(function(r){return r.p>=3;});
-    if(complete){
-      if(ordered[0]&&ordered[0]._tb!=="lots")confirmed["Winner "+key]=ordered[0].name;
-      if(ordered[1]&&ordered[1]._tb!=="lots")confirmed["2nd "+key]=ordered[1].name;
+    if(rows.every(function(r){return r.p>=3;})){ // group complete → settled by stSort
+      confirmed["Winner "+key]=ordered[0].name;
+      if(ordered[1])confirmed["2nd "+key]=ordered[1].name;
       return;
     }
-    const ceiling=function(r){return r.pts+3*Math.max(0,3-r.p);}; // best the team can still reach
-    // (1) Position points-locked → confirmed (no single rival can reach the total).
-    const lead=ordered[0];
-    if(rows.every(function(r){return r===lead||lead.pts>ceiling(r);})){
-      confirmed["Winner "+key]=lead.name;
-      const second=ordered[1];
-      if(second&&rows.every(function(r){return r===lead||r===second||second.pts>ceiling(r);}))
-        confirmed["2nd "+key]=second.name;
-    }
-    // (2) Clinched a top-2 berth (≤1 rival can still finish at/above it, given the
-    //     remaining schedule) → projected into its current position; tentative until
-    //     the last group game settles 1st/2nd.
     const rem=remain[key]||[];
-    [["Winner",ordered[0]],["2nd",ordered[1]]].forEach(function(pair){
-      const slotKey=pair[0]+" "+key,t=pair[1];
-      if(!t||confirmed[slotKey])return;
-      if(maxRivalsAtOrAbove(t,rows,rem)<=1)projected[slotKey]=t.name;
-    });
+    const i0=ordered[0]?clinchInfo(ordered[0],rows,G.matches,rem):null;
+    const i1=ordered[1]?clinchInfo(ordered[1],rows,G.matches,rem):null;
+    // Winner slot
+    if(i0&&i0.first)confirmed["Winner "+key]=ordered[0].name;
+    else if(i0&&i0.top2)projected["Winner "+key]=ordered[0].name;
+    // Runner-up slot
+    if(i1&&!i1.first){
+      if(confirmed["Winner "+key]&&i1.top2)confirmed["2nd "+key]=ordered[1].name; // 1st locked + this clinched top-2 → exactly 2nd
+      else if(i1.top2)projected["2nd "+key]=ordered[1].name;
+    }
   });
   bracket.forEach(function(m){
     ["h","a"].forEach(function(side){
@@ -2380,34 +2389,47 @@ function resolveBracketFromStandings(){
   });
 }
 
-/* Worst case for team T (it loses all its remaining games): the most rivals that
-   can finish with at least T's current points, given the remaining fixtures —
-   rivals that still meet take points off each other, so they can't all peak.
-   ≤1 means at most one team can end above T, i.e. T has clinched a top-2 berth. */
-function maxRivalsAtOrAbove(t,rows,remaining){
-  const threshold=t.pts,base={};
-  rows.forEach(function(r){base[r.name]=r.pts;});
-  const games=[];
-  remaining.forEach(function(g){
-    if(g[0]===t.name){base[g[1]]+=3;return;}      // T loses → opponent banks 3
-    if(g[1]===t.name){base[g[0]]+=3;return;}
-    games.push(g);                                 // rival vs rival → enumerate below
-  });
-  const N=games.length,total=Math.pow(3,N);let best=0;
-  for(let mask=0;mask<total;mask++){
-    const add={};let mm=mask;
+/* Is team T's finishing place secured, under the 2026 tiebreakers? Enumerates
+   every win/draw/loss combination of the remaining group games. In each, T is at
+   worst tied on points with some rivals; because head-to-head POINTS is the first
+   tiebreaker after points (and deeper criteria — H2H/overall goal difference —
+   depend on goal margins we must treat as adversarial), a rival can only be kept
+   below T when T strictly leads it on head-to-head points. Counting how many
+   rivals could end above T across all combinations gives:
+     first = true  → nobody can ever finish above T  (T has won the group)
+     top2  = true  → at most one team can ever be above T (T has clinched a berth) */
+function clinchInfo(T,rows,played,remaining){
+  const names=rows.map(function(r){return r.name;});
+  const base={};rows.forEach(function(r){base[r.name]=r.pts;});
+  const playedRes=played.map(function(m){return {home:m.home,away:m.away,o:m.hs>m.as?0:(m.hs<m.as?1:2)};});
+  const N=remaining.length,total=Math.pow(3,N);
+  let first=true,top2=true;
+  for(let mask=0;mask<total&&(first||top2);mask++){
+    const pts=Object.assign({},base),res=playedRes.slice();
+    let mm=mask;
     for(let i=0;i<N;i++){
       const o=mm%3;mm=(mm-o)/3;
-      if(o===0)add[games[i][0]]=(add[games[i][0]]||0)+3;
-      else if(o===1)add[games[i][1]]=(add[games[i][1]]||0)+3;
-      else{add[games[i][0]]=(add[games[i][0]]||0)+1;add[games[i][1]]=(add[games[i][1]]||0)+1;}
+      const g=remaining[i];
+      res.push({home:g[0],away:g[1],o:o});
+      if(o===0)pts[g[0]]+=3;else if(o===1)pts[g[1]]+=3;else{pts[g[0]]+=1;pts[g[1]]+=1;}
     }
-    let cnt=0;
-    rows.forEach(function(r){if(r!==t&&(base[r.name]+(add[r.name]||0))>=threshold)cnt++;});
-    if(cnt>best)best=cnt;
-    if(best>=2)break; // can't clinch top-2 → stop early
+    const Tp=pts[T.name];let above=0;const tied=[];
+    names.forEach(function(n){if(n===T.name)return;if(pts[n]>Tp)above++;else if(pts[n]===Tp)tied.push(n);});
+    let couldBeAbove=0;
+    if(tied.length){
+      const set={};[T.name].concat(tied).forEach(function(n){set[n]=true;});
+      const hp={};Object.keys(set).forEach(function(n){hp[n]=0;});
+      res.forEach(function(r){
+        if(!set[r.home]||!set[r.away])return;
+        if(r.o===0)hp[r.home]+=3;else if(r.o===1)hp[r.away]+=3;else{hp[r.home]+=1;hp[r.away]+=1;}
+      });
+      tied.forEach(function(n){if(hp[n]>=hp[T.name])couldBeAbove++;}); // not strictly beaten H2H → could edge T on deeper criteria
+    }
+    const worstAbove=above+couldBeAbove;
+    if(worstAbove>=1)first=false;
+    if(worstAbove>=2)top2=false;
   }
-  return best;
+  return {first:first,top2:top2};
 }
 
 function buildBracket(){
