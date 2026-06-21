@@ -1306,14 +1306,24 @@ function setFollowOnly(v){prefs.followOnly=!!v;savePrefs();}
 function nextMatchFor(name){
   const t=teamRecord(name);if(!t)return null;
   const key=canon(t.name);let best=null;
+  // group matches (from the venues) — these carry a kickoff time
   stadiums.forEach(function(s){s.m.forEach(function(m){
     if(!m.g.includes(" vs "))return;
-    const ks=m.g.split(" vs ").map(function(x){return canon(x.trim());});
-    if(ks.indexOf(key)<0)return;
+    const parts=m.g.split(" vs ").map(function(x){return x.trim();});
+    if(parts.map(canon).indexOf(key)<0)return;
     if(m.sc&&!m.live)return; // finished
     const ts=matchInstant(m);if(ts==null)return;
-    if(!best||ts<best.ts)best={m:m,ts:ts};
+    if(!best||ts<best.ts)best={ts:ts,instant:ts,opp:parts.filter(function(x){return canon(x)!==key;})[0]||"",d:m.d,t:m.t,live:!!m.live,clock:m.clock,knockout:false,round:m.r};
   });});
+  // knockout matches (from the bracket, once a slot resolves) — date only, no kickoff time
+  bracket.forEach(function(b){
+    const hh=(b.liveH&&!isSlotName(b.liveH))?b.liveH:null,aa=(b.liveA&&!isSlotName(b.liveA))?b.liveA:null;
+    const isHome=hh&&canon(hh)===key,isAway=aa&&canon(aa)===key;
+    if(!isHome&&!isAway)return;
+    if(b.hs!=null&&b.as!=null&&b.status!=="LIVE")return; // finished
+    const ts=isoToMs(b.iso);
+    if(!best||ts<best.ts)best={ts:ts,instant:null,opp:isHome?(aa||b.a):(hh||b.h),d:b.d,t:null,live:b.status==="LIVE",clock:b.minute,knockout:true,round:b.r};
+  });
   return best;
 }
 function buildFollowBar(){
@@ -1324,13 +1334,13 @@ function buildFollowBar(){
   const nx=nextMatchFor(t.name);
   let nextHtml;
   if(nx){
-    const m=nx.m;
-    const opp=m.g.split(" vs ").map(function(x){return x.trim();}).filter(function(x){return canon(x)!==canon(t.name);})[0]||"";
-    const f=(tzState.mode==="tz")?fmtInstant(nx.ts):null;
-    const when=f?(f.date+' · '+f.time+' '+f.tz):(m.d+' · '+m.t+' ET');
-    const liveTag=m.live?'<span class="fb-live">● LIVE'+(m.clock?" "+m.clock+"'":"")+'</span>':'';
-    nextHtml='<span class="fb-next">'+(m.live?'Now':'Next')+': <b>'+escHTML(opp?("vs "+opp):m.g)+'</b> · '+when+liveTag+'</span>';
-  }else nextHtml='<span class="fb-next fb-none">No upcoming group match</span>';
+    let when;
+    if(nx.instant!=null&&tzState.mode==="tz"){const f=fmtInstant(nx.instant);when=f.date+' · '+f.time+' '+f.tz;}
+    else if(nx.t){when=nx.d+' · '+nx.t+' ET';}
+    else{when=nx.d+(nx.knockout?(' · '+roundLabel(nx.round)):'');} // knockout: no time, show round
+    const liveTag=nx.live?'<span class="fb-live">● LIVE'+(nx.clock?" "+String(nx.clock).replace(/['′]/g,"")+"'":"")+'</span>':'';
+    nextHtml='<span class="fb-next">'+(nx.live?'Now':'Next')+': <b>vs '+escHTML(nx.opp)+'</b> · '+when+liveTag+'</span>';
+  }else nextHtml='<span class="fb-next fb-none">No upcoming match</span>';
   bar.innerHTML='<span class="fb-star">★</span>'+
     '<span class="tlink fb-team" data-team="'+t.name+'">'+t.flag+' '+t.name+'</span>'+
     nextHtml+
@@ -2828,6 +2838,7 @@ function toggleFriendlies(){toggleSection("fr-body","fr-toggle","friendlies");}
    Aggregated from the scoring plays already in the scoreboard feed — no extra
    requests. Own goals are excluded; penalties are counted and flagged. */
 let scorerData=[];
+let scorersReached=false; // did we actually pull the detailed scoreboard (ESPN)?
 function aggregateScorers(events){
   const tally={},seen={};
   (events||[]).forEach(function(e){
@@ -2846,7 +2857,9 @@ function buildScorers(){
   if(!grid)return;
   const st=document.getElementById("sc-updated");
   if(!scorerData.length){
-    grid.innerHTML='<div class="sc-empty">No goals yet — the race opens with the first goal of the tournament.</div>';
+    grid.innerHTML='<div class="sc-empty">'+(scorersReached
+      ?'No goals yet — the race opens with the first goal of the tournament.'
+      :'Top scorers fill in from the live scoreboard — host the page over http(s) or tap Refresh.')+'</div>';
     if(st)st.innerHTML="";return;
   }
   const top=scorerData.slice(0,20),maxG=top[0].goals;
@@ -3064,6 +3077,7 @@ async function refreshScores(){
     applyBracket(espnEvents);
     const goals=detectGoals();
     const bgoals=detectBracketGoals();
+    scorersReached=!!espnEvents; // ESPN feed carries per-goal scorer detail; the Claude fallback doesn't
     aggregateScorers(espnEvents);
     buildGrid();
     buildStandings();
