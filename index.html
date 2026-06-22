@@ -770,6 +770,8 @@ html[data-theme="dark"] .hx-scg{color:#34d39a}
 html[data-theme="dark"] .hx-stm{color:#80868f}
 .mp-venue{font-size:12px;color:#888;text-align:center;margin:-6px 0 12px}
 html[data-theme="dark"] .mp-venue{color:#9aa0a8}
+.mp-archived{font-size:11px;font-weight:700;color:#9a7b00;background:#fbf4d8;border:1px solid #f0e3a8;border-radius:8px;padding:4px 8px;margin-bottom:10px;text-align:center}
+html[data-theme="dark"] .mp-archived{color:#e8c75a;background:#2a2410;border-color:#4a3f17}
 .mp-lineups{display:flex;gap:14px}
 .mp-lncol{flex:1;min-width:0}
 .mp-lnteam{font-size:11px;font-weight:800;color:#1a1a1a;margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -1713,6 +1715,55 @@ function matchPopoverHTML(e){
 }
 
 /* On-demand goals & cards from ESPN's match summary. */
+/* Render a match summary (live from ESPN, or from the preserved snapshot — both
+   share the same shape: {keyEvents, rosters, commentary}). */
+function renderMatchEvents(box,d,archived){
+  let html="";
+  if(archived) html+='<div class="mp-archived">📦 Archived from snapshot</div>';
+  // Goals & cards (key events)
+  const evs=((d&&d.keyEvents)||[]).filter(function(x){var t=(x.type&&x.type.text)||"";return /goal|card/i.test(t);});
+  if(evs.length){
+    html+='<div class="mp-ev-head">Goals &amp; cards</div>'+evs.map(function(x){
+      var t=(x.type&&x.type.text)||"";
+      var clk=(x.clock&&x.clock.displayValue)||"";
+      var ic=/red card/i.test(t)?"🟥":(/yellow card/i.test(t)?"🟨":(/goal/i.test(t)?"⚽":"•"));
+      return '<div class="mp-ev"><span class="mp-ev-clk">'+escHTML(clk)+'</span><span>'+ic+'</span><span class="mp-ev-tx">'+escHTML(x.text||t)+'</span></div>';
+    }).join("");
+  }
+  // Lineups (collapsible) — both teams' starting XI + subs, from rosters
+  const rs=(d&&d.rosters)||[];
+  if(rs.length>=2 && rs.some(function(t){return (t.roster||[]).length;})){
+    const col=function(t){
+      const rost=t.roster||[];
+      const starters=rost.filter(function(p){return p.starter;});
+      const subs=rost.filter(function(p){return !p.starter;});
+      const nm=function(p){return escHTML((p.athlete&&p.athlete.displayName)||"");};
+      const row=function(p,sub){return '<div class="mp-ln'+(sub?" mp-lns":"")+'">'+(p.jersey?'<span class="mp-lnj">'+escHTML(p.jersey)+'</span>':'')+nm(p)+'</div>';};
+      return '<div class="mp-lncol"><div class="mp-lnteam">'+escHTML((t.team&&t.team.displayName)||"")+'</div>'+
+        (starters.length?starters.map(function(p){return row(p,false);}).join(""):rost.map(function(p){return row(p,false);}).join(""))+
+        (subs.length?'<div class="mp-lnsub">Subs</div>'+subs.map(function(p){return row(p,true);}).join(""):"")+'</div>';
+    };
+    html+='<div class="mp-comm"><button class="mp-comm-tog" onclick="this.parentNode.classList.toggle(\'open\')">Lineups &#9662;</button><div class="mp-comm-list"><div class="mp-lineups">'+col(rs[0])+col(rs[1])+'</div></div></div>';
+  }
+  // Full play-by-play commentary (collapsible, latest first)
+  const c=(d&&d.commentary)||[];
+  if(c.length){
+    const crows=c.slice().reverse().map(function(x){
+      var tm=(x.time&&x.time.displayValue)||"";
+      return '<div class="mp-cm"><span class="mp-cm-t">'+escHTML(tm)+'</span><span class="mp-cm-x">'+escHTML(x.text||"")+'</span></div>';
+    }).join("");
+    html+='<div class="mp-comm"><button class="mp-comm-tog" onclick="this.parentNode.classList.toggle(\'open\')">Full commentary &middot; '+c.length+' &#9662;</button><div class="mp-comm-list">'+crows+'</div></div>';
+  }
+  box.innerHTML=html || '<div class="mp-ev-loading">No event detail recorded for this match.</div>';
+}
+/* Lazy-load (and cache) the preserved live snapshot for popover fallback. */
+function getWCSnapshot(){
+  if(window.__wcSnap)return Promise.resolve(window.__wcSnap);
+  return fetch("data/2026-snapshot.json",{cache:"force-cache"})
+    .then(function(r){return r.ok?r.json():null;})
+    .then(function(s){window.__wcSnap=s;return s;})
+    .catch(function(){return null;});
+}
 function loadMatchEvents(eid){
   const box=document.getElementById("mpEvents");if(!box)return;
   box.innerHTML='<div class="mp-ev-loading">Loading match events…</div>';
@@ -1720,44 +1771,18 @@ function loadMatchEvents(eid){
    .then(function(r){return r.ok?r.json():null;})
    .then(function(d){
      if(!box.isConnected)return;
-     let html="";
-     // Goals & cards (key events)
-     const evs=((d&&d.keyEvents)||[]).filter(function(x){var t=(x.type&&x.type.text)||"";return /goal|card/i.test(t);});
-     if(evs.length){
-       html+='<div class="mp-ev-head">Goals &amp; cards</div>'+evs.map(function(x){
-         var t=(x.type&&x.type.text)||"";
-         var clk=(x.clock&&x.clock.displayValue)||"";
-         var ic=/red card/i.test(t)?"🟥":(/yellow card/i.test(t)?"🟨":(/goal/i.test(t)?"⚽":"•"));
-         return '<div class="mp-ev"><span class="mp-ev-clk">'+escHTML(clk)+'</span><span>'+ic+'</span><span class="mp-ev-tx">'+escHTML(x.text||t)+'</span></div>';
-       }).join("");
-     }
-     // Lineups (collapsible) — both teams' starting XI + subs, from rosters
-     const rs=(d&&d.rosters)||[];
-     if(rs.length>=2 && rs.some(function(t){return (t.roster||[]).length;})){
-       const col=function(t){
-         const rost=t.roster||[];
-         const starters=rost.filter(function(p){return p.starter;});
-         const subs=rost.filter(function(p){return !p.starter;});
-         const nm=function(p){return escHTML((p.athlete&&p.athlete.displayName)||"");};
-         const row=function(p,sub){return '<div class="mp-ln'+(sub?" mp-lns":"")+'">'+(p.jersey?'<span class="mp-lnj">'+escHTML(p.jersey)+'</span>':'')+nm(p)+'</div>';};
-         return '<div class="mp-lncol"><div class="mp-lnteam">'+escHTML((t.team&&t.team.displayName)||"")+'</div>'+
-           (starters.length?starters.map(function(p){return row(p,false);}).join(""):rost.map(function(p){return row(p,false);}).join(""))+
-           (subs.length?'<div class="mp-lnsub">Subs</div>'+subs.map(function(p){return row(p,true);}).join(""):"")+'</div>';
-       };
-       html+='<div class="mp-comm"><button class="mp-comm-tog" onclick="this.parentNode.classList.toggle(\'open\')">Lineups &#9662;</button><div class="mp-comm-list"><div class="mp-lineups">'+col(rs[0])+col(rs[1])+'</div></div></div>';
-     }
-     // Full play-by-play commentary (collapsible, latest first)
-     const c=(d&&d.commentary)||[];
-     if(c.length){
-       const crows=c.slice().reverse().map(function(x){
-         var tm=(x.time&&x.time.displayValue)||"";
-         return '<div class="mp-cm"><span class="mp-cm-t">'+escHTML(tm)+'</span><span class="mp-cm-x">'+escHTML(x.text||"")+'</span></div>';
-       }).join("");
-       html+='<div class="mp-comm"><button class="mp-comm-tog" onclick="this.parentNode.classList.toggle(\'open\')">Full commentary &middot; '+c.length+' &#9662;</button><div class="mp-comm-list">'+crows+'</div></div>';
-     }
-     box.innerHTML=html || '<div class="mp-ev-loading">No event detail recorded for this match.</div>';
+     if(d && (((d.keyEvents||[]).length)||((d.rosters||[]).length)||((d.commentary||[]).length))) renderMatchEvents(box,d,false);
+     else throw new Error("empty");   // fall through to the snapshot
    })
-   .catch(function(){if(box)box.innerHTML="";});
+   .catch(function(){
+     // Live summary unavailable — use the preserved snapshot if it has this match.
+     getWCSnapshot().then(function(snap){
+       if(!box||!box.isConnected)return;
+       const s=snap&&snap.summaries&&snap.summaries[eid];
+       if(s)renderMatchEvents(box,s,true);
+       else box.innerHTML='<div class="mp-ev-loading">No event detail available for this match.</div>';
+     });
+   });
 }
 
 function wdTime(claims,prop){
@@ -3444,6 +3469,18 @@ async function refreshScores(){
   if(!reached||!results||!results.length){
     try{const r=await fetchLiveScores();if(r){results=r;reached=true;}}catch(e){}
   }
+  // 3) …then the committed snapshot — preserves the whole tournament so the app
+  //    still works if the live sources are gone or change (scripts/snapshot-live.mjs).
+  let fromSnap=null;
+  if(!reached||!results||!results.length){
+    try{
+      const snap=await fetch("data/2026-snapshot.json",{cache:"force-cache"}).then(function(r){return r.ok?r.json():null;});
+      if(snap&&snap.events&&snap.events.length){
+        window.__wcSnap=snap;
+        results=snap.events;espnEvents=snap.events;reached=true;fromSnap=snap;
+      }
+    }catch(e){}
+  }
   const t=new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
   if(reached&&results){
     const n=applyLive(results);
@@ -3461,7 +3498,11 @@ async function refreshScores(){
     buildFollowBar();
     fireGoalNotifications(goals.concat(bgoals));
     if(goals.length||bgoals.length)setTimeout(function(){clearFlash();clearBracketFlash();buildGrid();buildToday();buildBracket();},2200); // clear pulse after it plays
-    if(n>0)setLiveStatus('<span class="ok">✓ Updated</span> '+n+' match'+(n!==1?"es":"")+' &middot; last checked '+t);
+    if(fromSnap){
+      let cap="";try{cap=new Date(fromSnap.capturedAt).toLocaleDateString([],{year:"numeric",month:"short",day:"numeric"});}catch(e){}
+      setLiveStatus('<span class="ok">✓ Archived</span> &middot; live source unavailable — showing the preserved snapshot'+(cap?' captured '+cap:'')+'.');
+    }
+    else if(n>0)setLiveStatus('<span class="ok">✓ Updated</span> '+n+' match'+(n!==1?"es":"")+' &middot; last checked '+t);
     else setLiveStatus('<span class="ok">✓ Checked</span> &middot; no World Cup matches in progress right now &middot; '+t);
   }else{
     setLiveStatus('<span class="warn">Couldn\'t reach a live source from here</span> — showing saved scores. Works in Claude\'s view, or host the page over http(s) for a normal browser.');

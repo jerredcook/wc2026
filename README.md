@@ -39,14 +39,32 @@ A small **network-first** service worker ([`sw.js`](sw.js)) makes the installed 
 
 ## How live data works
 
-Scores are **not stored in the file**. They are fetched at runtime from two sources, tried in order:
+Live scores are fetched at runtime from three sources, tried in order:
 
 1. **ESPN's public scoreboard** (`site.api.espn.com/.../soccer/fifa.world/scoreboard`) — keyless and CORS-friendly, so it works in any normal browser **when the page is served over http(s)**. Each tournament day so far is fetched in parallel and merged, so one refresh backfills every completed result plus anything live right now.
 2. **Claude web search** (Anthropic API) — used as a fallback when the page is open inside Claude's artifact view.
+3. **The preserved snapshot** (`data/2026-snapshot.json`) — see *Preserving the live data* below.
 
-If neither is reachable — e.g. the file is opened straight from disk via `file://`, where browsers block web requests — the app degrades gracefully, keeps the last scores it has, and the status line says so plainly.
+If none is reachable — e.g. the file is opened straight from disk via `file://`, where browsers block web requests — the app degrades gracefully, keeps the last scores it has, and the status line says so plainly.
 
-The standings and the bracket both recompute from the live scores every refresh.
+The standings and the bracket both recompute from the scores every refresh.
+
+### Preserving the live data
+
+Because the 2026 scores, scorers, lineups and commentary come from a live third-party feed, they would vanish if ESPN ever drops or changes the data. So we snapshot the feed into a committed file and let the app **fall back to it**:
+
+- [`scripts/snapshot-live.mjs`](scripts/snapshot-live.mjs) captures every played match into [`data/2026-snapshot.json`](data/) in the *exact* shape the app's live parser produces — the full event list (scores, goal scorers, red cards) plus each match's goals/cards timeline, lineups, and full commentary.
+- When the two live sources above both fail, the app loads that snapshot and runs it through the **same** pipeline — so the schedule, **group standings, Golden Boot leaderboard and the knockout bracket all reconstruct from preserved data**, and the status line reads *"✓ Archived — showing the preserved snapshot."* Match popovers fall back too, tagged *📦 Archived from snapshot*.
+- It's only ever a fallback: while the tournament is on, fresh live data is always preferred, and the snapshot is never even fetched unless a live source fails.
+
+Re-run it to keep the archive current, and once more after the final for the permanent record:
+
+```bash
+node scripts/snapshot-live.mjs          # capture every match up to today
+node scripts/snapshot-live.mjs --full   # ignore the "today" cap
+```
+
+A year from now, even if every live source is gone, opening the app still shows the complete 2026 tournament.
 
 ## Group standings & FIFA tiebreakers
 
