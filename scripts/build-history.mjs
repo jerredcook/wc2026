@@ -158,6 +158,48 @@ async function loadOpenfootball(year){
   return { byPair, stadiums, have: ms.length>0 };
 }
 
+const SUMMARY = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=";
+const POS_ORDER = { GK:0, DF:1, MF:2, FW:3, "":4 };
+/* Normalize ESPN's granular position labels (G, CD-L, CF-R, AM, RM, ST, SUB…)
+   to the four broad lines. Order of tests matters. */
+function posBroad(raw){
+  const p = String(raw||"").toUpperCase();
+  if(!p || p==="SUB") return "";
+  if(p[0]==="G") return "GK";
+  if(/F|ST|RW|LW|SS/.test(p)) return "FW";
+  if(/M/.test(p)) return "MF";
+  if(/D|B/.test(p)) return "DF";
+  return "";
+}
+/* Aggregate each team's squad from its matchday rosters across the tournament.
+   Modern matchday rosters include the full bench (≈ the 23/26-man squad);
+   pre-substitution eras list only the XI, so older squads are "players who
+   appeared." apps = matchday-squad appearances, starts = times in the XI. */
+async function fetchSquads(matches){
+  const acc = {}; // team -> name -> {n,p,a,s}
+  await pool(matches.filter(m=>m.eid), 8, async m=>{
+    const j = await getJSON(SUMMARY + encodeURIComponent(m.eid));
+    const rs = (j && j.rosters) || [];
+    for(const t of rs){
+      const tn = (t.team && t.team.displayName) || ""; if(!tn) continue;
+      const team = acc[tn] = acc[tn] || {};
+      for(const p of (t.roster || [])){
+        const name = p.athlete && p.athlete.displayName; if(!name) continue;
+        const broad = posBroad(p.position && p.position.abbreviation);
+        const e = team[name] = team[name] || { n:name, p:broad, a:0, s:0 };
+        e.a++; if(p.starter) e.s++;
+        if(!e.p && broad) e.p = broad;   // fill a position once a real one appears
+      }
+    }
+  });
+  const out = {};
+  for(const tn in acc){
+    out[tn] = Object.values(acc[tn]).sort((a,b)=>
+      ((POS_ORDER[a.p]??4)-(POS_ORDER[b.p]??4)) || b.s-a.s || b.a-a.a || a.n.localeCompare(b.n));
+  }
+  return out;
+}
+
 async function buildTournament(t){
   const days = daysBetween(t.start, t.end);
   const batches = await pool(days, 6, async ds => {
@@ -205,13 +247,16 @@ async function buildTournament(t){
     .slice(0,20);
   matches.forEach(m=>{ delete m._goals; });
 
+  const squads = await fetchSquads(matches);
+
   return {
     year:t.year, host:t.host, source: of.have ? "ESPN + openfootball (venues)" : "ESPN",
     rounds,
-    stats:{ matches:matches.length, played:played.length, goals, venuesFixed:vfixed },
+    stats:{ matches:matches.length, played:played.length, goals, venuesFixed:vfixed, teams:Object.keys(squads).length },
     champion,
     scorers,
     stadiums: of.stadiums,
+    squads,
     matches,
   };
 }

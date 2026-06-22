@@ -788,6 +788,23 @@ html[data-theme="dark"] .hx-mt{color:#cfd3da}
 html[data-theme="dark"] .hx-mt.w{color:#34d39a}
 html[data-theme="dark"] .hx-msc{background:#33373f;color:#e9eaed}
 html[data-theme="dark"] .mp-pensrow{color:#34d39a}
+.hx-teams{display:flex;flex-wrap:wrap;gap:6px}
+.hx-teamchip{font-size:12px;border:1px solid #e6e6e6;background:#fafafb;border-radius:14px;padding:3px 10px;cursor:pointer;white-space:nowrap}
+.hx-teamchip:hover{border-color:#0d8a4f;background:#f3fbf6}
+html[data-theme="dark"] .hx-teamchip{background:#23262e;border-color:#31343d;color:#cfd3da}
+html[data-theme="dark"] .hx-teamchip:hover{border-color:#34d39a;background:#1c2a22}
+.hs-note{font-size:11px;color:#999;margin:-6px 0 12px;line-height:1.4}
+.hs-grp{margin-bottom:12px}
+.hs-gl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#aaa;margin-bottom:4px}
+.hs-gc{color:#ccc}
+.hs-p{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:3px 0;border-bottom:1px solid #f5f5f5;font-size:13px}
+.hs-p:last-child{border-bottom:none}
+.hs-pn{color:#1a1a1a;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hs-pa{font-size:11px;color:#999;flex-shrink:0;font-variant-numeric:tabular-nums}
+html[data-theme="dark"] .hs-note,html[data-theme="dark"] .hs-gl,html[data-theme="dark"] .hs-pa{color:#80868f}
+html[data-theme="dark"] .hs-gc{color:#5a6069}
+html[data-theme="dark"] .hs-p{border-color:#2a2d35}
+html[data-theme="dark"] .hs-pn{color:#e9eaed}
 html[data-theme="dark"] .hx-section{background:#1e2026;box-shadow:0 1px 3px rgba(0,0,0,.45)}
 html[data-theme="dark"] .hx-title{color:#f2f3f5}
 html[data-theme="dark"] .hx-sub,html[data-theme="dark"] .hx-host,html[data-theme="dark"] .hx-foot,html[data-theme="dark"] .hx-stats{color:#9aa0a8}
@@ -3122,8 +3139,14 @@ function renderWCMatches(year){
       return '<div class="hx-scr"><span class="hx-scn">'+escHTML(s.name)+'<span class="hx-sct">'+escHTML(s.city)+'</span></span>'+
         '<span class="hx-stm">'+s.matches+'</span></div>';
     }).join("")+'</div>') : "";
-  box.innerHTML='<div class="hx-mhead">'+data.stats.matches+' matches &middot; '+data.stats.goals+' goals &middot; tap a match for details</div>'+
+  const teams=Object.keys(data.squads||{}).sort();
+  const sqHtml = teams.length ? ('<div class="hx-round"><div class="hx-rname">👥 Squads ('+teams.length+') &middot; tap a team</div><div class="hx-teams">'+teams.map(function(tm){
+      const tr=teamRecord(tm); const flag=tr?tr.flag+' ':'';
+      return '<span class="hx-teamchip" tabindex="0" role="button" onclick="openHistSquad('+year+',\''+tm.replace(/'/g,"\\'")+'\')">'+flag+escHTML(tm)+'</span>';
+    }).join("")+'</div></div>') : "";
+  box.innerHTML='<div class="hx-mhead">'+data.stats.matches+' matches &middot; '+data.stats.goals+' goals &middot; tap a match or team for details</div>'+
     '<div class="hx-twocol">'+scHtml+sdHtml+'</div>'+
+    sqHtml+
     data.rounds.map(function(rd){
       const ms=byRound[rd]||[];if(!ms.length)return"";
       return '<div class="hx-round"><div class="hx-rname">'+escHTML(rd)+'</div>'+ms.map(function(m){
@@ -3157,6 +3180,31 @@ function openHistMatch(year,eid){
   document.getElementById("mp-overlay").classList.add("open");
   document.body.style.overflow="hidden";
   if(m.eid)loadMatchEvents(m.eid);
+}
+/* A team's tournament squad (aggregated from matchday rosters), grouped by line. */
+function openHistSquad(year,team){
+  const data=wcCache[year];if(!data||!data.squads)return;
+  const sq=data.squads[team]||[];if(!sq.length)return;
+  const groups={GK:[],DF:[],MF:[],FW:[],"":[]};
+  sq.forEach(function(p){(groups[p.p]!==undefined?groups[p.p]:groups[""]).push(p);});
+  const labels={GK:"Goalkeepers",DF:"Defenders",MF:"Midfielders",FW:"Forwards","":"Other"};
+  let body="";
+  ["GK","DF","MF","FW",""].forEach(function(k){
+    const list=groups[k];if(!list.length)return;
+    body+='<div class="hs-grp"><div class="hs-gl">'+labels[k]+' <span class="hs-gc">'+list.length+'</span></div>'+list.map(function(p){
+      const apps=p.a+(p.s<p.a?' app'+(p.a!==1?'s':''):' start'+(p.a!==1?'s':''));
+      return '<div class="hs-p"><span class="hs-pn">'+escHTML(p.n)+'</span><span class="hs-pa">'+apps+'</span></div>';
+    }).join("")+'</div>';
+  });
+  const tr=teamRecord(team), flag=tr?tr.flag+' ':'';
+  const card=document.getElementById("mp-card");
+  card.innerHTML='<button class="mp-close" onclick="closeMatch()" aria-label="Close">✕</button>'+
+    '<div class="mp-top"><span class="mp-histbadge">'+year+'</span><span class="mp-date">'+flag+escHTML(team)+' · squad</span></div>'+
+    '<div class="hs-note">'+sq.length+' players · counts are matchday-roster appearances ('+(data.year>=1970?'incl. bench':'XI only — no subs in this era')+')</div>'+
+    '<div class="hs-squad">'+body+'</div>';
+  card.scrollTop=0;
+  document.getElementById("mp-overlay").classList.add("open");
+  document.body.style.overflow="hidden";
 }
 
 /* ══════════ TOP SCORERS (Golden Boot) ══════════
