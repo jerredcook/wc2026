@@ -15,6 +15,16 @@ import { dirname, join } from "node:path";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(ROOT, "data", "wc");
 const BASE = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
+const OF_BASE = "https://raw.githubusercontent.com/openfootball/world-cup.json/master"; // CC0 venues
+
+/* Normalize a nation for matching ESPN ↔ openfootball (their spellings differ). */
+const NALIAS = { germanyfr:"westgermany", frgermany:"westgermany",
+  korearepublic:"southkorea", iriran:"iran", chinapr:"china",
+  czechrepublic:"czechia", bosniaandherzegovina:"bosnia", capeverdeislands:"capeverde",
+  unitedstatesofamerica:"unitedstates", usa:"unitedstates" };
+function nt(s){ const k=String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z]/g,""); return NALIAS[k]||k; }
+function pairKey(a,b){ return [nt(a),nt(b)].sort().join("~"); }
+function splitGround(g){ const i=String(g||"").lastIndexOf(", "); return i<0?{name:g||"",city:""}:{name:g.slice(0,i),city:g.slice(i+2)}; }
 
 /* Tournament windows (a day or two of buffer each side). 2022 was in winter. */
 const TOURNAMENTS = [
@@ -132,6 +142,22 @@ function parseEvent(ev){
   return m;
 }
 
+/* openfootball grounds for a tournament: a pair→[{date,ground}] map plus the
+   distinct host stadiums with how many matches each hosted. */
+async function loadOpenfootball(year){
+  const j = await getJSON(`${OF_BASE}/${year}/worldcup.json`);
+  const ms = (j && j.matches) || [];
+  const byPair = {}; const venueCount = {};
+  for(const m of ms){
+    if(!m.ground) continue;
+    (byPair[pairKey(m.team1,m.team2)] = byPair[pairKey(m.team1,m.team2)] || []).push({ date:m.date, ground:m.ground });
+    venueCount[m.ground] = (venueCount[m.ground]||0) + 1;
+  }
+  const stadiums = Object.keys(venueCount).map(g=>{ const s=splitGround(g); return { name:s.name, city:s.city, matches:venueCount[g] }; })
+    .sort((a,b)=> b.matches-a.matches || a.name.localeCompare(b.name));
+  return { byPair, stadiums, have: ms.length>0 };
+}
+
 async function buildTournament(t){
   const days = daysBetween(t.start, t.end);
   const batches = await pool(days, 6, async ds => {
@@ -141,6 +167,19 @@ async function buildTournament(t){
   const seen=new Set(), matches=[];
   for(const arr of batches) for(const m of arr){ if(m.eid&&seen.has(m.eid)) continue; if(m.eid) seen.add(m.eid); matches.push(m); }
   matches.sort((a,b)=> a.date<b.date?-1 : a.date>b.date?1 : 0);
+
+  // Fix venues from openfootball (ESPN's historical venues are unreliable) and
+  // build the host-stadiums list. Match by team pair, disambiguating by date.
+  const of = await loadOpenfootball(t.year);
+  let vfixed = 0;
+  if(of.have){
+    for(const m of matches){
+      const cands = of.byPair[pairKey(m.home, m.away)];
+      if(!cands || !cands.length) continue;
+      const pick = cands.find(c=>c.date===m.date) || cands.sort((a,b)=>Math.abs(new Date(a.date)-new Date(m.date))-Math.abs(new Date(b.date)-new Date(m.date)))[0];
+      if(pick){ const g=splitGround(pick.ground); m.venue=g.name; m.city=g.city; vfixed++; }
+    }
+  }
 
   const played = matches.filter(m=>m.hs!=null&&m.as!=null);
   const goals = played.reduce((n,m)=>n+m.hs+m.as,0);
@@ -167,11 +206,12 @@ async function buildTournament(t){
   matches.forEach(m=>{ delete m._goals; });
 
   return {
-    year:t.year, host:t.host, source:"ESPN",
+    year:t.year, host:t.host, source: of.have ? "ESPN + openfootball (venues)" : "ESPN",
     rounds,
-    stats:{ matches:matches.length, played:played.length, goals },
+    stats:{ matches:matches.length, played:played.length, goals, venuesFixed:vfixed },
     champion,
     scorers,
+    stadiums: of.stadiums,
     matches,
   };
 }

@@ -764,6 +764,22 @@ html[data-theme="dark"] .hx-scorers{background:#23262e;border-color:#31343d}
 html[data-theme="dark"] .hx-scn{color:#e9eaed}
 html[data-theme="dark"] .hx-sct{color:#80868f}
 html[data-theme="dark"] .hx-scg{color:#34d39a}
+.hx-twocol{display:flex;gap:12px;flex-wrap:wrap}
+.hx-twocol .hx-scorers{flex:1;min-width:240px;max-width:none;margin-bottom:14px}
+.hx-stm{font-weight:700;color:#888;font-variant-numeric:tabular-nums;flex-shrink:0}
+html[data-theme="dark"] .hx-stm{color:#80868f}
+.mp-venue{font-size:12px;color:#888;text-align:center;margin:-6px 0 12px}
+html[data-theme="dark"] .mp-venue{color:#9aa0a8}
+.mp-lineups{display:flex;gap:14px}
+.mp-lncol{flex:1;min-width:0}
+.mp-lnteam{font-size:11px;font-weight:800;color:#1a1a1a;margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mp-ln{font-size:12px;color:#333;padding:2px 0;line-height:1.3;display:flex;gap:5px;align-items:baseline}
+.mp-lnj{display:inline-block;min-width:16px;font-size:10px;font-weight:700;color:#aaa;font-variant-numeric:tabular-nums}
+.mp-lns{color:#888}
+.mp-lnsub{font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#bbb;margin:6px 0 3px}
+html[data-theme="dark"] .mp-lnteam{color:#e9eaed}
+html[data-theme="dark"] .mp-ln{color:#cfd3da}
+html[data-theme="dark"] .mp-lns{color:#9aa0a8}
 .mp-histbadge{font-size:10px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:#7a5000;background:#fef4dc;border-radius:4px;padding:2px 7px}
 .mp-pensrow{font-size:12px;font-weight:700;color:#0d6b52;text-align:center;margin:-8px 0 10px}
 html[data-theme="dark"] .hx-mhead,html[data-theme="dark"] .hx-rname,html[data-theme="dark"] .hx-mload{color:#80868f}
@@ -1698,6 +1714,21 @@ function loadMatchEvents(eid){
          return '<div class="mp-ev"><span class="mp-ev-clk">'+escHTML(clk)+'</span><span>'+ic+'</span><span class="mp-ev-tx">'+escHTML(x.text||t)+'</span></div>';
        }).join("");
      }
+     // Lineups (collapsible) — both teams' starting XI + subs, from rosters
+     const rs=(d&&d.rosters)||[];
+     if(rs.length>=2 && rs.some(function(t){return (t.roster||[]).length;})){
+       const col=function(t){
+         const rost=t.roster||[];
+         const starters=rost.filter(function(p){return p.starter;});
+         const subs=rost.filter(function(p){return !p.starter;});
+         const nm=function(p){return escHTML((p.athlete&&p.athlete.displayName)||"");};
+         const row=function(p,sub){return '<div class="mp-ln'+(sub?" mp-lns":"")+'">'+(p.jersey?'<span class="mp-lnj">'+escHTML(p.jersey)+'</span>':'')+nm(p)+'</div>';};
+         return '<div class="mp-lncol"><div class="mp-lnteam">'+escHTML((t.team&&t.team.displayName)||"")+'</div>'+
+           (starters.length?starters.map(function(p){return row(p,false);}).join(""):rost.map(function(p){return row(p,false);}).join(""))+
+           (subs.length?'<div class="mp-lnsub">Subs</div>'+subs.map(function(p){return row(p,true);}).join(""):"")+'</div>';
+       };
+       html+='<div class="mp-comm"><button class="mp-comm-tog" onclick="this.parentNode.classList.toggle(\'open\')">Lineups &#9662;</button><div class="mp-comm-list"><div class="mp-lineups">'+col(rs[0])+col(rs[1])+'</div></div></div>';
+     }
      // Full play-by-play commentary (collapsible, latest first)
      const c=(d&&d.commentary)||[];
      if(c.length){
@@ -1707,7 +1738,7 @@ function loadMatchEvents(eid){
        }).join("");
        html+='<div class="mp-comm"><button class="mp-comm-tog" onclick="this.parentNode.classList.toggle(\'open\')">Full commentary &middot; '+c.length+' &#9662;</button><div class="mp-comm-list">'+crows+'</div></div>';
      }
-     box.innerHTML=html;
+     box.innerHTML=html || '<div class="mp-ev-loading">No event detail recorded for this match.</div>';
    })
    .catch(function(){if(box)box.innerHTML="";});
 }
@@ -3086,8 +3117,13 @@ function renderWCMatches(year){
       return '<div class="hx-scr"><span class="hx-scn">'+escHTML(s.scorer)+'<span class="hx-sct">'+escHTML(s.team)+'</span></span>'+
         '<span class="hx-scg">'+s.goals+(s.pens?'<span class="hx-scp">'+s.pens+'p</span>':'')+'</span></div>';
     }).join("")+'</div>') : "";
+  const sd=(data.stadiums||[]);
+  const sdHtml = sd.length ? ('<div class="hx-scorers hx-stadiums"><div class="hx-rname">🏟 Host stadiums ('+sd.length+')</div>'+sd.map(function(s){
+      return '<div class="hx-scr"><span class="hx-scn">'+escHTML(s.name)+'<span class="hx-sct">'+escHTML(s.city)+'</span></span>'+
+        '<span class="hx-stm">'+s.matches+'</span></div>';
+    }).join("")+'</div>') : "";
   box.innerHTML='<div class="hx-mhead">'+data.stats.matches+' matches &middot; '+data.stats.goals+' goals &middot; tap a match for details</div>'+
-    scHtml+
+    '<div class="hx-twocol">'+scHtml+sdHtml+'</div>'+
     data.rounds.map(function(rd){
       const ms=byRound[rd]||[];if(!ms.length)return"";
       return '<div class="hx-round"><div class="hx-rname">'+escHTML(rd)+'</div>'+ms.map(function(m){
@@ -3114,7 +3150,9 @@ function openHistMatch(year,eid){
   card.innerHTML='<button class="mp-close" onclick="closeMatch()" aria-label="Close">✕</button>'+
     '<div class="mp-top"><span class="mp-histbadge">'+year+' · '+escHTML(m.round)+'</span><span class="mp-date">'+escHTML(dt)+'</span><span class="mp-status ft">Full time</span></div>'+
     '<div class="mp-teams"><span class="mp-tm'+(hw?' win':'')+'">'+escHTML(m.home)+'</span>'+sc+'<span class="mp-tm a'+(aw?' win':'')+'">'+escHTML(m.away)+'</span></div>'+
-    pens+'<div class="mp-events" id="mpEvents"></div>';
+    pens+
+    (m.venue?'<div class="mp-venue">📍 '+escHTML(m.venue)+(m.city?' · '+escHTML(m.city):'')+'</div>':'')+
+    '<div class="mp-events" id="mpEvents"></div>';
   card.scrollTop=0;
   document.getElementById("mp-overlay").classList.add("open");
   document.body.style.overflow="hidden";
