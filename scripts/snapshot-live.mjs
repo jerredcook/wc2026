@@ -26,14 +26,18 @@
    Pure Node, no dependencies (Node 18+ for global fetch).
    ────────────────────────────────────────────────────────────────────────── */
 
-import { writeFile, mkdir } from "node:fs/promises";
+import { writeFile, readFile, mkdir } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const SCORE = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard?dates=";
 const SUMM  = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=";
-const FULL  = process.argv.includes("--full");
+/* By default we query the FULL tournament window (clock-independent), because
+   this runs on servers whose wall clock is not the tournament's — depending on
+   `new Date()` for the range made a scheduled run query the wrong dates and get
+   nothing back. `--today` opts into capping at today for quick local runs. */
+const CAP_TODAY = process.argv.includes("--today");
 
 async function getJSON(url, tries = 4) {
   for (let i = 0; i < tries; i++) {
@@ -57,14 +61,16 @@ async function pool(items, n, fn) {
   return out;
 }
 
-/* YYYYMMDD for Jun 11 2026 → min(today, Jul 19 2026) — mirrors the app's
-   tournamentDates() so the snapshot covers exactly what the app would fetch. */
+/* YYYYMMDD for every day of the tournament (Jun 11 → Jul 19 2026). Fixed window
+   by default so the date range never depends on the machine's clock; `--today`
+   caps it at today for incremental local runs. Built in UTC to be timezone-proof. */
 function tournamentDates() {
   const out = [];
-  const start = new Date(2026, 5, 11), end = new Date(2026, 6, 19), now = new Date();
-  const last = FULL ? end : (now < end ? now : end);
-  for (let d = new Date(start); d <= last; d.setDate(d.getDate() + 1)) {
-    out.push("" + d.getFullYear() + ("0" + (d.getMonth() + 1)).slice(-2) + ("0" + d.getDate()).slice(-2));
+  const start = Date.UTC(2026, 5, 11), end = Date.UTC(2026, 6, 19);
+  const last = CAP_TODAY ? Math.min(Date.now(), end) : end;
+  for (let t = start; t <= last; t += 86400000) {
+    const d = new Date(t);
+    out.push("" + d.getUTCFullYear() + ("0" + (d.getUTCMonth() + 1)).slice(-2) + ("0" + d.getUTCDate()).slice(-2));
   }
   return out;
 }
@@ -151,17 +157,21 @@ function trimSummary(d) {
 }
 
 async function main() {
+  const path = join(ROOT, "data", "2026-snapshot.json");
   const dates = tournamentDates();
-  console.log(`Capturing ${dates.length} tournament day(s)${FULL ? " (full range)" : " (up to today)"}…`);
+  console.log(`Capturing ${dates.length} tournament day(s)${CAP_TODAY ? " (up to today)" : " (full window Jun 11–Jul 19)"}…`);
 
-  // 1) All events across every day (the flat list the app's bracket consumes).
-  const days = await pool(dates, 6, async ds => parseEvents(await getJSON(SCORE + ds), ds));
-  const events = days.flat();
-  const played = events.filter(e => e.status === "FT" || e.status === "LIVE");
-  console.log(`  ${events.length} events (${played.length} played/live)`);
+  // 1) Every played/live match across the window (the list the app pipeline consumes).
+  //    UPCOMING fixtures carry no data and live in the app's schedule already, so we keep
+  //    only matches that actually have a result.
+  const all = (await pool(dates, 6, async ds => parseEvents(await getJSON(SCORE + ds), ds))).flat();
+  const events = all.filter(e => e.status === "FT" || e.status === "LIVE");
+  const daysWithData = new Set(events.map(e => e.date)).size;
+  const through = events.length ? events.map(e => e.date).sort().slice(-1)[0] : "";
+  console.log(`  ${all.length} events seen, ${events.length} played/live across ${daysWithData} day(s); through ${through || "—"}`);
 
-  // 2) Per-match detail (goals/cards, lineups, commentary) for everything with a score.
-  const withId = played.filter(e => e.id);
+  // 2) Per-match detail (goals/cards, lineups, commentary) for each played match.
+  const withId = events.filter(e => e.id);
   const summaries = {};
   let got = 0;
   await pool(withId, 8, async e => {
@@ -170,18 +180,28 @@ async function main() {
   });
   console.log(`  ${got}/${withId.length} match summaries captured`);
 
+  // 3) Protect the archive: never overwrite a good snapshot with fewer matches.
+  //    A run that comes back empty (ESPN down, queried the wrong dates, network
+  //    blocked) must not erase real preserved data — matches only accumulate.
+  let existingPlayed = 0;
+  try { existingPlayed = JSON.parse(await readFile(path, "utf8")).counts.played || 0; } catch (e) { /* none yet */ }
+  if (events.length < existingPlayed) {
+    console.log(`✗ Only ${events.length} played match(es) this run, but the existing snapshot has ${existingPlayed}. ` +
+      `Keeping the existing archive (not overwriting). Likely ESPN was unreachable or returned no data.`);
+    return;
+  }
+
   const snapshot = {
     capturedAt: new Date().toISOString(),
-    through: dates[dates.length - 1] || "",
-    counts: { days: dates.length, events: events.length, played: played.length, summaries: got },
+    through,
+    counts: { days: dates.length, eventsSeen: all.length, played: events.length, summaries: got },
     events,
     summaries
   };
 
   await mkdir(join(ROOT, "data"), { recursive: true });
-  const path = join(ROOT, "data", "2026-snapshot.json");
   await writeFile(path, JSON.stringify(snapshot));
-  console.log(`✓ wrote data/2026-snapshot.json (${(JSON.stringify(snapshot).length / 1024).toFixed(0)} KB)`);
+  console.log(`✓ wrote data/2026-snapshot.json — ${events.length} matches, ${got} summaries (${(JSON.stringify(snapshot).length / 1024).toFixed(0)} KB)`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); });
