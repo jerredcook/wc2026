@@ -754,6 +754,16 @@ html[data-theme="dark"] .site-foot a{color:#34d39a;border-color:#2c5a48}
 .hx-mt.w{font-weight:800;color:#0d6b52}
 .hx-msc{font-weight:800;font-variant-numeric:tabular-nums;background:#f1f2f4;border-radius:5px;padding:1px 7px;color:#1a1a1a;white-space:nowrap;flex-shrink:0}
 .hx-pens{font-size:9px;font-weight:700;color:#7a5000;white-space:nowrap;flex-shrink:0}
+.hx-scorers{margin-bottom:14px;background:#fafafb;border:1px solid #f0f0f0;border-radius:9px;padding:8px 11px;max-width:340px}
+.hx-scr{display:flex;align-items:baseline;justify-content:space-between;gap:8px;padding:3px 0;font-size:12.5px}
+.hx-scn{color:#1a1a1a;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.hx-sct{color:#999;font-size:11px;margin-left:6px}
+.hx-scg{font-weight:800;color:#0d6b52;font-variant-numeric:tabular-nums;flex-shrink:0}
+.hx-scp{font-size:9px;font-weight:700;color:#7a5000;margin-left:3px}
+html[data-theme="dark"] .hx-scorers{background:#23262e;border-color:#31343d}
+html[data-theme="dark"] .hx-scn{color:#e9eaed}
+html[data-theme="dark"] .hx-sct{color:#80868f}
+html[data-theme="dark"] .hx-scg{color:#34d39a}
 .mp-histbadge{font-size:10px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:#7a5000;background:#fef4dc;border-radius:4px;padding:2px 7px}
 .mp-pensrow{font-size:12px;font-weight:700;color:#0d6b52;text-align:center;margin:-8px 0 10px}
 html[data-theme="dark"] .hx-mhead,html[data-theme="dark"] .hx-rname,html[data-theme="dark"] .hx-mload{color:#80868f}
@@ -3071,7 +3081,13 @@ function renderWCMatches(year){
   const box=document.getElementById("hx-m-"+year);if(!box)return;
   const data=wcCache[year];if(!data){box.innerHTML="";return;}
   const byRound={};data.matches.forEach(function(m){(byRound[m.round]=byRound[m.round]||[]).push(m);});
+  const sc=(data.scorers||[]).slice(0,8);
+  const scHtml = sc.length ? ('<div class="hx-scorers"><div class="hx-rname">Top scorers</div>'+sc.map(function(s){
+      return '<div class="hx-scr"><span class="hx-scn">'+escHTML(s.scorer)+'<span class="hx-sct">'+escHTML(s.team)+'</span></span>'+
+        '<span class="hx-scg">'+s.goals+(s.pens?'<span class="hx-scp">'+s.pens+'p</span>':'')+'</span></div>';
+    }).join("")+'</div>') : "";
   box.innerHTML='<div class="hx-mhead">'+data.stats.matches+' matches &middot; '+data.stats.goals+' goals &middot; tap a match for details</div>'+
+    scHtml+
     data.rounds.map(function(rd){
       const ms=byRound[rd]||[];if(!ms.length)return"";
       return '<div class="hx-round"><div class="hx-rname">'+escHTML(rd)+'</div>'+ms.map(function(m){

@@ -105,6 +105,30 @@ function parseEvent(ev){
   };
   if(Number.isFinite(phs)&&Number.isFinite(pas)) m.pens={h:phs,a:pas};     // penalty shootout
   if(win && (HS===AS || m.pens)) m.win=win;                                // winner when score alone doesn't show it
+
+  // Goal scorers (for the per-tournament Golden Boot). Scoring plays are
+  // chronological; anything beyond the match score (hs+as) is a shootout kick,
+  // so we cap at the real total. Own goals count toward the score but credit
+  // no scorer; unrecorded scorers (ESPN gaps) are skipped.
+  const homeId=String(home.id||""), awayId=String(away.id||"");
+  const teamOf=tid=> String(tid)===homeId?m.home : (String(tid)===awayId?m.away : "");
+  const goals=[]; const total=(HS||0)+(AS||0);
+  if(Array.isArray(comp.details)){
+    let accounted=0;
+    for(const p of comp.details){
+      if(!p.scoringPlay) continue;
+      if(accounted>=total) break;                 // remaining plays are shootout penalties
+      accounted++;
+      const tx=((p.type&&(p.type.text||p.type.name))||"")+"";
+      if(/own goal/i.test(tx)) continue;          // counts toward score, credits nobody
+      const a=(p.athletesInvolved&&p.athletesInvolved[0])||null;
+      const name=a&&(a.displayName||a.shortName);
+      if(!name) continue;                          // unrecorded scorer
+      const tid=(a.team&&a.team.id)||(p.team&&p.team.id);
+      goals.push({scorer:name, team:teamOf(tid), pen:/penalt/i.test(tx)});
+    }
+  }
+  m._goals=goals;
   return m;
 }
 
@@ -129,11 +153,25 @@ async function buildTournament(t){
   const rounds = ROUND_ORDER.filter(r=>matches.some(m=>m.round===r))
     .concat([...new Set(matches.map(m=>m.round))].filter(r=>!ROUND_ORDER.includes(r)));
 
+  // Aggregate the tournament Golden Boot from per-match scorers, then strip the
+  // working data so the stored matches stay lean.
+  const tally={};
+  for(const m of matches){ for(const g of (m._goals||[])){
+    const k=g.scorer+"|"+g.team;
+    (tally[k]=tally[k]||{scorer:g.scorer,team:g.team,goals:0,pens:0});
+    tally[k].goals++; if(g.pen)tally[k].pens++;
+  }}
+  const scorers=Object.values(tally)
+    .sort((a,b)=> b.goals-a.goals || a.pens-b.pens || a.scorer.localeCompare(b.scorer))
+    .slice(0,20);
+  matches.forEach(m=>{ delete m._goals; });
+
   return {
     year:t.year, host:t.host, source:"ESPN",
     rounds,
     stats:{ matches:matches.length, played:played.length, goals },
     champion,
+    scorers,
     matches,
   };
 }
