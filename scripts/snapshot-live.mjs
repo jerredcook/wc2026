@@ -166,28 +166,44 @@ async function main() {
   //    only matches that actually have a result.
   const all = (await pool(dates, 6, async ds => parseEvents(await getJSON(SCORE + ds), ds))).flat();
   const events = all.filter(e => e.status === "FT" || e.status === "LIVE");
+  // Stable order so identical data always serializes identically (no commit churn).
+  events.sort((a, b) => a.date.localeCompare(b.date) || String(a.id).localeCompare(String(b.id)));
   const daysWithData = new Set(events.map(e => e.date)).size;
   const through = events.length ? events.map(e => e.date).sort().slice(-1)[0] : "";
   console.log(`  ${all.length} events seen, ${events.length} played/live across ${daysWithData} day(s); through ${through || "—"}`);
 
   // 2) Per-match detail (goals/cards, lineups, commentary) for each played match.
   const withId = events.filter(e => e.id);
-  const summaries = {};
+  const raw = {};
   let got = 0;
   await pool(withId, 8, async e => {
     const s = trimSummary(await getJSON(SUMM + encodeURIComponent(e.id)));
-    if (s) { summaries[e.id] = s; got++; }
+    if (s) { raw[e.id] = s; got++; }
   });
+  // Sort keys: the pool fills them in network-completion order, which varies per
+  // run — sorting makes the serialization deterministic so unchanged data == no commit.
+  const summaries = {};
+  for (const id of Object.keys(raw).sort()) summaries[id] = raw[id];
   console.log(`  ${got}/${withId.length} match summaries captured`);
 
-  // 3) Protect the archive: never overwrite a good snapshot with fewer matches.
-  //    A run that comes back empty (ESPN down, queried the wrong dates, network
-  //    blocked) must not erase real preserved data — matches only accumulate.
-  let existingPlayed = 0;
-  try { existingPlayed = JSON.parse(await readFile(path, "utf8")).counts.played || 0; } catch (e) { /* none yet */ }
+  let existing = null;
+  try { existing = JSON.parse(await readFile(path, "utf8")); } catch (e) { /* none yet */ }
+
+  // 3a) Protect the archive: never overwrite a good snapshot with fewer matches.
+  //     A run that comes back empty (ESPN down, queried the wrong dates, network
+  //     blocked) must not erase real preserved data — matches only accumulate.
+  const existingPlayed = (existing && existing.counts && existing.counts.played) || 0;
   if (events.length < existingPlayed) {
     console.log(`✗ Only ${events.length} played match(es) this run, but the existing snapshot has ${existingPlayed}. ` +
       `Keeping the existing archive (not overwriting). Likely ESPN was unreachable or returned no data.`);
+    return;
+  }
+
+  // 3b) Skip rewriting when the actual match data is unchanged, so a scheduled
+  //     run doesn't churn a commit just because the capture timestamp moved.
+  if (existing && JSON.stringify(existing.events) === JSON.stringify(events)
+      && JSON.stringify(existing.summaries) === JSON.stringify(summaries)) {
+    console.log(`✓ No change since last snapshot (${events.length} matches) — leaving the file untouched.`);
     return;
   }
 
