@@ -1,0 +1,156 @@
+[
+ {
+  "year": 2022,
+  "host": "Qatar",
+  "matches": 64,
+  "goals": 172,
+  "champion": "Argentina"
+ },
+ {
+  "year": 2018,
+  "host": "Russia",
+  "matches": 64,
+  "goals": 169,
+  "champion": "France"
+ },
+ {
+  "year": 2014,
+  "host": "Brazil",
+  "matches": 64,
+  "goals": 171,
+  "champion": "Germany"
+ },
+ {
+  "year": 2010,
+  "host": "South Africa",
+  "matches": 64,
+  "goals": 145,
+  "champion": "Spain"
+ },
+ {
+  "year": 2006,
+  "host": "Germany",
+  "matches": 64,
+  "goals": 147,
+  "champion": "Italy"
+ },
+ {
+  "year": 2002,
+  "host": "South Korea / Japan",
+  "matches": 64,
+  "goals": 161,
+  "champion": "Brazil"
+ },
+ {
+  "year": 1998,
+  "host": "France",
+  "matches": 64,
+  "goals": 171,
+  "champion": "France"
+ },
+ {
+  "year": 1994,
+  "host": "United States",
+  "matches": 52,
+  "goals": 141,
+  "champion": "Brazil"
+ },
+ {
+  "year": 1990,
+  "host": "Italy",
+  "matches": 52,
+  "goals": 115,
+  "champion": "Germany FR"
+ },
+ {
+  "year": 1986,
+  "host": "Mexico",
+  "matches": 52,
+  "goals": 131,
+  "champion": "Argentina"
+ },
+ {
+  "year": 1982,
+  "host": "Spain",
+  "matches": 52,
+  "goals": 146,
+  "champion": "Italy"
+ },
+ {
+  "year": 1978,
+  "host": "Argentina",
+  "matches": 38,
+  "goals": 102,
+  "champion": "Argentina"
+ },
+ {
+  "year": 1974,
+  "host": "West Germany",
+  "matches": 38,
+  "goals": 97,
+  "champion": "Germany FR"
+ },
+ {
+  "year": 1970,
+  "host": "Mexico",
+  "matches": 32,
+  "goals": 95,
+  "champion": "Brazil"
+ },
+ {
+  "year": 1966,
+  "host": "England",
+  "matches": 32,
+  "goals": 89,
+  "champion": "England"
+ },
+ {
+  "year": 1962,
+  "host": "Chile",
+  "matches": 32,
+  "goals": 89,
+  "champion": "Brazil"
+ },
+ {
+  "year": 1958,
+  "host": "Sweden",
+  "matches": 35,
+  "goals": 126,
+  "champion": "Brazil"
+ },
+ {
+  "year": 1954,
+  "host": "Switzerland",
+  "matches": 26,
+  "goals": 139,
+  "champion": "Germany FR"
+ },
+ {
+  "year": 1950,
+  "host": "Brazil",
+  "matches": 22,
+  "goals": 88,
+  "champion": null
+ },
+ {
+  "year": 1938,
+  "host": "France",
+  "matches": 18,
+  "goals": 81,
+  "champion": "Italy"
+ },
+ {
+  "year": 1934,
+  "host": "Italy",
+  "matches": 17,
+  "goals": 70,
+  "champion": "Italy"
+ },
+ {
+  "year": 1930,
+  "host": "Uruguay",
+  "matches": 18,
+  "goals": 69,
+  "champion": "Uruguay"
+ }
+]

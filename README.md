@@ -22,7 +22,7 @@ The whole app is [`index.html`](index.html) — HTML, CSS, and vanilla JavaScrip
 - **Time-zone toggle** — view kickoff times in ET, your local zone, or any picked zone.
 - **Dark mode** (respects your system preference) and **persistent preferences** — theme, time zone, filters, open/closed sections, and auto-refresh are remembered across visits.
 - **Installable** — add it to your phone's home screen for a full-screen, app-like experience (see below).
-- **World Cup history** — every champion since 1930; tap any tournament to expand the final (venue + score), the top-four finishers, the Golden Boot winner, and key stats (teams · matches · goals) plus a notable fact.
+- **World Cup history** — every champion since 1930; tap any tournament to expand the final, the top-four finishers, the Golden Boot winner, key stats, and a notable fact — plus its **full match results by round, lazy-loaded** from a static snapshot. Tap any historic match (e.g. the France 4–3 Argentina 2018 thriller) to open the same detail popover with its **goal & card timeline**. Match data is pre-pulled from ESPN by [`scripts/build-history.mjs`](scripts/build-history.mjs) into [`data/wc/`](data/wc/), so it loads fast and works offline.
 - **Pre-tournament warm-up friendlies** played across the host nations (collapsible).
 
 ## Installing it (add to home screen)

@@ -742,6 +742,26 @@ html[data-theme="dark"] .site-foot a{color:#34d39a;border-color:#2c5a48}
 .hx-stats{display:flex;flex-wrap:wrap;gap:5px 18px;font-size:12px;color:#666;margin-bottom:11px}
 .hx-stats b{color:#1a1a1a}
 .hx-fact{font-size:12.5px;line-height:1.5;color:#5a4a1a;background:#fffdf2;border:1px solid #f1e6b8;border-radius:9px;padding:9px 12px}
+.hx-matches{margin-top:12px}
+.hx-mload{font-size:12px;color:#aaa;padding:4px 2px}
+.hx-mhead{font-size:10.5px;color:#999;font-weight:600;margin-bottom:8px}
+.hx-round{margin-bottom:12px}
+.hx-rname{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:#aaa;margin:0 0 4px 2px}
+.hx-m{display:flex;align-items:center;gap:8px;padding:5px 8px;border-radius:6px;cursor:pointer;font-size:13px}
+.hx-m:hover{background:#f7f7f8}
+.hx-mt{flex:1;min-width:0;color:#333;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:right}
+.hx-ma{text-align:left}
+.hx-mt.w{font-weight:800;color:#0d6b52}
+.hx-msc{font-weight:800;font-variant-numeric:tabular-nums;background:#f1f2f4;border-radius:5px;padding:1px 7px;color:#1a1a1a;white-space:nowrap;flex-shrink:0}
+.hx-pens{font-size:9px;font-weight:700;color:#7a5000;white-space:nowrap;flex-shrink:0}
+.mp-histbadge{font-size:10px;font-weight:800;letter-spacing:.03em;text-transform:uppercase;color:#7a5000;background:#fef4dc;border-radius:4px;padding:2px 7px}
+.mp-pensrow{font-size:12px;font-weight:700;color:#0d6b52;text-align:center;margin:-8px 0 10px}
+html[data-theme="dark"] .hx-mhead,html[data-theme="dark"] .hx-rname,html[data-theme="dark"] .hx-mload{color:#80868f}
+html[data-theme="dark"] .hx-m:hover{background:#262931}
+html[data-theme="dark"] .hx-mt{color:#cfd3da}
+html[data-theme="dark"] .hx-mt.w{color:#34d39a}
+html[data-theme="dark"] .hx-msc{background:#33373f;color:#e9eaed}
+html[data-theme="dark"] .mp-pensrow{color:#34d39a}
 html[data-theme="dark"] .hx-section{background:#1e2026;box-shadow:0 1px 3px rgba(0,0,0,.45)}
 html[data-theme="dark"] .hx-title{color:#f2f3f5}
 html[data-theme="dark"] .hx-sub,html[data-theme="dark"] .hx-host,html[data-theme="dark"] .hx-foot,html[data-theme="dark"] .hx-stats{color:#9aa0a8}
@@ -3022,11 +3042,68 @@ function buildHistory(){
         '<span><b>⚽ Golden Boot</b> '+h.bf+' '+escHTML(h.boot)+' · '+h.bg+' goals</span>'+
         '<span><b>'+h.tm+'</b> teams · <b>'+h.ma+'</b> matches · <b>'+h.go+'</b> goals</span>'+
       '</div>'+
-      '<div class="hx-fact">'+escHTML(h.fact)+'</div></div>';
+      '<div class="hx-fact">'+escHTML(h.fact)+'</div>'+
+      '<div class="hx-matches" id="hx-m-'+h.y+'"><div class="hx-mload">Loading match results…</div></div></div>';
     return '<div class="hx-item hx-on">'+head+detail+'</div>';
   }).join("");
+  HISTORY.forEach(function(h){ if(hxOpen[h.y]) loadWC(h.y); }); // lazy-pull match data for expanded tournaments
 }
 function toggleHistorySection(){toggleSection("hx-body","hx-toggle","history");}
+
+/* ── Historical match data: lazy-loaded per tournament from data/wc/<year>.json
+   (the ETL snapshot of ESPN). Cached; rendered grouped by round; each match
+   opens the same popover used live, with the goal timeline via its event id.
+   (ESPN's historical venues are unreliable for old tournaments, so they're not
+   shown here — match results/scorers are accurate.) ── */
+const wcCache={};
+function loadWC(year){
+  if(wcCache[year]){renderWCMatches(year);return;}
+  fetch("data/wc/"+year+".json",{cache:"force-cache"})
+    .then(function(r){return r.ok?r.json():null;})
+    .then(function(d){
+      const box=document.getElementById("hx-m-"+year);
+      if(d){wcCache[year]=d;renderWCMatches(year);}
+      else if(box)box.innerHTML='<div class="hx-mload">Match results unavailable.</div>';
+    })
+    .catch(function(){const box=document.getElementById("hx-m-"+year);if(box)box.innerHTML='<div class="hx-mload">Match results unavailable — needs a connection (or http(s) hosting).</div>';});
+}
+function renderWCMatches(year){
+  const box=document.getElementById("hx-m-"+year);if(!box)return;
+  const data=wcCache[year];if(!data){box.innerHTML="";return;}
+  const byRound={};data.matches.forEach(function(m){(byRound[m.round]=byRound[m.round]||[]).push(m);});
+  box.innerHTML='<div class="hx-mhead">'+data.stats.matches+' matches &middot; '+data.stats.goals+' goals &middot; tap a match for details</div>'+
+    data.rounds.map(function(rd){
+      const ms=byRound[rd]||[];if(!ms.length)return"";
+      return '<div class="hx-round"><div class="hx-rname">'+escHTML(rd)+'</div>'+ms.map(function(m){
+        const played=m.hs!=null&&m.as!=null;
+        const hw=m.win==="home"||(played&&m.hs>m.as), aw=m.win==="away"||(played&&m.as>m.hs);
+        const score=played?(m.hs+'–'+m.as):'v';
+        const pens=m.pens?'<span class="hx-pens">('+m.pens.h+'-'+m.pens.a+'p)</span>':'';
+        return '<div class="hx-m" tabindex="0" role="button" onclick="openHistMatch('+year+',\''+m.eid+'\')">'+
+          '<span class="hx-mt'+(hw?' w':'')+'">'+escHTML(m.home)+'</span>'+
+          '<span class="hx-msc">'+score+'</span>'+
+          '<span class="hx-mt hx-ma'+(aw?' w':'')+'">'+escHTML(m.away)+'</span>'+pens+'</div>';
+      }).join("")+'</div>';
+    }).join("");
+}
+function openHistMatch(year,eid){
+  const data=wcCache[year];if(!data)return;
+  const m=data.matches.find(function(x){return x.eid===eid;});if(!m)return;
+  const card=document.getElementById("mp-card");
+  const played=m.hs!=null&&m.as!=null;
+  const hw=m.win==="home"||(played&&m.hs>m.as), aw=m.win==="away"||(played&&m.as>m.hs);
+  const sc=played?('<span class="mp-sc">'+m.hs+'–'+m.as+'</span>'):'<span class="mp-vs">vs</span>';
+  const pens=m.pens?'<div class="mp-pensrow">'+m.home+' won '+m.pens.h+'–'+m.pens.a+' on penalties</div>':'';
+  let dt=m.date;try{dt=new Date(m.date+"T12:00:00Z").toLocaleDateString("en-US",{year:"numeric",month:"short",day:"numeric"});}catch(e){}
+  card.innerHTML='<button class="mp-close" onclick="closeMatch()" aria-label="Close">✕</button>'+
+    '<div class="mp-top"><span class="mp-histbadge">'+year+' · '+escHTML(m.round)+'</span><span class="mp-date">'+escHTML(dt)+'</span><span class="mp-status ft">Full time</span></div>'+
+    '<div class="mp-teams"><span class="mp-tm'+(hw?' win':'')+'">'+escHTML(m.home)+'</span>'+sc+'<span class="mp-tm a'+(aw?' win':'')+'">'+escHTML(m.away)+'</span></div>'+
+    pens+'<div class="mp-events" id="mpEvents"></div>';
+  card.scrollTop=0;
+  document.getElementById("mp-overlay").classList.add("open");
+  document.body.style.overflow="hidden";
+  if(m.eid)loadMatchEvents(m.eid);
+}
 
 /* ══════════ TOP SCORERS (Golden Boot) ══════════
    Aggregated from the scoring plays already in the scoreboard feed — no extra
