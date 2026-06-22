@@ -1,0 +1,45 @@
+name: Daily 2026 snapshot
+
+# Preserve the live 2026 World Cup data. Runs on GitHub's runners (which can
+# reach ESPN — the Anthropic cloud sandbox cannot), captures every played match
+# into data/2026-snapshot.json, and commits it when it changes. The script's
+# own guard discards an empty/short pull, so a bad fetch can never erase the
+# archive. A separate claude.ai routine reads this file and emails the summary.
+
+on:
+  schedule:
+    - cron: "0 13 * * *"   # 13:00 UTC = 9:00 AM US Eastern, daily
+  workflow_dispatch: {}     # allow manual runs from the Actions tab / gh CLI
+
+permissions:
+  contents: write           # so the job can push the updated snapshot
+
+concurrency:
+  group: snapshot
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Capture live snapshot
+        run: node scripts/snapshot-live.mjs
+
+      - name: Commit if the snapshot changed
+        run: |
+          if [ -n "$(git status --porcelain data/2026-snapshot.json)" ]; then
+            git config user.name  "github-actions[bot]"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add data/2026-snapshot.json
+            git commit -m "Update 2026 live snapshot ($(date -u +%Y-%m-%d))"
+            git push
+            echo "Pushed updated snapshot."
+          else
+            echo "No snapshot changes — nothing to commit."
+          fi
