@@ -244,6 +244,31 @@ html[data-theme="dark"] .pk-opt.sel{background:#16331f;border-color:#34d39a;colo
 html[data-theme="dark"] .pk-opt.correct{background:#1aa251;border-color:#1aa251;color:#fff}
 html[data-theme="dark"] .pk-opt.wrong{background:#3a1c1a;border-color:#d6322c;color:#f0a39e}
 html[data-theme="dark"] .pk-res{color:#9aa0a8}
+.pk-row{flex-direction:column;align-items:stretch}
+.pk-line{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;width:100%}
+.pk-detail{display:flex;flex-wrap:wrap;align-items:center;gap:14px;margin:7px 0 1px;font-size:11px;color:#999}
+.pk-exact{display:inline-flex;align-items:center;gap:4px}
+.pk-sin{width:34px;text-align:center;font-size:13px;font-weight:700;padding:3px 2px;border:1px solid #dcdfe3;border-radius:6px;background:#fff;color:#222;-moz-appearance:textfield}
+.pk-sin::-webkit-outer-spin-button,.pk-sin::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.pk-conf{display:inline-flex;align-items:center;gap:4px}
+.pk-cf{width:22px;height:22px;border-radius:6px;font-size:11px;font-weight:800;border:1px solid #dcdfe3;background:#fff;color:#888;cursor:pointer}
+.pk-cf.on{border-color:#0d8a4f;background:#0d8a4f;color:#fff}
+.pk-pts{font-weight:800;font-size:12px;margin-left:2px}
+.pk-pts.pos{color:#0d8a4f}.pk-pts.neg{color:#d6322c}
+.pk-pred{font-size:11px;color:#999;margin-top:5px}
+.pk-breakdown{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:10px 0 2px}
+.pk-brlbl{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#aaa}
+.pk-br{font-size:12px;color:#555;background:#f1f3f5;border-radius:8px;padding:3px 8px;font-weight:700}
+.pk-br b{color:#1a1a1a}.pk-br i{color:#aaa;font-style:normal;font-weight:600;margin-left:4px;font-size:11px}
+.pk-rules{font-size:10.5px;color:#a0a4ab;margin:8px 0 2px;line-height:1.4}
+.pk-rules b{color:#777}
+html[data-theme="dark"] .pk-detail,html[data-theme="dark"] .pk-pred,html[data-theme="dark"] .pk-rules{color:#80868f}
+html[data-theme="dark"] .pk-rules b{color:#aab0b8}
+html[data-theme="dark"] .pk-sin{background:#23262e;border-color:#3a3d45;color:#e9eaed}
+html[data-theme="dark"] .pk-cf{background:#23262e;border-color:#3a3d45;color:#aab0b8}
+html[data-theme="dark"] .pk-cf.on{background:#1aa251;border-color:#1aa251;color:#fff}
+html[data-theme="dark"] .pk-br{background:#23262e;color:#aab0b8}
+html[data-theme="dark"] .pk-br b{color:#e9eaed}
 html[data-theme="dark"] .st-scn{background:#1c1f26;border-color:#31343d}
 html[data-theme="dark"] .st-scn-h{color:#80868f}
 html[data-theme="dark"] .sc-row .tlink{color:#e9eaed}
@@ -3291,52 +3316,105 @@ function predictables(){
   stadiums.forEach(function(s){s.m.forEach(function(m){
     if(m.g.indexOf(" vs ")<0)return;
     const p=m.g.split(" vs ").map(function(x){return x.trim();});
-    let dec=false,oc=null;
-    if(m.sc&&!m.live){var sp=m.sc.split("-"),hs=+sp[0],as=+sp[1];if(isFinite(hs)&&isFinite(as)){dec=true;oc=hs>as?"h":(hs<as?"a":"d");}}
-    out.push({key:"g:"+canon(p[0])+"~"+canon(p[1]),home:p[0],away:p[1],ts:matchInstant(m)||0,d:m.d,r:m.r,sc:m.sc,live:!!m.live,decided:dec,outcome:oc,ko:false});
+    let dec=false,oc=null,ahs=null,aas=null;
+    if(m.sc&&!m.live){var sp=m.sc.split("-"),hs=+sp[0],as=+sp[1];if(isFinite(hs)&&isFinite(as)){dec=true;oc=hs>as?"h":(hs<as?"a":"d");ahs=hs;aas=as;}}
+    out.push({key:"g:"+canon(p[0])+"~"+canon(p[1]),home:p[0],away:p[1],ts:matchInstant(m)||0,d:m.d,r:m.r,sc:m.sc,live:!!m.live,decided:dec,outcome:oc,ahs:ahs,aas:aas,ko:false});
   });});
   bracket.forEach(function(b){
     if(!(b.liveH&&!isSlotName(b.liveH))||!(b.liveA&&!isSlotName(b.liveA)))return; // both teams must be known
     const w=koWinner(b);
-    out.push({key:"k:"+b.r+"-"+b.no,home:b.liveH,away:b.liveA,ts:bkSortTs(b),d:b.d,r:b.r,sc:(b.hs!=null?b.hs+"-"+b.as:null),live:b.status==="LIVE",decided:!!w,outcome:w?(canon(w)===canon(b.liveH)?"h":"a"):null,ko:true});
+    out.push({key:"k:"+b.r+"-"+b.no,home:b.liveH,away:b.liveA,ts:bkSortTs(b),d:b.d,r:b.r,sc:(b.hs!=null?b.hs+"-"+b.as:null),live:b.status==="LIVE",decided:!!w,outcome:w?(canon(w)===canon(b.liveH)?"h":"a"):null,ahs:(b.hs!=null?b.hs:null),aas:(b.as!=null?b.as:null),ko:true});
   });
   out.sort(function(a,b){return (a.ts||0)-(b.ts||0);});
   return out;
 }
-function getPick(k){return (prefs.picks||{})[k];}
-function setPick(k,v){if(!prefs.picks)prefs.picks={};if(prefs.picks[k]===v)delete prefs.picks[k];else prefs.picks[k]=v;savePrefs();buildPickem();}
+/* A pick is {o:outcome, hs,as:predicted score (optional), c:confidence 1-3}.
+   Old picks were a bare "h"/"d"/"a" string — normalise those to confidence 1. */
+function normPick(p){
+  if(p==null)return null;
+  if(typeof p==="string")return {o:p,hs:null,as:null,c:1};
+  return {o:p.o,hs:(p.hs==null?null:p.hs),as:(p.as==null?null:p.as),c:p.c||1};
+}
+function getPick(k){return normPick((prefs.picks||{})[k]);}
+function setPick(k,v){
+  if(!prefs.picks)prefs.picks={};
+  const cur=normPick(prefs.picks[k]);
+  if(cur&&cur.o===v)delete prefs.picks[k];                 // tap again to clear
+  else prefs.picks[k]=Object.assign({},cur||{hs:null,as:null,c:1},{o:v});
+  savePrefs();buildPickem();
+}
+function setConfidence(k,c){const p=normPick((prefs.picks||{})[k]);if(!p)return;p.c=c;prefs.picks[k]=p;savePrefs();buildPickem();}
+/* Score inputs don't rebuild (would steal focus mid-type); the value is bound on
+   the next natural render and scored when the match finishes. */
+function setPickScore(k,side,val){const p=normPick((prefs.picks||{})[k]);if(!p)return;const n=parseInt(val,10);p[side]=(isNaN(n)||n<0)?null:Math.min(n,20);prefs.picks[k]=p;savePrefs();}
+/* Points for a decided match: right result = 1×confidence, exact score = 2×
+   confidence; a wrong call costs (confidence−1), so bold calls cut both ways. */
+function pickPoints(m,p){
+  if(p.o!==m.outcome)return -((p.c||1)-1);
+  const exact=(p.hs!=null&&p.as!=null&&p.hs===m.ahs&&p.as===m.aas);
+  return (exact?2:1)*(p.c||1);
+}
+function pickIsExact(m,p){return p&&p.o===m.outcome&&p.hs!=null&&p.as!=null&&p.hs===m.ahs&&p.as===m.aas;}
+function stageOf(r){return String(r).indexOf("Group")===0?"Group":String(r);}
+const STAGE_ORDER=["Group","R32","R16","QF","SF","3rd","Final"];
 function setChampionPick(v){prefs.champion=v||"";savePrefs();buildPickem();}
 function resetPicks(){
   if(((prefs.picks&&Object.keys(prefs.picks).length)||prefs.champion)&&!confirm("Clear all your picks and champion pick?"))return;
   prefs.picks={};prefs.champion="";savePrefs();buildPickem();
 }
 function pickStats(ms){
-  const picks=prefs.picks||{};let correct=0,decided=0,pending=0;
-  ms.forEach(function(m){const p=picks[m.key];if(!p)return;if(m.decided){decided++;if(p===m.outcome)correct++;}else pending++;});
-  return {correct:correct,decided:decided,pending:pending,made:Object.keys(picks).length};
+  const picks=prefs.picks||{};
+  let points=0,correct=0,decided=0,exact=0,pending=0;
+  const byRound={};
+  ms.forEach(function(m){
+    const raw=picks[m.key];if(!raw)return;
+    const p=normPick(raw);
+    if(!m.decided){pending++;return;}
+    decided++;
+    const st=stageOf(m.r),br=byRound[st]||(byRound[st]={points:0,correct:0,decided:0});
+    br.decided++;
+    const pts=pickPoints(m,p);points+=pts;br.points+=pts;
+    if(p.o===m.outcome){correct++;br.correct++;if(pickIsExact(m,p))exact++;}
+  });
+  return {points:points,correct:correct,decided:decided,exact:exact,pending:pending,made:Object.keys(picks).length,byRound:byRound};
 }
 function sharePickem(){
   const s=pickStats(predictables()),pct=s.decided?Math.round(100*s.correct/s.decided):0;
-  const txt="My 2026 World Cup pick'em: "+s.correct+"/"+s.decided+" correct ("+pct+"%)"+(prefs.champion?" · champion pick: "+prefs.champion:"")+".";
+  const txt="My 2026 World Cup pick'em: "+s.points+" pts · "+s.correct+"/"+s.decided+" correct ("+pct+"%)"+(s.exact?" · "+s.exact+" exact":"")+(prefs.champion?" · champion: "+prefs.champion:"")+".";
   const note=document.getElementById("pk-sharenote");
   const show=function(ok){if(note)note.textContent=ok?"✓ Copied to clipboard!":txt;};
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(function(){show(true);},function(){show(false);});
   else show(false);
 }
 function pkRow(m){
-  const pick=getPick(m.key),lock=m.decided||m.live;
+  const p=getPick(m.key),lock=m.decided||m.live;
   const opts=m.ko?[["h",m.home],["a",m.away]]:[["h",m.home],["d","Draw"],["a",m.away]];
   const btns=opts.map(function(o){
     let cls="pk-opt";
-    if(pick===o[0])cls+=" sel";
-    if(m.decided){if(o[0]===m.outcome)cls+=" actual";if(pick===o[0])cls+=(o[0]===m.outcome?" correct":" wrong");}
+    if(p&&p.o===o[0])cls+=" sel";
+    if(m.decided){if(o[0]===m.outcome)cls+=" actual";if(p&&p.o===o[0])cls+=(o[0]===m.outcome?" correct":" wrong");}
     return '<button class="'+cls+'"'+(lock?" disabled":"")+' onclick="setPick(\''+m.key+'\',\''+o[0]+'\')">'+escHTML(o[1])+'</button>';
   }).join("");
   let tag;
-  if(m.decided)tag='<span class="pk-res '+(pick?(pick===m.outcome?"ok":"no"):"")+'">'+(m.sc?escHTML(m.sc.replace("-","–")):"")+(pick?(pick===m.outcome?" ✓":" ✗"):"")+'</span>';
-  else if(m.live)tag='<span class="pk-live">● LIVE '+escHTML(m.sc||"")+'</span>';
+  if(m.decided){
+    const pts=p?pickPoints(m,p):null,ex=pickIsExact(m,p);
+    tag='<span class="pk-res '+(p?(p.o===m.outcome?"ok":"no"):"")+'">'+(m.sc?escHTML(m.sc.replace("-","–")):"")+
+      (p?' <span class="pk-pts '+(pts>0?"pos":(pts<0?"neg":""))+'">'+(pts>0?"+":"")+pts+(ex?" ★":"")+'</span>':"")+'</span>';
+  }else if(m.live)tag='<span class="pk-live">● LIVE '+escHTML(m.sc||"")+'</span>';
   else tag='<span class="pk-when">'+escHTML(m.d)+'</span>';
-  return '<div class="pk-row"><div class="pk-meta"><span class="pk-rd">'+escHTML(roundLabel(m.r))+'</span>'+tag+'</div><div class="pk-opts'+(m.ko?" ko":"")+'">'+btns+'</div></div>';
+  let detail="";
+  if(p&&!lock){
+    const cf=function(n){return '<button class="pk-cf'+(p.c===n?" on":"")+'" onclick="setConfidence(\''+m.key+'\','+n+')" title="confidence ×'+n+'">'+n+'</button>';};
+    detail='<div class="pk-detail">'+
+      '<span class="pk-exact">score <input class="pk-sin" type="number" min="0" max="20" inputmode="numeric" value="'+(p.hs==null?"":p.hs)+'" onchange="setPickScore(\''+m.key+'\',\'hs\',this.value)" aria-label="predicted home goals">–<input class="pk-sin" type="number" min="0" max="20" inputmode="numeric" value="'+(p.as==null?"":p.as)+'" onchange="setPickScore(\''+m.key+'\',\'as\',this.value)" aria-label="predicted away goals"></span>'+
+      '<span class="pk-conf">conf '+cf(1)+cf(2)+cf(3)+'</span></div>';
+  }
+  let pred="";
+  if(m.decided&&p){
+    const ps=(p.hs!=null&&p.as!=null)?(" "+p.hs+"–"+p.as):"";
+    pred='<div class="pk-pred">your call: '+escHTML(p.o==="d"?"Draw":(p.o==="h"?m.home:m.away))+ps+(p.c>1?' · conf ×'+p.c:'')+'</div>';
+  }
+  return '<div class="pk-row'+(m.decided?" done":"")+'"><div class="pk-line"><div class="pk-meta"><span class="pk-rd">'+escHTML(roundLabel(m.r))+'</span>'+tag+'</div><div class="pk-opts'+(m.ko?" ko":"")+'">'+btns+'</div></div>'+detail+pred+'</div>';
 }
 function buildPickem(){
   const box=document.getElementById("pk-body");if(!box)return;
@@ -3347,11 +3425,17 @@ function buildPickem(){
   const champ=bkChampName(bkGet("Final",1));
   let champRes="";
   if(prefs.champion&&champ)champRes=' <span class="pk-res '+(canon(prefs.champion)===canon(champ)?"ok":"no")+'">'+(canon(prefs.champion)===canon(champ)?"✓ champion!":"✗ "+escHTML(champ)+" won")+'</span>';
+  const brHtml=STAGE_ORDER.filter(function(st){return s.byRound[st];}).map(function(st){
+    const b=s.byRound[st];
+    return '<span class="pk-br"><b>'+escHTML(st)+'</b> '+(b.points>0?"+":"")+b.points+'<i>'+b.correct+'/'+b.decided+'</i></span>';
+  }).join("");
   box.innerHTML=
-    '<div class="pk-score"><div class="pk-big">'+s.correct+'<span>/'+s.decided+'</span></div>'+
-      '<div class="pk-lbl">correct'+(s.decided?' · '+pct+'%':'')+'<span class="pk-sub2">'+s.made+' pick'+(s.made!==1?'s':'')+' made · '+s.pending+' pending</span></div>'+
+    '<div class="pk-score"><div class="pk-big">'+s.points+'<span> pts</span></div>'+
+      '<div class="pk-lbl">'+s.correct+'/'+s.decided+' correct'+(s.decided?' · '+pct+'%':'')+'<span class="pk-sub2">'+s.exact+' exact · '+s.made+' pick'+(s.made!==1?'s':'')+' · '+s.pending+' pending</span></div>'+
       '<div class="pk-actions"><button class="pk-share" onclick="sharePickem()">Share</button><button class="pk-reset" onclick="resetPicks()">Reset</button></div></div>'+
+    (brHtml?'<div class="pk-breakdown"><span class="pk-brlbl">By round</span>'+brHtml+'</div>':'')+
     '<div class="pk-sharenote" id="pk-sharenote"></div>'+
+    '<div class="pk-rules">Scoring: <b>+1</b> correct result, <b>+2</b> exact score, <b>×1–3</b> by confidence, <b>−(conf−1)</b> if wrong.</div>'+
     '<div class="pk-champ">🏆 Your champion: <select onchange="setChampionPick(this.value)">'+champOpts+'</select>'+champRes+'</div>'+
     (upcoming.length?'<div class="pk-h">Coming up — make your picks</div>'+upcoming.map(pkRow).join(""):'<div class="pk-empty">No upcoming matches to pick right now — check back as the schedule unfolds.</div>')+
     (done.length?'<div class="pk-h">Your results</div>'+done.map(pkRow).join(""):"");
