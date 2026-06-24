@@ -152,8 +152,18 @@ function trimSummary(d) {
     time: { displayValue: (x.time && x.time.displayValue) || "" },
     text: x.text || ""
   }));
-  if (!keyEvents.length && !rosters.length && !commentary.length) return null;
-  return { keyEvents, rosters, commentary };
+  // Team stats (the popover renders a curated set — keep just those, lean).
+  const WANT = new Set(["possessionPct","totalShots","shotsOnTarget","wonCorners","foulsCommitted","offsides","yellowCards","redCards","saves"]);
+  const bt = (d.boxscore && d.boxscore.teams) || [];
+  const boxscore = bt.length >= 2 ? { teams: bt.map(t => ({
+    homeAway: t.homeAway,
+    team: { displayName: (t.team && t.team.displayName) || "" },
+    statistics: (t.statistics || []).filter(s => WANT.has(s.name)).map(s => ({ name: s.name, displayValue: s.displayValue }))
+  })) } : null;
+  if (!keyEvents.length && !rosters.length && !commentary.length && !boxscore) return null;
+  const out = { keyEvents, rosters, commentary };
+  if (boxscore) out.boxscore = boxscore;
+  return out;
 }
 
 async function main() {
