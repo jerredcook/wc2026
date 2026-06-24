@@ -191,6 +191,10 @@ h1{font-size:22px;font-weight:600;margin-bottom:4px}
 .sc-won .sc-dt{color:#b8860b;font-weight:600}
 .sc-through .sc-dt{color:#0d8a4f;font-weight:600}
 .sc-out{opacity:.6}
+.form-dots{display:inline-flex;gap:3px;margin-left:6px;vertical-align:middle}
+.fd{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;font-size:8px;font-weight:800;color:#fff;line-height:1;flex-shrink:0}
+.fd-W{background:#1aa251}.fd-D{background:#9aa0a8}.fd-L{background:#d6322c}
+.tm-sec .form-dots{margin-left:8px}
 html[data-theme="dark"] .st-scn{background:#1c1f26;border-color:#31343d}
 html[data-theme="dark"] .st-scn-h{color:#80868f}
 html[data-theme="dark"] .sc-row .tlink{color:#e9eaed}
@@ -1490,6 +1494,20 @@ function teamMatches(name){
   out.sort(function(a,b){return a.sortk-b.sortk;});
   return out;
 }
+/* Recent-form dots (W/D/L) from a team's completed matches, oldest→newest.
+   groupOnly keeps it to group games (for the group tables). */
+function formDots(name,max,groupOnly){
+  let ms=teamMatches(name).filter(function(x){return x.played&&x.sc&&!x.live;});
+  if(groupOnly)ms=ms.filter(function(x){return String(x.r).indexOf("Group")===0;});
+  if(!ms.length)return "";
+  ms.sort(function(a,b){return (a.ts||0)-(b.ts||0);});
+  const show=(max&&max>0)?ms.slice(-max):ms;
+  return '<span class="form-dots">'+show.map(function(x){
+    const sp=x.sc.split("-"),own=x.isHome?+sp[0]:+sp[1],op=x.isHome?+sp[1]:+sp[0];
+    const r=own>op?"W":(own<op?"L":"D");
+    return '<span class="fd fd-'+r+'" title="'+r+' '+own+'–'+op+' v '+escHTML(x.opp)+'">'+r+'</span>';
+  }).join("")+'</span>';
+}
 function teamScheduleHTML(name){
   const ms=teamMatches(name);if(!ms.length)return "";
   const rows=ms.map(function(x){
@@ -1509,7 +1527,7 @@ function teamScheduleHTML(name){
       '<span class="tsch-mid">'+mid+'</span>'+
       '<span class="rbadge '+roundClass(x.r)+'">'+roundLabel(x.r)+'</span></div>';
   }).join("");
-  return '<div class="tm-sec">Schedule &amp; results</div><div class="tsch">'+rows+'</div>';
+  return '<div class="tm-sec">Schedule &amp; results'+formDots(name,6,false)+'</div><div class="tsch">'+rows+'</div>';
 }
 
 let tmCurrent=null;
@@ -2630,7 +2648,7 @@ function buildStandings(){
       const tb=!gComplete?"":r._tb==="h2h"?"<span class=\"st-tb\" title=\"order decided by head-to-head (which outranks goal difference in 2026)\">h2h</span>"
               :r._tb==="rank"?"<span class=\"st-tb st-tb-lots\" title=\"level on all results — separated by FIFA World Ranking (replaced the drawing of lots for 2026)\">rank</span>":"";
       return "<tr class=\"st-q"+pos+"\">"+
-        "<td class=\"tl\"><span class=\"st-pos\">"+pos+"</span>"+teamLink(r.name,false,false)+tb+"</td>"+
+        "<td class=\"tl\"><span class=\"st-pos\">"+pos+"</span>"+teamLink(r.name,false,false)+tb+formDots(r.name,0,true)+"</td>"+
         "<td>"+r.p+"</td><td>"+r.w+"</td><td>"+r.d+"</td><td>"+r.l+"</td>"+
         "<td>"+r.gf+"</td><td>"+r.ga+"</td>"+
         "<td class=\""+gdCls+"\">"+gdTxt+"</td>"+

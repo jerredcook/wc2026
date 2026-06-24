@@ -12,6 +12,7 @@ The whole app is [`index.html`](index.html) — HTML, CSS, and vanilla JavaScrip
 - **Filters** by country, group (A–L), and team, with a running summary and reset.
 - **Live & final scores** pulled automatically on load and via the **Refresh latest scores** button. Matches in progress show a red LIVE badge and the current minute, and the page **auto-refreshes every 60s while a match is live**. A goal **flashes** the match on screen, and you can opt in to **browser goal notifications**.
 - **Group standings — live**, computed from the fetched scores (never hardcoded), with full FIFA tiebreakers (see below), plus a **best-third-placed race** showing the top-8 Round-of-32 cut line.
+- **Recent-form dots** — each standings row and team card carries a small W/D/L strip (green/grey/red, hover for the score and opponent) summarising how each side has been playing.
 - **"What needs to happen"** — on the final group matchday, each table shows a plain-English qualification scenario per team (*Won the group · Through · A draw is enough · Must win to be sure · Out of the top two*), derived by enumerating every remaining win/draw/loss combination through the same adversarial 2026-tiebreaker clinch test the bracket uses.
 - **Top scorers — Golden Boot race**, a live leaderboard built from the scoring plays already in the match feed (own goals excluded, penalties flagged), with ties sharing a rank.
 - **Follow a team** — pick a favorite nation (persisted): it's starred everywhere, pinned in a bar with its next match, and goal alerts can be scoped to just that team.
