@@ -195,6 +195,55 @@ h1{font-size:22px;font-weight:600;margin-bottom:4px}
 .fd{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;font-size:8px;font-weight:800;color:#fff;line-height:1;flex-shrink:0}
 .fd-W{background:#1aa251}.fd-D{background:#9aa0a8}.fd-L{background:#d6322c}
 .tm-sec .form-dots{margin-left:8px}
+.pk-section{background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+html[data-theme="dark"] .pk-section{background:#1e2026;box-shadow:0 1px 3px rgba(0,0,0,.45)}
+.pk-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;cursor:pointer}
+.pk-title{font-size:16px;font-weight:800;color:#1a1a1a}
+.pk-sub{font-size:12px;color:#8a8f98;margin-top:2px;line-height:1.4}
+.pk-toggle{font-size:12px;font-weight:600;color:#8a8f98;white-space:nowrap;flex-shrink:0}
+html[data-theme="dark"] .pk-title{color:#e9eaed}
+#pk-body{margin-top:14px}
+.pk-score{display:flex;align-items:center;gap:14px;background:#f7f8fa;border:1px solid #eceef1;border-radius:12px;padding:12px 14px}
+.pk-big{font-size:30px;font-weight:800;color:#0d8a4f;line-height:1;font-variant-numeric:tabular-nums}
+.pk-big span{font-size:18px;color:#b0b4ba;font-weight:700}
+.pk-lbl{font-size:13px;color:#555;font-weight:700;line-height:1.3}
+.pk-sub2{display:block;font-size:11px;color:#999;font-weight:500;margin-top:2px}
+.pk-actions{margin-left:auto;display:flex;gap:6px}
+.pk-share,.pk-reset{font-size:12px;font-weight:700;border-radius:8px;padding:7px 12px;cursor:pointer;border:1px solid}
+.pk-share{color:#fff;background:#0d8a4f;border-color:#0d8a4f}
+.pk-reset{color:#888;background:#fff;border-color:#e0e0e0}
+.pk-sharenote{font-size:11px;color:#0d8a4f;min-height:13px;margin:6px 2px 0;word-break:break-word}
+.pk-champ{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:13px;font-weight:700;color:#333;margin:14px 0 4px}
+.pk-champ select{font-size:13px;padding:5px 8px;border-radius:8px;border:1px solid #ddd;background:#fff;max-width:62%}
+.pk-h{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#999;margin:16px 0 6px}
+.pk-empty{font-size:13px;color:#888;padding:8px 0}
+.pk-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px;padding:8px 0;border-top:1px solid #f0f1f3}
+.pk-meta{display:flex;align-items:center;gap:8px;min-width:0}
+.pk-rd{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:#bbb;flex-shrink:0}
+.pk-when{font-size:12px;color:#999}
+.pk-live{font-size:11px;font-weight:800;color:#d6322c}
+.pk-res{font-size:12px;font-weight:800;color:#666;font-variant-numeric:tabular-nums}
+.pk-res.ok{color:#0d8a4f}.pk-res.no{color:#d6322c}
+.pk-opts{display:flex;gap:5px;flex-shrink:0;flex-wrap:wrap;justify-content:flex-end}
+.pk-opt{font-size:12px;font-weight:700;max-width:116px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid #dcdfe3;background:#fff;color:#444;border-radius:8px;padding:6px 9px;cursor:pointer}
+.pk-opts.ko .pk-opt{min-width:84px}
+.pk-opt.sel{border-color:#0d8a4f;background:#eaf7ef;color:#0a6b3d}
+.pk-opt.correct{border-color:#0d8a4f;background:#0d8a4f;color:#fff}
+.pk-opt.wrong{border-color:#d6322c;background:#fdeceb;color:#c02a24;text-decoration:line-through}
+.pk-opt.actual:not(.sel){border-color:#0d8a4f;border-style:dashed}
+.pk-opt:disabled{cursor:default}
+html[data-theme="dark"] .pk-score{background:#23262e;border-color:#31343d}
+html[data-theme="dark"] .pk-lbl{color:#cfd3da}
+html[data-theme="dark"] .pk-sub2,html[data-theme="dark"] .pk-when,html[data-theme="dark"] .pk-empty{color:#8a9099}
+html[data-theme="dark"] .pk-reset{background:#23262e;border-color:#3a3d45;color:#aab0b8}
+html[data-theme="dark"] .pk-champ{color:#cfd3da}
+html[data-theme="dark"] .pk-champ select{background:#23262e;border-color:#3a3d45;color:#e9eaed}
+html[data-theme="dark"] .pk-row{border-color:#2a2d35}
+html[data-theme="dark"] .pk-opt{background:#23262e;border-color:#3a3d45;color:#cfd3da}
+html[data-theme="dark"] .pk-opt.sel{background:#16331f;border-color:#34d39a;color:#7ee0b0}
+html[data-theme="dark"] .pk-opt.correct{background:#1aa251;border-color:#1aa251;color:#fff}
+html[data-theme="dark"] .pk-opt.wrong{background:#3a1c1a;border-color:#d6322c;color:#f0a39e}
+html[data-theme="dark"] .pk-res{color:#9aa0a8}
 html[data-theme="dark"] .st-scn{background:#1c1f26;border-color:#31343d}
 html[data-theme="dark"] .st-scn-h{color:#80868f}
 html[data-theme="dark"] .sc-row .tlink{color:#e9eaed}
@@ -1024,6 +1073,18 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
   </div>
 </div>
 
+<!-- ══════════ PICK'EM ══════════ -->
+<div class="pk-section">
+  <div class="pk-head" tabindex="0" role="button" onclick="togglePickem()">
+    <div class="pk-titlewrap">
+      <div class="pk-title">🔮 Pick'em — call the results</div>
+      <div class="pk-sub">Predict each match; your picks are saved on this device and scored automatically as games finish</div>
+    </div>
+    <span class="pk-toggle" id="pk-toggle">▼ Show</span>
+  </div>
+  <div id="pk-body" style="display:none"></div>
+</div>
+
 <!-- ══════════ WARM-UP FRIENDLIES ══════════ -->
 <div class="fr-section">
   <div class="fr-head" tabindex="0" role="button" onclick="toggleFriendlies()">
@@ -1244,6 +1305,7 @@ const SECTIONS=[
   {key:"scorers",body:"sc-body",tog:"sc-toggle"},
   {key:"rankings",body:"rk-body",tog:"rk-toggle"},
   {key:"bracket",body:"bk-body",tog:"bk-toggle"},
+  {key:"pickem",body:"pk-body",tog:"pk-toggle"},
   {key:"friendlies",body:"fr-body",tog:"fr-toggle"},
   {key:"history",body:"hx-body",tog:"hx-toggle"},
   {key:"stadiums",body:"sd-body",tog:"sd-toggle"}
@@ -3207,6 +3269,95 @@ function groupScenarioHTML(rows,played,rem){
   return '<div class="st-scn"><div class="st-scn-h">🔮 What needs to happen</div>'+items+'</div>';
 }
 
+/* ══════════ PICK'EM — predict outcomes, track your score ══════════
+   Picks persist in prefs (localStorage). Group games are Home/Draw/Away by the
+   90-minute result; knockout ties are Home/Away by who advances (penalty
+   shootouts resolved via who turns up in the next bracket slot). Re-scored on
+   every refresh — nothing is sent anywhere; it's all on this device. */
+function bkChampName(fin){
+  if(!fin||fin.hs==null||fin.as==null||fin.status==="LIVE"||fin.hs===fin.as)return"";
+  const w=fin.hs>fin.as?fin.liveH:fin.liveA;return (w&&!isSlotName(w))?w:"";
+}
+function bkSortTs(b){const i=b.iso||"";return i.length<8?0:Date.UTC(+i.slice(0,4),+i.slice(4,6)-1,+i.slice(6,8),12);}
+function koWinner(b){
+  if(b.hs==null||b.as==null||b.status==="LIVE")return null;
+  if(b.hs>b.as)return b.liveH;if(b.as>b.hs)return b.liveA;
+  const key="Winner "+b.r+"-"+b.no,nxt=bracket.find(function(m){return m.h===key||m.a===key;});
+  if(nxt){const slot=nxt.h===key?nxt.liveH:nxt.liveA;if(slot&&!isSlotName(slot))return slot;}
+  return null; // drawn, advancer not yet known
+}
+function predictables(){
+  const out=[];
+  stadiums.forEach(function(s){s.m.forEach(function(m){
+    if(m.g.indexOf(" vs ")<0)return;
+    const p=m.g.split(" vs ").map(function(x){return x.trim();});
+    let dec=false,oc=null;
+    if(m.sc&&!m.live){var sp=m.sc.split("-"),hs=+sp[0],as=+sp[1];if(isFinite(hs)&&isFinite(as)){dec=true;oc=hs>as?"h":(hs<as?"a":"d");}}
+    out.push({key:"g:"+canon(p[0])+"~"+canon(p[1]),home:p[0],away:p[1],ts:matchInstant(m)||0,d:m.d,r:m.r,sc:m.sc,live:!!m.live,decided:dec,outcome:oc,ko:false});
+  });});
+  bracket.forEach(function(b){
+    if(!(b.liveH&&!isSlotName(b.liveH))||!(b.liveA&&!isSlotName(b.liveA)))return; // both teams must be known
+    const w=koWinner(b);
+    out.push({key:"k:"+b.r+"-"+b.no,home:b.liveH,away:b.liveA,ts:bkSortTs(b),d:b.d,r:b.r,sc:(b.hs!=null?b.hs+"-"+b.as:null),live:b.status==="LIVE",decided:!!w,outcome:w?(canon(w)===canon(b.liveH)?"h":"a"):null,ko:true});
+  });
+  out.sort(function(a,b){return (a.ts||0)-(b.ts||0);});
+  return out;
+}
+function getPick(k){return (prefs.picks||{})[k];}
+function setPick(k,v){if(!prefs.picks)prefs.picks={};if(prefs.picks[k]===v)delete prefs.picks[k];else prefs.picks[k]=v;savePrefs();buildPickem();}
+function setChampionPick(v){prefs.champion=v||"";savePrefs();buildPickem();}
+function resetPicks(){
+  if(((prefs.picks&&Object.keys(prefs.picks).length)||prefs.champion)&&!confirm("Clear all your picks and champion pick?"))return;
+  prefs.picks={};prefs.champion="";savePrefs();buildPickem();
+}
+function pickStats(ms){
+  const picks=prefs.picks||{};let correct=0,decided=0,pending=0;
+  ms.forEach(function(m){const p=picks[m.key];if(!p)return;if(m.decided){decided++;if(p===m.outcome)correct++;}else pending++;});
+  return {correct:correct,decided:decided,pending:pending,made:Object.keys(picks).length};
+}
+function sharePickem(){
+  const s=pickStats(predictables()),pct=s.decided?Math.round(100*s.correct/s.decided):0;
+  const txt="My 2026 World Cup pick'em: "+s.correct+"/"+s.decided+" correct ("+pct+"%)"+(prefs.champion?" · champion pick: "+prefs.champion:"")+".";
+  const note=document.getElementById("pk-sharenote");
+  const show=function(ok){if(note)note.textContent=ok?"✓ Copied to clipboard!":txt;};
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(txt).then(function(){show(true);},function(){show(false);});
+  else show(false);
+}
+function pkRow(m){
+  const pick=getPick(m.key),lock=m.decided||m.live;
+  const opts=m.ko?[["h",m.home],["a",m.away]]:[["h",m.home],["d","Draw"],["a",m.away]];
+  const btns=opts.map(function(o){
+    let cls="pk-opt";
+    if(pick===o[0])cls+=" sel";
+    if(m.decided){if(o[0]===m.outcome)cls+=" actual";if(pick===o[0])cls+=(o[0]===m.outcome?" correct":" wrong");}
+    return '<button class="'+cls+'"'+(lock?" disabled":"")+' onclick="setPick(\''+m.key+'\',\''+o[0]+'\')">'+escHTML(o[1])+'</button>';
+  }).join("");
+  let tag;
+  if(m.decided)tag='<span class="pk-res '+(pick?(pick===m.outcome?"ok":"no"):"")+'">'+(m.sc?escHTML(m.sc.replace("-","–")):"")+(pick?(pick===m.outcome?" ✓":" ✗"):"")+'</span>';
+  else if(m.live)tag='<span class="pk-live">● LIVE '+escHTML(m.sc||"")+'</span>';
+  else tag='<span class="pk-when">'+escHTML(m.d)+'</span>';
+  return '<div class="pk-row"><div class="pk-meta"><span class="pk-rd">'+escHTML(roundLabel(m.r))+'</span>'+tag+'</div><div class="pk-opts'+(m.ko?" ko":"")+'">'+btns+'</div></div>';
+}
+function buildPickem(){
+  const box=document.getElementById("pk-body");if(!box)return;
+  const ms=predictables(),s=pickStats(ms),pct=s.decided?Math.round(100*s.correct/s.decided):0;
+  const upcoming=ms.filter(function(m){return !m.decided;}).slice(0,10);
+  const done=ms.filter(function(m){return m.decided&&getPick(m.key);}).sort(function(a,b){return b.ts-a.ts;});
+  const champOpts='<option value="">— pick your champion —</option>'+Object.keys(TEAMS).sort().map(function(t){return '<option value="'+escHTML(t)+'"'+(prefs.champion===t?" selected":"")+'>'+escHTML(t)+'</option>';}).join("");
+  const champ=bkChampName(bkGet("Final",1));
+  let champRes="";
+  if(prefs.champion&&champ)champRes=' <span class="pk-res '+(canon(prefs.champion)===canon(champ)?"ok":"no")+'">'+(canon(prefs.champion)===canon(champ)?"✓ champion!":"✗ "+escHTML(champ)+" won")+'</span>';
+  box.innerHTML=
+    '<div class="pk-score"><div class="pk-big">'+s.correct+'<span>/'+s.decided+'</span></div>'+
+      '<div class="pk-lbl">correct'+(s.decided?' · '+pct+'%':'')+'<span class="pk-sub2">'+s.made+' pick'+(s.made!==1?'s':'')+' made · '+s.pending+' pending</span></div>'+
+      '<div class="pk-actions"><button class="pk-share" onclick="sharePickem()">Share</button><button class="pk-reset" onclick="resetPicks()">Reset</button></div></div>'+
+    '<div class="pk-sharenote" id="pk-sharenote"></div>'+
+    '<div class="pk-champ">🏆 Your champion: <select onchange="setChampionPick(this.value)">'+champOpts+'</select>'+champRes+'</div>'+
+    (upcoming.length?'<div class="pk-h">Coming up — make your picks</div>'+upcoming.map(pkRow).join(""):'<div class="pk-empty">No upcoming matches to pick right now — check back as the schedule unfolds.</div>')+
+    (done.length?'<div class="pk-h">Your results</div>'+done.map(pkRow).join(""):"");
+}
+function togglePickem(){toggleSection("pk-body","pk-toggle","pickem");}
+
 function buildBracket(){
   resolveBracketFromStandings();
   const cols=document.getElementById("bk-cols");
@@ -3792,6 +3943,7 @@ async function refreshScores(){
     buildThirds();
     buildScorers();
     buildBracket();
+    buildPickem();
     buildToday();
     buildFollowBar();
     fireGoalNotifications(goals.concat(bgoals));
@@ -3853,6 +4005,7 @@ async function refreshScores(){
   buildRankingsControls();
   buildRankings();
   buildBracket();
+  buildPickem();
   buildGrid();
   refreshScores(); // auto-pull live + final scores on load (works when hosted or in Claude's view)
 
