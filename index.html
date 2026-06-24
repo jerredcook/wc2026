@@ -477,6 +477,10 @@ html[data-theme="dark"] .trank{color:#7e858f}
 .tm-fv{font-size:13px;font-weight:600;color:#1a1a1a;margin-top:2px}
 .tm-blurb{font-size:13px;line-height:1.5;color:#5a4a1a;background:#fffdf2;border:1px solid #f1e6b8;border-radius:10px;padding:10px 13px;margin-bottom:16px}
 .tm-sec{font-size:11px;font-weight:700;color:#999;letter-spacing:.05em;text-transform:uppercase;margin-bottom:8px}
+.tm-cal{display:block;width:100%;margin:0 0 16px;padding:9px 12px;font-size:13px;font-weight:600;color:#0d8a4f;background:#f3fbf6;border:1px solid #cdeadb;border-radius:9px;cursor:pointer}
+.tm-cal:hover{background:#e9f7ef;border-color:#0d8a4f}
+html[data-theme="dark"] .tm-cal{color:#34d39a;background:#16241c;border-color:#244a35}
+html[data-theme="dark"] .tm-cal:hover{background:#1c2f24;border-color:#34d39a}
 .tsch{margin-bottom:18px}
 .tsch-row{display:flex;align-items:center;gap:9px;padding:7px 6px;border-bottom:1px solid #f0f0f0;cursor:pointer;border-radius:6px}
 .tsch-row:hover{background:#f7f7f8}
@@ -902,6 +906,7 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
   <span class="auto-wrap" id="autoWrap"></span>
   <span class="tz-toggle" id="tzToggle"></span>
   <button class="theme-btn" id="notifyBtn" onclick="toggleNotify()" style="display:none">🔔 Notify goals</button>
+  <button class="theme-btn" id="calBtn" onclick="exportCalendar()" title="Download all fixtures as a calendar file (.ics)">📅 Calendar</button>
   <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙 Dark</button>
 </div>
 
@@ -1158,6 +1163,56 @@ function fmtInstant(ts){
     tz:tzAbbr(z,d)
   };
 }
+
+/* ── Calendar export (.ics) — add fixtures to any calendar app, with correct
+   UTC kickoff instants (matchInstant), so they land at the right local time
+   anywhere. Either the whole tournament or a single nation's matches. ── */
+function fixtureEvents(teamName){
+  const tk=teamName?canon(teamName):null;
+  const evs=[];
+  stadiums.forEach(function(s){
+    s.m.forEach(function(m,i){
+      const ts=matchInstant(m);if(ts==null)return;
+      const has=m.g.indexOf(" vs ")>=0;
+      if(tk){
+        if(!has)return;
+        const parts=m.g.split(" vs ").map(function(x){return canon(x.trim());});
+        if(parts.indexOf(tk)<0)return;
+      }
+      evs.push({
+        ts:ts,
+        summary:has?(m.g+" — "+m.r):(m.g+" — "+s.fifa),
+        location:s.real+", "+s.city,
+        desc:(m.sc?("Result: "+m.sc.replace("-","–")+" · "):"")+m.r+" · "+s.fifa,
+        uid:"wc2026-"+i+"-"+canon(s.fifa).replace(/[^a-z0-9]/g,"").slice(0,10)+"@wc2026.app"
+      });
+    });
+  });
+  evs.sort(function(a,b){return a.ts-b.ts;});
+  return evs;
+}
+function buildICS(evs,calName){
+  const esc=function(s){return String(s||"").replace(/\\/g,"\\\\").replace(/[;,]/g,"\\$&").replace(/\n/g,"\\n");};
+  const dt=function(ts){return new Date(ts).toISOString().replace(/[-:]/g,"").replace(/\.\d{3}/,"");};
+  const fold=function(line){var o="",i=0;while(line.length-i>73){o+=line.slice(i,i+73)+"\r\n ";i+=73;}return o+line.slice(i);};
+  const stamp=dt(Date.now());
+  const L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//wc2026//app//EN","CALSCALE:GREGORIAN","METHOD:PUBLISH","X-WR-CALNAME:"+esc(calName)];
+  evs.forEach(function(e){
+    L.push("BEGIN:VEVENT","UID:"+e.uid,"DTSTAMP:"+stamp,"DTSTART:"+dt(e.ts),"DTEND:"+dt(e.ts+7200000),
+      "SUMMARY:"+esc(e.summary),"LOCATION:"+esc(e.location),"DESCRIPTION:"+esc(e.desc),"END:VEVENT");
+  });
+  L.push("END:VCALENDAR");
+  return L.map(fold).join("\r\n")+"\r\n";
+}
+function downloadICS(evs,calName,filename){
+  if(!evs.length)return;
+  const blob=new Blob([buildICS(evs,calName)],{type:"text/calendar;charset=utf-8"});
+  const url=URL.createObjectURL(blob),a=document.createElement("a");
+  a.href=url;a.download=filename;document.body.appendChild(a);a.click();
+  document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(url);},1500);
+}
+function exportCalendar(){downloadICS(fixtureEvents(null),"FIFA World Cup 2026","world-cup-2026.ics");}
+function exportTeamCalendar(name){const e=fixtureEvents(name);if(e.length)downloadICS(e,name+" · World Cup 2026",canon(name).replace(/[^a-z0-9]/g,"")+"-wc2026.ics");}
 
 /* ── Preferences (localStorage): remembers theme, time zone, filters, which
    sections are open, and the auto-refresh toggle across visits. ── */
@@ -1483,6 +1538,7 @@ function openTeam(name){
       '<div class="tm-facts">'+facts+'</div>'+
       '<div class="tm-blurb">💡 '+t.fact+'</div>'+
       teamScheduleHTML(t.name)+
+      '<button class="tm-cal" onclick="exportTeamCalendar(\''+t.name.replace(/'/g,"\\'")+'\')">📅 Add '+escHTML(t.name)+'’s matches to your calendar</button>'+
       '<div class="tm-sec">Squad &middot; final 26-player roster</div>'+
       '<div class="tm-squad">'+squad+'</div>'+
       '<div class="tm-foot">Official 26-player squad named for the 2026 FIFA World Cup (rosters locked at FIFA&rsquo;s June 1 deadline). GK goalkeeper &middot; DF defender &middot; MF midfielder &middot; FW forward. The coloured tag is each player&rsquo;s current role at their club (Starter / Rotation / Sub / Reserve / Injured / On loan), as of the tournament.</div>'+
