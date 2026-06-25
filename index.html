@@ -1098,8 +1098,8 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
   </div>
 </div>
 
-<!-- ══════════ PICK'EM ══════════ -->
-<div class="pk-section">
+<!-- ══════════ PICK'EM (parked — hidden via PICKEM_ENABLED) ══════════ -->
+<div class="pk-section" id="pk-section" style="display:none">
   <div class="pk-head" tabindex="0" role="button" onclick="togglePickem()">
     <div class="pk-titlewrap">
       <div class="pk-title">🔮 Pick'em — call the results</div>
@@ -3298,7 +3298,10 @@ function groupScenarioHTML(rows,played,rem){
    Picks persist in prefs (localStorage). Group games are Home/Draw/Away by the
    90-minute result; knockout ties are Home/Away by who advances (penalty
    shootouts resolved via who turns up in the next bracket slot). Re-scored on
-   every refresh — nothing is sent anywhere; it's all on this device. */
+   every refresh — nothing is sent anywhere; it's all on this device.
+   ── PARKED: the section is hidden for now. Everything below stays wired and
+   verified; flip PICKEM_ENABLED to true (and re-show #pk-section) to restore it. */
+const PICKEM_ENABLED=false;
 function bkChampName(fin){
   if(!fin||fin.hs==null||fin.as==null||fin.status==="LIVE"||fin.hs===fin.as)return"";
   const w=fin.hs>fin.as?fin.liveH:fin.liveA;return (w&&!isSlotName(w))?w:"";
@@ -3417,6 +3420,9 @@ function pkRow(m){
   return '<div class="pk-row'+(m.decided?" done":"")+'"><div class="pk-line"><div class="pk-meta"><span class="pk-rd">'+escHTML(roundLabel(m.r))+'</span>'+tag+'</div><div class="pk-opts'+(m.ko?" ko":"")+'">'+btns+'</div></div>'+detail+pred+'</div>';
 }
 function buildPickem(){
+  const sec=document.getElementById("pk-section");
+  if(!PICKEM_ENABLED){if(sec)sec.style.display="none";return;}  // parked — see PICKEM_ENABLED
+  if(sec)sec.style.display="";
   const box=document.getElementById("pk-body");if(!box)return;
   const ms=predictables(),s=pickStats(ms),pct=s.decided?Math.round(100*s.correct/s.decided):0;
   const upcoming=ms.filter(function(m){return !m.decided;}).slice(0,10);
