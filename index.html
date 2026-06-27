@@ -280,6 +280,37 @@ html[data-theme="dark"] .mev-n{color:#aab0b8}
 html[data-theme="dark"] .mev-m{color:#6a7079}
 html[data-theme="dark"] .mev-e.red .mev-n{color:#f0a39e}
 html[data-theme="dark"] .mev-e.yel .mev-n{color:#d6c24a}
+.rs-section{background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+html[data-theme="dark"] .rs-section{background:#1e2026;box-shadow:0 1px 3px rgba(0,0,0,.45)}
+.rs-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;cursor:pointer}
+.rs-title{font-size:16px;font-weight:800;color:#1a1a1a}
+.rs-sub{font-size:12px;color:#8a8f98;margin-top:2px;line-height:1.4}
+.rs-toggle{font-size:12px;font-weight:600;color:#8a8f98;white-space:nowrap;flex-shrink:0}
+html[data-theme="dark"] .rs-title{color:#e9eaed}
+#rs-body{margin-top:12px}
+.rs-summary{font-size:12px;color:#888;margin-bottom:12px;font-weight:600}
+.rs-round{margin-bottom:16px}
+.rs-rname{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#888;margin:0 0 4px}
+.rs-rn{color:#bbb;font-weight:700}
+.rs-m{padding:6px 4px;border-top:1px solid #f1f2f4;cursor:pointer;border-radius:6px}
+.rs-m:hover{background:#fafbfc}
+.rs-top{display:flex;align-items:center;gap:8px}
+.rs-d{font-size:11px;color:#999;width:42px;flex-shrink:0;font-weight:600}
+.rs-line{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;min-width:0;font-size:14px}
+.rs-tn{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#555}
+.rs-tn.h{text-align:right}.rs-tn.a{text-align:left}
+.rs-tn.w{font-weight:800;color:#111}
+.rs-sc{font-weight:800;font-variant-numeric:tabular-nums;flex-shrink:0;padding:1px 9px;background:#f1f3f5;border-radius:6px;color:#222}
+.rs-live{font-size:9px;font-weight:800;color:#d6322c;flex-shrink:0;white-space:nowrap}
+.rs-m .mev{border-bottom:none;padding:4px 0 2px 50px}
+.rs-empty{font-size:13px;color:#888;padding:8px 0}
+html[data-theme="dark"] .rs-sub,html[data-theme="dark"] .rs-toggle,html[data-theme="dark"] .rs-summary,html[data-theme="dark"] .rs-rname,html[data-theme="dark"] .rs-empty{color:#8a9099}
+html[data-theme="dark"] .rs-rn{color:#5a6069}
+html[data-theme="dark"] .rs-m{border-color:#26282f}
+html[data-theme="dark"] .rs-m:hover{background:#23262e}
+html[data-theme="dark"] .rs-d,html[data-theme="dark"] .rs-tn{color:#aab0b8}
+html[data-theme="dark"] .rs-tn.w{color:#fff}
+html[data-theme="dark"] .rs-sc{background:#2b2f38;color:#e9eaed}
 html[data-theme="dark"] .st-scn{background:#1c1f26;border-color:#31343d}
 html[data-theme="dark"] .st-scn-h{color:#80868f}
 html[data-theme="dark"] .sc-row .tlink{color:#e9eaed}
@@ -1064,6 +1095,18 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
   </div>
 </div>
 
+<!-- ══════════ RESULTS ══════════ -->
+<div class="rs-section">
+  <div class="rs-head" tabindex="0" role="button" onclick="toggleResults()">
+    <div class="rs-titlewrap">
+      <div class="rs-title">📋 Results — every match so far</div>
+      <div class="rs-sub">Each completed match by round, with its goals &amp; cards by minute &middot; tap any match for full detail</div>
+    </div>
+    <span class="rs-toggle" id="rs-toggle">▼ Show</span>
+  </div>
+  <div id="rs-body" style="display:none"></div>
+</div>
+
 <!-- ══════════ FIFA WORLD RANKINGS ══════════ -->
 <div class="rk-section">
   <div class="rk-head" tabindex="0" role="button" onclick="toggleRankings()">
@@ -1339,6 +1382,7 @@ const SECTIONS=[
   {key:"standings",body:"st-body",tog:"st-toggle"},
   {key:"thirds",body:"th-body",tog:"th-toggle"},
   {key:"scorers",body:"sc-body",tog:"sc-toggle"},
+  {key:"results",body:"rs-body",tog:"rs-toggle"},
   {key:"rankings",body:"rk-body",tog:"rk-toggle"},
   {key:"bracket",body:"bk-body",tog:"bk-toggle"},
   {key:"pickem",body:"pk-body",tog:"pk-toggle"},
@@ -3036,6 +3080,7 @@ function applyBracket(events){
     if(e.home&&!isSlotName(e.home))m.liveH=e.home;
     if(e.away&&!isSlotName(e.away))m.liveA=e.away;
     if(e.id)m._eid=e.id;
+    if(e.ev)m.ev=e.ev; // goals & cards timeline for inline display
     if(e.hs!=null&&e.as!=null){m.hs=e.hs;m.as=e.as;m.status=e.status;m.minute=e.minute;n++;}
   });
   return n;
@@ -3458,6 +3503,59 @@ function buildPickem(){
     (done.length?'<div class="pk-h">Your results</div>'+done.map(pkRow).join(""):"");
 }
 function togglePickem(){toggleSection("pk-body","pk-toggle","pickem");}
+
+/* ══════════ RESULTS — every completed 2026 match, by round ══════════
+   A consolidated, browsable results view (the grid is by venue): each played
+   group + knockout match grouped by round, with its inline goals/cards timeline,
+   tappable into the same popover. */
+function roundFull(r){
+  if(String(r).indexOf("Group")===0)return r;
+  return ({R32:"Round of 32",R16:"Round of 16",QF:"Quarterfinals",SF:"Semifinals","3rd":"Third-place play-off",Final:"Final"})[r]||r;
+}
+function roundRank(r){
+  r=String(r);
+  if(r.indexOf("Group")===0)return (r.charCodeAt(6)||65)-65; // Group A→0 … L→11
+  return ({R32:100,R16:101,QF:102,SF:103,"3rd":104,Final:105})[r]||50;
+}
+function results2026(){
+  const out=[];
+  stadiums.forEach(function(s){s.m.forEach(function(m){
+    if(m.g.indexOf(" vs ")<0||!m.sc)return;
+    const p=m.g.split(" vs ").map(function(x){return x.trim();});
+    out.push({round:m.r,home:p[0],away:p[1],sc:m.sc,ev:m.ev,live:!!m.live,clock:m.clock,id:m._id,d:m.d,ts:matchInstant(m)||0});
+  });});
+  bracket.forEach(function(b){
+    if(b.hs==null||b.as==null)return;
+    if(!(b.liveH&&!isSlotName(b.liveH))||!(b.liveA&&!isSlotName(b.liveA)))return;
+    out.push({round:b.r,home:b.liveH,away:b.liveA,sc:b.hs+"-"+b.as,ev:b.ev,live:b.status==="LIVE",clock:b.minute,id:b._id,d:b.d,ts:bkSortTs(b)});
+  });
+  return out;
+}
+function rsRow(m){
+  const sp=m.sc.split("-"),hs=+sp[0],as=+sp[1];
+  const hw=hs>as,aw=as>hs;
+  const live=m.live?'<span class="rs-live">● LIVE'+(m.clock?" "+String(m.clock).replace(/['′]/g,"")+"'":"")+'</span>':'';
+  return '<div class="rs-m" tabindex="0" role="button" data-match="'+m.id+'">'+
+    '<div class="rs-top"><span class="rs-d">'+escHTML(m.d)+'</span>'+
+      '<span class="rs-line"><span class="rs-tn h'+(hw?' w':'')+'">'+escHTML(m.home)+'</span>'+
+      '<span class="rs-sc">'+hs+'–'+as+'</span>'+
+      '<span class="rs-tn a'+(aw?' w':'')+'">'+escHTML(m.away)+'</span></span>'+live+'</div>'+
+    mevHTML(m.ev)+'</div>';
+}
+function buildResults(){
+  const box=document.getElementById("rs-body");if(!box)return;
+  const all=results2026();
+  if(!all.length){box.innerHTML='<div class="rs-empty">No matches have been played yet — results appear here as the tournament unfolds.</div>';return;}
+  const byR={};all.forEach(function(m){(byR[m.round]=byR[m.round]||[]).push(m);});
+  const rounds=Object.keys(byR).sort(function(a,b){return roundRank(a)-roundRank(b)||a.localeCompare(b);});
+  let goals=0;all.forEach(function(m){var sp=m.sc.split("-");goals+=(+sp[0]||0)+(+sp[1]||0);});
+  box.innerHTML='<div class="rs-summary">'+all.length+' match'+(all.length!==1?'es':'')+' played &middot; '+goals+' goals</div>'+
+    rounds.map(function(r){
+      const ms=byR[r].slice().sort(function(a,b){return a.ts-b.ts;});
+      return '<div class="rs-round"><div class="rs-rname">'+escHTML(roundFull(r))+' <span class="rs-rn">'+ms.length+'</span></div>'+ms.map(rsRow).join("")+'</div>';
+    }).join("");
+}
+function toggleResults(){toggleSection("rs-body","rs-toggle","results");}
 
 function buildBracket(){
   resolveBracketFromStandings();
@@ -4076,6 +4174,7 @@ async function refreshScores(){
     buildScorers();
     buildBracket();
     buildPickem();
+    buildResults();
     buildToday();
     buildFollowBar();
     fireGoalNotifications(goals.concat(bgoals));
@@ -4138,6 +4237,7 @@ async function refreshScores(){
   buildRankings();
   buildBracket();
   buildPickem();
+  buildResults();
   buildGrid();
   refreshScores(); // auto-pull live + final scores on load (works when hosted or in Claude's view)
 
