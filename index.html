@@ -288,7 +288,16 @@ html[data-theme="dark"] .rs-section{background:#1e2026;box-shadow:0 1px 3px rgba
 .rs-toggle{font-size:12px;font-weight:600;color:#8a8f98;white-space:nowrap;flex-shrink:0}
 html[data-theme="dark"] .rs-title{color:#e9eaed}
 #rs-body{margin-top:12px}
+.rs-modes{display:flex;align-items:center;gap:5px;margin-bottom:10px}
+.rs-mlbl{font-size:11px;color:#999;font-weight:600;margin-right:2px}
+.rs-mode{font-size:11px;font-weight:700;border:1px solid #dcdfe3;background:#fff;color:#666;border-radius:7px;padding:4px 11px;cursor:pointer;text-transform:capitalize}
+.rs-mode.on{border-color:#0d8a4f;background:#0d8a4f;color:#fff}
+html[data-theme="dark"] .rs-mlbl{color:#8a9099}
+html[data-theme="dark"] .rs-mode{background:#23262e;border-color:#3a3d45;color:#aab0b8}
+html[data-theme="dark"] .rs-mode.on{background:#1aa251;border-color:#1aa251;color:#fff}
 .rs-summary{font-size:12px;color:#888;margin-bottom:12px;font-weight:600}
+.rs-summary b{color:#0d8a4f}
+html[data-theme="dark"] .rs-summary b{color:#34d39a}
 .rs-round{margin-bottom:16px}
 .rs-rname{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#888;margin:0 0 4px}
 .rs-rn{color:#bbb;font-weight:700}
@@ -2641,6 +2650,7 @@ function setFilter(type,val,btn){
   }
   setPref("filters",{country:state.country,group:state.group,team:state.team});
   buildGrid();
+  buildResults();
 }
 
 function resetAll(){
@@ -2650,6 +2660,7 @@ function resetAll(){
   document.getElementById("teamSelect").value="all";
   setPref("filters",{country:"all",group:"all",team:"all"});
   buildGrid();
+  buildResults();
 }
 
 /* ══════════ GROUP STANDINGS (derived, never hardcoded) ══════════
@@ -3517,20 +3528,30 @@ function roundRank(r){
   if(r.indexOf("Group")===0)return (r.charCodeAt(6)||65)-65; // Group A→0 … L→11
   return ({R32:100,R16:101,QF:102,SF:103,"3rd":104,Final:105})[r]||50;
 }
+const RS_CA=["Toronto","Vancouver"], RS_MX=["Mexico City","Guadalajara","Monterrey","Guadalupe"];
+function cityCountry(city){city=String(city||"");return RS_CA.indexOf(city)>=0?"Canada":(RS_MX.indexOf(city)>=0?"Mexico":"USA");}
 function results2026(){
   const out=[];
   stadiums.forEach(function(s){s.m.forEach(function(m){
     if(m.g.indexOf(" vs ")<0||!m.sc)return;
     const p=m.g.split(" vs ").map(function(x){return x.trim();});
-    out.push({round:m.r,home:p[0],away:p[1],sc:m.sc,ev:m.ev,live:!!m.live,clock:m.clock,id:m._id,d:m.d,ts:matchInstant(m)||0});
+    out.push({round:m.r,home:p[0],away:p[1],sc:m.sc,ev:m.ev,live:!!m.live,clock:m.clock,id:m._id,d:m.d,ts:matchInstant(m)||0,country:s.country});
   });});
   bracket.forEach(function(b){
     if(b.hs==null||b.as==null)return;
     if(!(b.liveH&&!isSlotName(b.liveH))||!(b.liveA&&!isSlotName(b.liveA)))return;
-    out.push({round:b.r,home:b.liveH,away:b.liveA,sc:b.hs+"-"+b.as,ev:b.ev,live:b.status==="LIVE",clock:b.minute,id:b._id,d:b.d,ts:bkSortTs(b)});
+    out.push({round:b.r,home:b.liveH,away:b.liveA,sc:b.hs+"-"+b.as,ev:b.ev,live:b.status==="LIVE",clock:b.minute,id:b._id,d:b.d,ts:bkSortTs(b),country:cityCountry(b.city)});
   });
   return out;
 }
+/* Respect the global country/group/team filters (set in Stadiums & Matches). */
+function rsVisible(m){
+  if(state.country!=="all"&&m.country!==state.country)return false;
+  if(state.group!=="all"&&m.round!=="Group "+state.group)return false;
+  if(state.team!=="all"&&canon(state.team)!==canon(m.home)&&canon(state.team)!==canon(m.away))return false;
+  return true;
+}
+function setResultsMode(mode){prefs.rsmode=mode;savePrefs();buildResults();}
 function rsRow(m){
   const sp=m.sc.split("-"),hs=+sp[0],as=+sp[1];
   const hw=hs>as,aw=as>hs;
@@ -3545,14 +3566,31 @@ function rsRow(m){
 function buildResults(){
   const box=document.getElementById("rs-body");if(!box)return;
   const all=results2026();
-  if(!all.length){box.innerHTML='<div class="rs-empty">No matches have been played yet — results appear here as the tournament unfolds.</div>';return;}
-  const byR={};all.forEach(function(m){(byR[m.round]=byR[m.round]||[]).push(m);});
-  const rounds=Object.keys(byR).sort(function(a,b){return roundRank(a)-roundRank(b)||a.localeCompare(b);});
-  let goals=0;all.forEach(function(m){var sp=m.sc.split("-");goals+=(+sp[0]||0)+(+sp[1]||0);});
-  box.innerHTML='<div class="rs-summary">'+all.length+' match'+(all.length!==1?'es':'')+' played &middot; '+goals+' goals</div>'+
-    rounds.map(function(r){
-      const ms=byR[r].slice().sort(function(a,b){return a.ts-b.ts;});
-      return '<div class="rs-round"><div class="rs-rname">'+escHTML(roundFull(r))+' <span class="rs-rn">'+ms.length+'</span></div>'+ms.map(rsRow).join("")+'</div>';
+  const vis=all.filter(rsVisible);
+  const mode=prefs.rsmode==="date"?"date":"round";
+  const toggle='<div class="rs-modes"><span class="rs-mlbl">Group by</span>'+
+    '<button class="rs-mode'+(mode==="round"?" on":"")+'" onclick="setResultsMode(\'round\')">round</button>'+
+    '<button class="rs-mode'+(mode==="date"?" on":"")+'" onclick="setResultsMode(\'date\')">date</button></div>';
+  const filt=[];if(state.country!=="all")filt.push(state.country);if(state.group!=="all")filt.push("Group "+state.group);if(state.team!=="all")filt.push(state.team);
+  if(!vis.length){
+    box.innerHTML=toggle+'<div class="rs-empty">'+(all.length?('No results match the current filter'+(filt.length?' ('+escHTML(filt.join(", "))+')':'')+' — adjust filters in Stadiums &amp; Matches.'):'No matches have been played yet — results appear here as the tournament unfolds.')+'</div>';
+    return;
+  }
+  let goals=0;vis.forEach(function(m){var sp=m.sc.split("-");goals+=(+sp[0]||0)+(+sp[1]||0);});
+  const byG={};
+  vis.forEach(function(m){
+    const key=mode==="date"?("d:"+m.d):("r:"+m.round);
+    if(!byG[key])byG[key]={label:mode==="date"?m.d:roundFull(m.round),items:[],maxts:0};
+    const g=byG[key];g.items.push(m);if((m.ts||0)>g.maxts)g.maxts=m.ts||0;
+  });
+  const keys=Object.keys(byG).sort(function(a,b){
+    return mode==="date"?(byG[b].maxts-byG[a].maxts):(roundRank(byG[a].items[0].round)-roundRank(byG[b].items[0].round)||a.localeCompare(b));
+  });
+  box.innerHTML=toggle+
+    '<div class="rs-summary">'+vis.length+' match'+(vis.length!==1?'es':'')+' &middot; '+goals+' goals'+(filt.length?' &middot; <b>'+escHTML(filt.join(" · "))+'</b>':'')+'</div>'+
+    keys.map(function(k){
+      const g=byG[k],ms=g.items.slice().sort(function(a,b){return a.ts-b.ts;});
+      return '<div class="rs-round"><div class="rs-rname">'+escHTML(g.label)+' <span class="rs-rn">'+ms.length+'</span></div>'+ms.map(rsRow).join("")+'</div>';
     }).join("");
 }
 function toggleResults(){toggleSection("rs-body","rs-toggle","results");}
