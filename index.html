@@ -295,9 +295,19 @@ html[data-theme="dark"] .rs-title{color:#e9eaed}
 html[data-theme="dark"] .rs-mlbl{color:#8a9099}
 html[data-theme="dark"] .rs-mode{background:#23262e;border-color:#3a3d45;color:#aab0b8}
 html[data-theme="dark"] .rs-mode.on{background:#1aa251;border-color:#1aa251;color:#fff}
+.rs-collapse{margin-left:auto;font-size:11px;font-weight:600;color:#888;background:none;border:none;cursor:pointer;text-decoration:underline}
+html[data-theme="dark"] .rs-collapse{color:#8a9099}
 .rs-summary{font-size:12px;color:#888;margin-bottom:12px;font-weight:600}
 .rs-summary b{color:#0d8a4f}
 html[data-theme="dark"] .rs-summary b{color:#34d39a}
+.rs-rname{cursor:pointer;user-select:none}
+.rs-rname::before{content:"▾";font-size:9px;color:#bbb;margin-right:5px;display:inline-block}
+.rs-round.collapsed .rs-rname::before{content:"▸"}
+.rs-round.collapsed .rs-m{display:none}
+.tm-results{color:#1b6fd4;background:#eef5fd;border-color:#cfe2f8}
+.tm-results:hover{background:#e3eefb;border-color:#1b6fd4}
+html[data-theme="dark"] .tm-results{color:#6fb1f5;background:#16202e;border-color:#274056}
+html[data-theme="dark"] .tm-results:hover{background:#1b2839;border-color:#6fb1f5}
 .rs-round{margin-bottom:16px}
 .rs-rname{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#888;margin:0 0 4px}
 .rs-rn{color:#bbb;font-weight:700}
@@ -1712,6 +1722,7 @@ function openTeam(name){
       '<div class="tm-facts">'+facts+'</div>'+
       '<div class="tm-blurb">💡 '+t.fact+'</div>'+
       teamScheduleHTML(t.name)+
+      '<button class="tm-cal tm-results" onclick="jumpToResults(\''+t.name.replace(/'/g,"\\'")+'\')">📋 See '+escHTML(t.name)+'’s results &amp; timelines</button>'+
       '<button class="tm-cal" onclick="exportTeamCalendar(\''+t.name.replace(/'/g,"\\'")+'\')">📅 Add '+escHTML(t.name)+'’s matches to your calendar</button>'+
       '<div class="tm-sec">Squad &middot; final 26-player roster</div>'+
       '<div class="tm-squad">'+squad+'</div>'+
@@ -3570,7 +3581,8 @@ function buildResults(){
   const mode=prefs.rsmode==="date"?"date":"round";
   const toggle='<div class="rs-modes"><span class="rs-mlbl">Group by</span>'+
     '<button class="rs-mode'+(mode==="round"?" on":"")+'" onclick="setResultsMode(\'round\')">round</button>'+
-    '<button class="rs-mode'+(mode==="date"?" on":"")+'" onclick="setResultsMode(\'date\')">date</button></div>';
+    '<button class="rs-mode'+(mode==="date"?" on":"")+'" onclick="setResultsMode(\'date\')">date</button>'+
+    '<button class="rs-collapse" onclick="rsCollapseAll()">collapse all</button></div>';
   const filt=[];if(state.country!=="all")filt.push(state.country);if(state.group!=="all")filt.push("Group "+state.group);if(state.team!=="all")filt.push(state.team);
   if(!vis.length){
     box.innerHTML=toggle+'<div class="rs-empty">'+(all.length?('No results match the current filter'+(filt.length?' ('+escHTML(filt.join(", "))+')':'')+' — adjust filters in Stadiums &amp; Matches.'):'No matches have been played yet — results appear here as the tournament unfolds.')+'</div>';
@@ -3590,8 +3602,38 @@ function buildResults(){
     '<div class="rs-summary">'+vis.length+' match'+(vis.length!==1?'es':'')+' &middot; '+goals+' goals'+(filt.length?' &middot; <b>'+escHTML(filt.join(" · "))+'</b>':'')+'</div>'+
     keys.map(function(k){
       const g=byG[k],ms=g.items.slice().sort(function(a,b){return a.ts-b.ts;});
-      return '<div class="rs-round"><div class="rs-rname">'+escHTML(g.label)+' <span class="rs-rn">'+ms.length+'</span></div>'+ms.map(rsRow).join("")+'</div>';
+      return '<div class="rs-round'+(rsCollapsed[k]?" collapsed":"")+'" data-rk="'+escHTML(k)+'">'+
+        '<div class="rs-rname" onclick="rsToggleRound(this)" tabindex="0" role="button">'+escHTML(g.label)+' <span class="rs-rn">'+ms.length+'</span></div>'+
+        ms.map(rsRow).join("")+'</div>';
     }).join("");
+}
+var rsCollapsed={}; // round keys collapsed this session (survives rebuilds)
+function rsToggleRound(el){
+  const r=el.closest&&el.closest(".rs-round");if(!r)return;
+  const k=r.getAttribute("data-rk");
+  if(rsCollapsed[k]){delete rsCollapsed[k];r.classList.remove("collapsed");}
+  else{rsCollapsed[k]=1;r.classList.add("collapsed");}
+}
+function rsCollapseAll(){
+  const rounds=document.querySelectorAll("#rs-body .rs-round");
+  const anyOpen=[].some.call(rounds,function(r){return !r.classList.contains("collapsed");});
+  rounds.forEach(function(r){
+    const k=r.getAttribute("data-rk");
+    if(anyOpen){rsCollapsed[k]=1;r.classList.add("collapsed");}
+    else{delete rsCollapsed[k];r.classList.remove("collapsed");}
+  });
+}
+/* From a team card: filter Results to this nation, open the section, scroll to it. */
+function jumpToResults(name){
+  closeTeam();
+  state.country="all";state.group="all";
+  document.querySelectorAll(".filter-row:nth-child(1) .fbtn").forEach(function(b,i){b.classList.toggle("active",i===0);});
+  document.querySelectorAll("#groupBtns .fbtn").forEach(function(b,i){b.classList.toggle("active",i===0);});
+  setFilter("team",name,null);
+  const body=document.getElementById("rs-body"),tog=document.getElementById("rs-toggle");
+  if(body&&body.style.display==="none"){body.style.display="";if(tog)tog.textContent="▲ Hide";if(!prefs.sections)prefs.sections={};prefs.sections.results=false;savePrefs();}
+  const sec=document.querySelector(".rs-section");
+  if(sec)setTimeout(function(){sec.scrollIntoView({behavior:"smooth",block:"start"});},60);
 }
 function toggleResults(){toggleSection("rs-body","rs-toggle","results");}
 
