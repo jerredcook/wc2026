@@ -118,9 +118,28 @@ function parseEvents(data, ds) {
           goals.push({ scorer: name, team, pen: /penalt/i.test(tx) });
         });
       }
+      // Compact goals+cards timeline (by minute) — mirrors the app's parseESPNEvents,
+      // so the inline display works in the snapshot fallback too.
+      const evx = [];
+      if (Array.isArray(comp.details)) {
+        comp.details.forEach(d => {
+          const tx = ((d.type && (d.type.text || d.type.name)) || "") + "";
+          const ath = (d.athletesInvolved && d.athletesInvolved[0]) || null;
+          const nm = ath && (ath.shortName || ath.displayName);
+          let k = null;
+          if (/own goal/i.test(tx)) k = "og";
+          else if (d.scoringPlay || /goal/i.test(tx)) k = "g";
+          else if (d.redCard === true || /red card|second yellow|sent off|ejection/i.test(tx)) k = "r";
+          else if (d.yellowCard === true || /yellow card/i.test(tx)) k = "y";
+          if (!k || !nm) return;
+          evx.push({ m: (d.clock && d.clock.displayValue) || "", k, n: nm, p: /penalt/i.test(tx) });
+        });
+        const mn = s => { const x = String(s || "").match(/(\d+)(?:'?\s*\+\s*(\d+))?/); return x ? +x[1] * 100 + (x[2] ? +x[2] : 0) : 9999; };
+        evx.sort((a, b) => mn(a.m) - mn(b.m));
+      }
       hs = isNaN(hs) ? null : hs; as = isNaN(as) ? null : as;
       out.push({
-        home: homeName, away: awayName, hs, as, hr, ar, goals,
+        home: homeName, away: awayName, hs, as, hr, ar, goals, ev: evx,
         status, minute: (status === "LIVE" && clk) ? clk : null,
         id: ev.id || "", date: ds || "",
         venue: (comp.venue && comp.venue.fullName) || ""

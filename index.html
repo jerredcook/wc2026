@@ -269,6 +269,17 @@ html[data-theme="dark"] .pk-cf{background:#23262e;border-color:#3a3d45;color:#aa
 html[data-theme="dark"] .pk-cf.on{background:#1aa251;border-color:#1aa251;color:#fff}
 html[data-theme="dark"] .pk-br{background:#23262e;color:#aab0b8}
 html[data-theme="dark"] .pk-br b{color:#e9eaed}
+.mev{display:flex;flex-wrap:wrap;gap:3px 12px;padding:3px 6px 8px 8px;font-size:11px;line-height:1.55;border-bottom:1px solid #f1f2f4}
+.mev-e{display:inline-flex;align-items:center;gap:3px;white-space:nowrap}
+.mev-m{font-weight:700;color:#aab;font-variant-numeric:tabular-nums;font-size:10px}
+.mev-n{color:#555}
+.mev-e.red .mev-n{color:#d6322c;font-weight:600}
+.mev-e.yel .mev-n{color:#9a7d00}
+html[data-theme="dark"] .mev{border-color:#26282f}
+html[data-theme="dark"] .mev-n{color:#aab0b8}
+html[data-theme="dark"] .mev-m{color:#6a7079}
+html[data-theme="dark"] .mev-e.red .mev-n{color:#f0a39e}
+html[data-theme="dark"] .mev-e.yel .mev-n{color:#d6c24a}
 html[data-theme="dark"] .st-scn{background:#1c1f26;border-color:#31343d}
 html[data-theme="dark"] .st-scn-h{color:#80868f}
 html[data-theme="dark"] .sc-row .tlink{color:#e9eaed}
@@ -2544,7 +2555,7 @@ function buildGrid(){
       const hl=state.team!=="all"&&teamInMatch(state.team,m.g);
       const played=!!m.sc;
       const cls=(hl?" highlight":"")+(played&&!hl?" played":"")+(m._flash?" scored":"");
-      return`<div class="mrow${cls}" tabindex="0" role="button" data-match="${m._id}">${whenHTML(m)}<span class="mgame">${gameHTML(m)}</span><span class="rbadge ${roundClass(m.r)}">${roundLabel(m.r)}</span></div>`;
+      return`<div class="mrow${cls}" tabindex="0" role="button" data-match="${m._id}">${whenHTML(m)}<span class="mgame">${gameHTML(m)}</span><span class="rbadge ${roundClass(m.r)}">${roundLabel(m.r)}</span></div>`+(played?mevHTML(m.ev):"");
     }).join("");
     return`<div class="card">
       <div class="bar" style="background:${s.bar}"></div>
@@ -2839,7 +2850,7 @@ function buildToday(){
     const when=live?('<span class="td-live">● LIVE'+(m.clock?" "+String(m.clock).replace(/['′]/g,"")+"'":"")+'</span>')
               :(played?'<span class="td-ft">FT</span>':'<span class="td-time">'+f.time+'</span>');
     return '<div class="td-row'+(live?' td-rowlive':'')+(m._flash?' scored':'')+'" tabindex="0" role="button" data-match="'+m._id+'"><span class="td-when">'+when+'</span>'+
-      '<span class="td-game">'+mid+xdTag+goal+'</span><span class="td-meta">'+roundLabel(m.r)+' · '+it.city+'</span></div>';
+      '<span class="td-game">'+mid+xdTag+goal+'</span><span class="td-meta">'+roundLabel(m.r)+' · '+it.city+'</span></div>'+((live||played)?mevHTML(m.ev):"");
   }).join("");
 }
 
@@ -3882,6 +3893,7 @@ function applyLive(results){
           const hr=(r.hr!=null?r.hr:0),ar=(r.ar!=null?r.ar:0);
           m.hr=(k1===rk1)?hr:ar;m.ar=(k1===rk1)?ar:hr;
           if(r.id)m._eid=r.id;
+          m.ev=r.ev||null; // goals & cards timeline for inline display
           updated++;
         }
       }
@@ -3896,6 +3908,17 @@ function setLiveStatus(html){document.getElementById("liveStatus").innerHTML=htm
    served over http(s). ESPN's scoreboard sends permissive CORS headers.
    We pull each tournament day so far in parallel and merge, so one refresh
    backfills every completed result plus anything live right now. */
+/* Minute string ("45'", "90'+2'") → sortable number. */
+function mevMin(s){const m=String(s||"").match(/(\d+)(?:'?\s*\+\s*(\d+))?/);return m?parseInt(m[1],10)*100+(m[2]?parseInt(m[2],10):0):9999;}
+/* Inline goals & cards timeline shown under a match score by default. */
+function mevHTML(ev){
+  if(!ev||!ev.length)return"";
+  const ic={g:"⚽",og:"⚽",y:"🟨",r:"🟥"};
+  return '<div class="mev">'+ev.map(function(e){
+    return '<span class="mev-e'+(e.k==="r"?" red":(e.k==="y"?" yel":""))+'"><span class="mev-m">'+escHTML(e.m)+'</span>'+ic[e.k]+
+      '<span class="mev-n">'+escHTML(e.n)+(e.k==="og"?" (OG)":(e.p?" (P)":""))+'</span></span>';
+  }).join("")+'</div>';
+}
 function parseESPNEvents(data,ds){
   const out=[];
   (((data||{}).events)||[]).forEach(function(ev){
@@ -3939,6 +3962,24 @@ function parseESPNEvents(data,ds){
           goals.push({scorer:name,team:team,pen:/penalt/i.test(tx)});
         });
       }
+      // Compact event timeline (goals + cards, by minute) for inline display —
+      // straight from the scoreboard details, so no extra requests.
+      const evx=[];
+      if(Array.isArray(comp.details)){
+        comp.details.forEach(function(d){
+          const tx=((d.type&&(d.type.text||d.type.name))||"")+"";
+          const ath=(d.athletesInvolved&&d.athletesInvolved[0])||null;
+          const nm=ath&&(ath.shortName||ath.displayName);
+          let k=null;
+          if(/own goal/i.test(tx))k="og";
+          else if(d.scoringPlay||/goal/i.test(tx))k="g";
+          else if(d.redCard===true||/red card|second yellow|sent off|ejection/i.test(tx))k="r";
+          else if(d.yellowCard===true||/yellow card/i.test(tx))k="y";
+          if(!k||!nm)return;
+          evx.push({m:(d.clock&&d.clock.displayValue)||"",k:k,n:nm,p:/penalt/i.test(tx)});
+        });
+        evx.sort(function(a,b){return mevMin(a.m)-mevMin(b.m);});
+      }
       out.push({
         home:homeName,
         away:awayName,
@@ -3946,6 +3987,7 @@ function parseESPNEvents(data,ds){
         as:isNaN(as)?null:as,
         hr:hr,ar:ar,
         goals:goals,
+        ev:evx,
         status:status,
         minute:(status==="LIVE"&&clk)?clk:null,
         id:ev.id||"",
