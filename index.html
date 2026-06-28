@@ -2044,8 +2044,9 @@ function matchPopoverHTML(e){
   let home,away,sc,live,clock,played,roundR,dateStr,instant,venueLine,locKey,locLine,homePh=false,awayPh=false,etStr="";
   if(e.type==="s"){
     const m=e.m,s=e.s;
-    const has=m.g.includes(" vs ");
-    const parts=has?m.g.split(" vs ").map(function(x){return x.trim();}):[m.g,""];
+    const g=(m._koH!=null)?(m._koH+" vs "+m._koA):m.g;   // knockout: real teams / slot labels
+    const has=g.includes(" vs ");
+    const parts=has?g.split(" vs ").map(function(x){return x.trim();}):[g,""];
     home=parts[0];away=parts[1];
     sc=m.sc;live=!!m.live;clock=m.clock;played=!!m.sc;roundR=m.r;
     instant=matchInstant(m);dateStr=m.d;
@@ -2623,8 +2624,9 @@ function highlightGame(gameStr){
 /* Renders the match text. If the match has a final score (sc),
    shows "Home  H–A  Away  FT" with the winning number highlighted. */
 function gameHTML(m){
-  if(m.sc&&m.g.includes(" vs ")){
-    const [home,away]=m.g.split(" vs ").map(x=>x.trim());
+  const g=(m._koH!=null)?(m._koH+" vs "+m._koA):m.g;   // knockout: real teams / slot labels
+  if(m.sc&&g.includes(" vs ")){
+    const [home,away]=g.split(" vs ").map(x=>x.trim());
     const [hs,as_]=m.sc.split("-");
     const hN=Number(hs),aN=Number(as_);
     const hCls=hN>aN?"win":(hN<aN?"los":"");
@@ -2634,7 +2636,7 @@ function gameHTML(m){
     const tag=m.live?`<span class="live-badge">● LIVE</span>`+(m.clock?`<span class="live-min">${m.clock}'</span>`:``):`<span class="ft">FT</span>`;
     return `${homeEl}${rcMark(m.hr)}<span class="mscore"><span class="${hCls}">${hs}</span>–<span class="${aCls}">${as_}</span></span>${rcMark(m.ar)}${awayEl}${tag}`;
   }
-  return highlightGame(m.g);
+  return highlightGame(g);
 }
 /* Red-card marker: one red rectangle per sending-off, with a "down to N" tooltip. */
 function rcMark(n){
@@ -2969,14 +2971,15 @@ function buildToday(){
   if(!items.length){wrap.innerHTML='<div class="td-empty">No World Cup matches scheduled today.</div>';return;}
   wrap.innerHTML=items.map(function(it){
     const m=it.m,f=fmtInstant(it.ts),live=!!m.live,played=!!m.sc;
+    const g=(m._koH!=null)?(m._koH+" vs "+m._koA):m.g;   // knockout: real teams / slot labels
     let mid;
-    if(m.g.includes(" vs ")){
+    if(g.includes(" vs ")){
       if(played){
-        const p=m.g.split(" vs ").map(function(x){return x.trim();});
+        const p=g.split(" vs ").map(function(x){return x.trim();});
         const sp=m.sc.split("-");
         mid=teamLink(p[0],false,false)+rcMark(m.hr)+' <b>'+sp[0]+'–'+sp[1]+'</b> '+rcMark(m.ar)+teamLink(p[1],false,false);
-      }else mid=m.g.split(" vs ").map(function(x){return teamLink(x.trim(),false,false);}).join(" vs ");
-    }else mid=m.g;
+      }else mid=g.split(" vs ").map(function(x){return teamLink(x.trim(),false,false);}).join(" vs ");
+    }else mid=g;
     const goal=m._flash?'<span class="goal-badge">⚽ GOAL</span>':"";
     const xdTag=(!live&&!played&&m.xd)?' <span class="td-xd" title="kicks off after midnight ET">'+m.xd+'</span>':"";
     const when=live?('<span class="td-live">● LIVE'+(m.clock?" "+String(m.clock).replace(/['′]/g,"")+"'":"")+'</span>')
@@ -3218,6 +3221,48 @@ function bkTeamRow(slot,liveName,myScore,oppScore,proj){
     label='<span class="bk-tn ph">'+slotShort(slot)+'</span>';
   }
   return '<div class="bk-team'+(win?" win":"")+'">'+lead+label+sc+'</div>';
+}
+/* ── Knockout fixtures in the schedule are placeholders ("Round of 32"); the
+   real teams and scores live in the bracket. Match each fixture to its bracket
+   match by date + venue, then copy across the teams (resolved name, or a
+   readable slot label like "Winner Grp C"), the score, the timeline and event
+   id — so the Today bar, schedule grid and popover show who's actually playing
+   and what the score is, not just "Round of 32 · time · location". ── */
+const KO_ROUNDS={R32:1,R16:1,QF:1,SF:1,"3rd":1,Final:1};
+const VEN_ALIAS={estadioazteca:"estadiobanorte"};       // schedule name → bracket name
+function isoOf(dStr){var p=String(dStr).split(" "),mo=MONTHS[p[0]],day=parseInt(p[1],10);return (mo==null||isNaN(day))?"":"2026"+("0"+(mo+1)).slice(-2)+("0"+day).slice(-2);}
+function venKey(v){var k=canonVen(v);return VEN_ALIAS[k]||k;}
+function bracketFixture(iso,ven){
+  if(!iso)return null;
+  const cands=bracket.filter(function(b){return b.iso===iso;});
+  if(!cands.length)return null;
+  const vk=venKey(ven);
+  let m=cands.find(function(b){return venKey(b.ven)===vk;});
+  if(!m)m=cands.find(function(b){var bk=venKey(b.ven);return bk.indexOf(vk)>=0||vk.indexOf(bk)>=0;}); // e.g. Arrowhead
+  return m||null;
+}
+function slotLabel(slot){
+  slot=String(slot||"");var m;
+  if(m=/^Winner ([A-L])$/.exec(slot))return "Winner Grp "+m[1];
+  if(m=/^2nd ([A-L])$/.exec(slot))return "2nd Grp "+m[1];
+  if(m=/^3rd ([A-L/]+)$/.exec(slot))return "3rd ("+m[1]+")";
+  if(m=/^Winner (R32|R16|QF|SF)-(\d+)$/.exec(slot))return "Winner "+m[1]+"·"+m[2];
+  if(m=/^Loser (SF)-(\d+)$/.exec(slot))return "Loser "+m[1]+"·"+m[2];
+  return slot;
+}
+function enrichKnockouts(){
+  stadiums.forEach(function(s){s.m.forEach(function(m){
+    if(!KO_ROUNDS[m.r])return;
+    const bf=bracketFixture(isoOf(m.d),s.real)||(m.xd?bracketFixture(isoOf(m.xd),s.real):null);
+    if(!bf){m._koH=null;return;}
+    const rh=bf.liveH&&!isSlotName(bf.liveH),ra=bf.liveA&&!isSlotName(bf.liveA);
+    m._koH=rh?bf.liveH:slotLabel(bf.h);m._koHR=rh;
+    m._koA=ra?bf.liveA:slotLabel(bf.a);m._koAR=ra;
+    if(bf.hs!=null&&bf.as!=null){m.sc=bf.hs+"-"+bf.as;m.live=(bf.status==="LIVE");m.clock=bf.minute;m.hr=0;m.ar=0;}
+    else{m.sc=null;m.live=false;}
+    if(bf._eid)m._eid=bf._eid;
+    if(bf.ev)m.ev=bf.ev;
+  });});
 }
 function bkCard(m){
   const live=m.status==="LIVE";
@@ -4415,6 +4460,8 @@ async function refreshScores(){
   if(reached&&results){
     const n=applyLive(results);
     applyBracket(espnEvents);
+    resolveBracketFromStandings();   // project/confirm knockout slots from standings…
+    enrichKnockouts();               // …then show those teams/scores in the schedule too
     const goals=detectGoals();
     const bgoals=detectBracketGoals();
     scorersReached=!!espnEvents; // ESPN feed carries per-goal scorer detail; the Claude fallback doesn't
@@ -4500,6 +4547,7 @@ async function refreshScores(){
   buildRankingsControls();
   buildRankings();
   buildBracket();
+  enrichKnockouts();     // fill knockout fixtures with their bracket teams/scores
   buildPickem();
   buildCards();
   buildResults();
