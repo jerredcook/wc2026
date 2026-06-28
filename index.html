@@ -1305,6 +1305,9 @@ const tzState={mode:'et',zone:'America/New_York'};
 const COMMON_ZONES=[["America/Los_Angeles","Pacific"],["America/Denver","Mountain"],["America/Chicago","Central"],["America/New_York","Eastern"],["America/Mexico_City","Mexico City"],["America/Sao_Paulo","São Paulo"],["Europe/London","London"],["Europe/Madrid","Madrid (CET)"]];
 
 function localZone(){try{return Intl.DateTimeFormat().resolvedOptions().timeZone||"America/New_York";}catch(e){return "America/New_York";}}
+/* The zone to display in: Eastern, the auto-detected local zone (re-resolved
+   every render, so it follows you if you travel), or a specifically picked one. */
+function activeZone(){return tzState.mode==='et'?'America/New_York':(tzState.mode==='local'?localZone():tzState.zone);}
 function tzAbbr(zone,d){try{return new Intl.DateTimeFormat("en-US",{timeZone:zone,timeZoneName:"short"}).formatToParts(d||new Date()).find(p=>p.type==="timeZoneName").value;}catch(e){return "";}}
 /* UTC instant (ms) of a fixture's kickoff, or null if it has no time. */
 function matchInstant(m){
@@ -1327,7 +1330,7 @@ function etSlateKey(dStr){
 }
 /* Format an instant in the active display zone → {date,time,tz}. */
 function fmtInstant(ts){
-  const d=new Date(ts),z=tzState.zone;
+  const d=new Date(ts),z=activeZone();
   return {
     date:d.toLocaleDateString("en-US",{timeZone:z,month:"short",day:"numeric"}),
     time:d.toLocaleTimeString("en-US",{timeZone:z,hour:"numeric",minute:"2-digit"}),
@@ -1682,7 +1685,7 @@ function teamScheduleHTML(name){
       const live=x.live?'<span class="tsch-live">'+(x.clock?String(x.clock).replace(/['′]/g,"")+"'":"LIVE")+'</span>':'';
       mid='<span class="tsch-sc">'+own+'–'+opp+'</span><span class="tsch-res tsch-'+res+'">'+res+'</span>'+live;
     }else{
-      const when=(x.ts!=null&&tzState.mode==="tz")?(fmtInstant(x.ts).time+" "+fmtInstant(x.ts).tz):(x.t?(x.t+" ET"):"TBD");
+      const when=(x.ts!=null&&tzState.mode!=="et")?(fmtInstant(x.ts).time+" "+fmtInstant(x.ts).tz):(x.t?(x.t+" ET"):"TBD");
       mid='<span class="tsch-when">'+escHTML(when)+'</span>';
     }
     return '<div class="tsch-row" tabindex="0" role="button" data-match="'+x.id+'">'+
@@ -1787,7 +1790,7 @@ function buildFollowBar(){
   let nextHtml;
   if(nx){
     let when;
-    if(nx.instant!=null&&tzState.mode==="tz"){const f=fmtInstant(nx.instant);when=f.date+' · '+f.time+' '+f.tz;}
+    if(nx.instant!=null&&tzState.mode!=="et"){const f=fmtInstant(nx.instant);when=f.date+' · '+f.time+' '+f.tz;}
     else if(nx.t){when=nx.d+' · '+nx.t+' ET';}
     else{when=nx.d+(nx.knockout?(' · '+roundLabel(nx.round)):'');} // knockout: no time, show round
     const liveTag=nx.live?'<span class="fb-live">● LIVE'+(nx.clock?" "+String(nx.clock).replace(/['′]/g,"")+"'":"")+'</span>':'';
@@ -2017,7 +2020,7 @@ function matchPopoverHTML(e){
   }
 
   let kick;
-  if(tzState.mode==="tz"&&instant!=null){
+  if(tzState.mode!=="et"&&instant!=null){
     const f=fmtInstant(instant);
     const sub=etStr?('<span class="sub"> · '+escHTML(etStr)+'</span>'):"";
     kick=mpRow("Kickoff",f.date+' · '+f.time+' '+f.tz+sub);
@@ -2587,7 +2590,7 @@ function rcMark(n){
    instant is converted and shown with that zone's abbreviation. */
 function whenHTML(m){
   if(!m.t)return `<span class="mwhen"><span class="mdate">${m.d}</span></span>`;
-  if(tzState.mode==='tz'){
+  if(tzState.mode!=='et'){
     const ts=matchInstant(m);
     if(ts!=null){
       const f=fmtInstant(ts);
@@ -2861,18 +2864,19 @@ function buildTzToggle(){
   if(!el)return;
   const lz=localZone(),la=tzAbbr(lz)||"Local";
   const etActive=tzState.mode==='et';
-  const localActive=tzState.mode==='tz'&&tzState.zone===lz;
+  const localActive=tzState.mode==='local';
   const opts=COMMON_ZONES.map(function(z){
-    const sel=(tzState.mode==='tz'&&tzState.zone===z[0]&&!localActive)?" selected":"";
+    const sel=(tzState.mode==='tz'&&tzState.zone===z[0])?" selected":"";
     return '<option value="'+z[0]+'"'+sel+'>'+z[1]+'</option>';
   }).join("");
   el.innerHTML='<span class="tz-label">Times</span>'+
+    '<button class="tzbtn'+(localActive?' active':'')+'" onclick="setTimeMode(\'local\',null,this)">My time ('+la+')</button>'+
     '<button class="tzbtn'+(etActive?' active':'')+'" onclick="setTimeMode(\'et\',null,this)">ET</button>'+
-    '<button class="tzbtn'+(localActive?' active':'')+'" onclick="setTimeMode(\'tz\',\''+lz+'\',this)">My time ('+la+')</button>'+
     '<select class="tz-select" onchange="if(this.value)setTimeMode(\'tz\',this.value,null)"><option value="">Pick a zone…</option>'+opts+'</select>';
   const note=document.getElementById("tzNote");
   if(note){
     if(tzState.mode==='et')note.textContent="Kickoff times shown in U.S. Eastern (ET)";
+    else if(tzState.mode==='local')note.textContent="Kickoff times shown in your local zone ("+(tzAbbr(localZone())||localZone())+"), auto-detected";
     else note.textContent="Kickoff times shown in "+(tzAbbr(tzState.zone)||tzState.zone);
   }
 }
@@ -2881,7 +2885,7 @@ function buildTzToggle(){
 function buildToday(){
   const wrap=document.getElementById("today-body");
   if(!wrap)return;
-  const zone=tzState.mode==='tz'?tzState.zone:'America/New_York';
+  const zone=activeZone();
   const dayKey=function(ts){return new Date(ts).toLocaleDateString("en-US",{timeZone:zone,year:"numeric",month:"2-digit",day:"2-digit"});};
   const today=new Date().toLocaleDateString("en-US",{timeZone:zone,year:"numeric",month:"2-digit",day:"2-digit"});
   // A midnight-crossing late game (kicks off 12:00 AM ET) is listed under the
@@ -2902,7 +2906,7 @@ function buildToday(){
   items.sort(function(a,b){return a.ts-b.ts;});
   const dateLabel=new Date().toLocaleDateString("en-US",{timeZone:zone,weekday:"short",month:"short",day:"numeric"});
   const stamp=document.getElementById("today-date");
-  if(stamp)stamp.textContent=dateLabel+(tzState.mode==='tz'?(" · "+(tzAbbr(zone)||zone)):" · ET");
+  if(stamp)stamp.textContent=dateLabel+(tzState.mode!=='et'?(" · "+(tzAbbr(zone)||zone)):" · ET");
   if(!items.length){wrap.innerHTML='<div class="td-empty">No World Cup matches scheduled today.</div>';return;}
   wrap.innerHTML=items.map(function(it){
     const m=it.m,f=fmtInstant(it.ts),live=!!m.live,played=!!m.sc;
@@ -4297,7 +4301,16 @@ async function refreshScores(){
 (function init(){
   // Restore saved preferences (theme was already applied in <head> to avoid a flash).
   updateThemeBtn();
-  if(prefs.tz&&prefs.tz.mode){tzState.mode=prefs.tz.mode;if(prefs.tz.zone)tzState.zone=prefs.tz.zone;}
+  // Default to the visitor's local zone (auto-detected). One-time migration flips
+  // anyone still on the old Eastern default — or a frozen "My time" zone — to the
+  // new auto-following local mode; explicit choices made afterward are kept.
+  if(!prefs.tzMigrated){
+    tzState.mode='local';prefs.tz={mode:'local'};prefs.tzMigrated=true;savePrefs();
+  }else if(prefs.tz&&prefs.tz.mode){
+    tzState.mode=prefs.tz.mode;if(prefs.tz.zone)tzState.zone=prefs.tz.zone;
+  }else{
+    tzState.mode='local';
+  }
   if(typeof prefs.auto==="boolean")auto.on=prefs.auto;
   notifyState.on=!!prefs.notify&&notifySupported()&&Notification.permission==="granted";
   updateNotifyBtn();
