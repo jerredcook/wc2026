@@ -32,10 +32,15 @@ The whole app is [`index.html`](index.html) — HTML, CSS, and vanilla JavaScrip
 
 ## Installing it (add to home screen)
 
-The app ships a web manifest and icons, so it can be installed:
+**Live app: [jerredcook.github.io/wc2026](https://jerredcook.github.io/wc2026/)** (hosted free on GitHub Pages).
 
-- **iPhone / iPad (Safari):** Share → *Add to Home Screen*. It launches full-screen with its own icon.
-- **Android (Chrome):** the ⋮ menu shows *Install app* / *Add to Home screen*.
+It's a full PWA — proper manifest (`id`, `standalone`, theme color, 192/512/maskable icons) and a network-first service worker — so it installs as a real app:
+
+- **Android (Chrome):** open the link and tap the in-app **⬇ Install app** button (or the ⋮ menu → *Install app*). Launches full-screen with its own adaptive icon, works offline.
+- **iPhone / iPad (Safari):** Share → *Add to Home Screen*.
+- **Desktop (Chrome/Edge):** an install icon appears in the address bar.
+
+Because it's a standards-compliant PWA, the *same* code can later be wrapped as a **Trusted Web Activity** (e.g. via [PWABuilder](https://www.pwabuilder.com/)) for a Google Play listing — no rewrite, just a thin Android shell over this site.
 - **Desktop (Chrome/Edge):** an install icon appears in the address bar.
 
 ### Offline
