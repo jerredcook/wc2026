@@ -308,6 +308,8 @@ html[data-theme="dark"] .rs-summary b{color:#34d39a}
 .tm-results:hover{background:#e3eefb;border-color:#1b6fd4}
 html[data-theme="dark"] .tm-results{color:#6fb1f5;background:#16202e;border-color:#274056}
 html[data-theme="dark"] .tm-results:hover{background:#1b2839;border-color:#6fb1f5}
+#installBtn{background:#0d8a4f;border-color:#0d8a4f;color:#fff;font-weight:700}
+#installBtn:hover{background:#0a6e3f;border-color:#0a6e3f}
 .rs-round{margin-bottom:16px}
 .rs-rname{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#888;margin:0 0 4px}
 .rs-rn{color:#bbb;font-weight:700}
@@ -1050,6 +1052,7 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
   <span class="tz-toggle" id="tzToggle"></span>
   <button class="theme-btn" id="notifyBtn" onclick="toggleNotify()" style="display:none">🔔 Notify goals</button>
   <button class="theme-btn" id="calBtn" onclick="exportCalendar()" title="Download all fixtures as a calendar file (.ics)">📅 Calendar</button>
+  <button class="theme-btn" id="installBtn" onclick="doInstall()" style="display:none" title="Install this app to your home screen">⬇ Install app</button>
   <button class="theme-btn" id="themeBtn" onclick="toggleTheme()">🌙 Dark</button>
 </div>
 
@@ -4081,6 +4084,24 @@ function applyLive(results){
 }
 
 function setLiveStatus(html){document.getElementById("liveStatus").innerHTML=html;}
+
+/* Home-screen install (Android/desktop Chromium fire beforeinstallprompt; iOS
+   uses Share → Add to Home Screen). Show our own button when installable. */
+let deferredInstall=null;
+window.addEventListener("beforeinstallprompt",function(e){
+  e.preventDefault();deferredInstall=e;
+  const b=document.getElementById("installBtn");if(b)b.style.display="";
+});
+window.addEventListener("appinstalled",function(){
+  deferredInstall=null;const b=document.getElementById("installBtn");if(b)b.style.display="none";
+});
+function doInstall(){
+  if(!deferredInstall)return;
+  deferredInstall.prompt();
+  deferredInstall.userChoice.finally(function(){
+    deferredInstall=null;const b=document.getElementById("installBtn");if(b)b.style.display="none";
+  });
+}
 
 /* Public, keyless source — works in a normal browser when the page is
    served over http(s). ESPN's scoreboard sends permissive CORS headers.
