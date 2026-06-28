@@ -132,7 +132,9 @@ function parseEvents(data, ds) {
           else if (d.redCard === true || /red card|second yellow|sent off|ejection/i.test(tx)) k = "r";
           else if (d.yellowCard === true || /yellow card/i.test(tx)) k = "y";
           if (!k || !nm) return;
-          evx.push({ m: (d.clock && d.clock.displayValue) || "", k, n: nm, p: /penalt/i.test(tx) });
+          const tid = (ath && ath.team && ath.team.id) || (d.team && d.team.id);
+          const tm = String(tid) === String(home.id) ? homeName : (String(tid) === String(away.id) ? awayName : "");
+          evx.push({ m: (d.clock && d.clock.displayValue) || "", k, n: nm, p: /penalt/i.test(tx), tm });
         });
         const mn = s => { const x = String(s || "").match(/(\d+)(?:'?\s*\+\s*(\d+))?/); return x ? +x[1] * 100 + (x[2] ? +x[2] : 0) : 9999; };
         evx.sort((a, b) => mn(a.m) - mn(b.m));

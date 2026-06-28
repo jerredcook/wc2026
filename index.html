@@ -300,6 +300,24 @@ html[data-theme="dark"] .rs-collapse{color:#8a9099}
 .rs-summary{font-size:12px;color:#888;margin-bottom:12px;font-weight:600}
 .rs-summary b{color:#0d8a4f}
 html[data-theme="dark"] .rs-summary b{color:#34d39a}
+.cd-table{width:100%;border-collapse:collapse;font-size:13px}
+.cd-table th{text-align:left;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#aaa;padding:4px 6px;border-bottom:1px solid #eee}
+.cd-table th.cd-c,.cd-table th.cd-rk{text-align:center}
+.cd-table td{padding:6px 6px;border-bottom:1px solid #f3f4f6}
+.cd-table tr:last-child td{border-bottom:none}
+.cd-rk{width:24px;color:#aaa;font-weight:700;text-align:center;font-variant-numeric:tabular-nums}
+.cd-c{text-align:center;width:46px;font-weight:800;font-variant-numeric:tabular-nums}
+.cd-y{color:#b59500}.cd-r{color:#d6322c}
+.cd-z{color:#ccc;font-weight:400}
+.cd-tm{color:#222}
+.cd-foot{font-size:10px;color:#aaa;margin-top:8px;line-height:1.4}
+html[data-theme="dark"] .cd-table th{color:#80868f;border-color:#2a2d35}
+html[data-theme="dark"] .cd-table td{border-color:#26282f}
+html[data-theme="dark"] .cd-rk{color:#80868f}
+html[data-theme="dark"] .cd-tm{color:#e9eaed}
+html[data-theme="dark"] .cd-y{color:#d6c24a}html[data-theme="dark"] .cd-r{color:#f0a39e}
+html[data-theme="dark"] .cd-z{color:#5a6069}
+html[data-theme="dark"] .cd-foot{color:#80868f}
 .rs-rname{cursor:pointer;user-select:none}
 .rs-rname::before{content:"▾";font-size:9px;color:#bbb;margin-right:5px;display:inline-block}
 .rs-round.collapsed .rs-rname::before{content:"▸"}
@@ -1117,6 +1135,18 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
   </div>
 </div>
 
+<!-- ══════════ CARD TRACKER ══════════ -->
+<div class="rs-section">
+  <div class="rs-head" tabindex="0" role="button" onclick="toggleCards()">
+    <div class="rs-titlewrap">
+      <div class="rs-title">🟨🟥 Card Tracker</div>
+      <div class="rs-sub">Yellow &amp; red cards by team or by round &middot; from the live match feed</div>
+    </div>
+    <span class="rs-toggle" id="cd-toggle">▼ Show</span>
+  </div>
+  <div id="cd-body" style="display:none"></div>
+</div>
+
 <!-- ══════════ RESULTS ══════════ -->
 <div class="rs-section">
   <div class="rs-head" tabindex="0" role="button" onclick="toggleResults()">
@@ -1407,6 +1437,7 @@ const SECTIONS=[
   {key:"standings",body:"st-body",tog:"st-toggle"},
   {key:"thirds",body:"th-body",tog:"th-toggle"},
   {key:"scorers",body:"sc-body",tog:"sc-toggle"},
+  {key:"cards",body:"cd-body",tog:"cd-toggle"},
   {key:"results",body:"rs-body",tog:"rs-toggle"},
   {key:"rankings",body:"rk-body",tog:"rk-toggle"},
   {key:"bracket",body:"bk-body",tog:"bk-toggle"},
@@ -3642,6 +3673,47 @@ function jumpToResults(name){
   const sec=document.querySelector(".rs-section");
   if(sec)setTimeout(function(){sec.scrollIntoView({behavior:"smooth",block:"start"});},60);
 }
+
+/* ══════════ CARD TRACKER — yellows & reds by team or round ══════════
+   Aggregated from the same goals/cards timeline (ev) already on each match. */
+function cardsData(){
+  const cards=[];
+  function add(ev,round){(ev||[]).forEach(function(e){if(e.k==="y"||e.k==="r")cards.push({team:e.tm||"",round:round,kind:e.k});});}
+  stadiums.forEach(function(s){s.m.forEach(function(m){if(m.sc&&m.ev)add(m.ev,m.r);});});
+  bracket.forEach(function(b){if(b.hs!=null&&b.ev)add(b.ev,b.r);});
+  return cards;
+}
+function setCardsMode(m){prefs.cdmode=m;savePrefs();buildCards();}
+function buildCards(){
+  const box=document.getElementById("cd-body");if(!box)return;
+  const cards=cardsData();
+  if(!cards.length){box.innerHTML='<div class="rs-empty">No cards recorded yet — they appear here as matches are played.</div>';return;}
+  const mode=prefs.cdmode==="round"?"round":"team";
+  const toggle='<div class="rs-modes"><span class="rs-mlbl">By</span>'+
+    '<button class="rs-mode'+(mode==="team"?" on":"")+'" onclick="setCardsMode(\'team\')">team</button>'+
+    '<button class="rs-mode'+(mode==="round"?" on":"")+'" onclick="setCardsMode(\'round\')">round</button></div>';
+  const totY=cards.filter(function(c){return c.kind==="y";}).length,totR=cards.length-totY;
+  const summary='<div class="rs-summary">🟨 '+totY+' yellow &middot; 🟥 '+totR+' red &middot; '+cards.length+' total</div>';
+  const zr=function(n){return n||'<span class="cd-z">–</span>';};
+  let bodyHtml,foot;
+  if(mode==="team"){
+    const by={};
+    cards.forEach(function(c){if(!c.team)return;const t=by[c.team]||(by[c.team]={y:0,r:0});if(c.kind==="y")t.y++;else t.r++;});
+    const rows=Object.keys(by).map(function(t){return {team:t,y:by[t].y,r:by[t].r};}).sort(function(a,b){return (b.r-a.r)||(b.y-a.y)||a.team.localeCompare(b.team);});
+    bodyHtml='<table class="cd-table"><thead><tr><th class="cd-rk">#</th><th>Team</th><th class="cd-c">🟨</th><th class="cd-c">🟥</th></tr></thead><tbody>'+
+      rows.map(function(r,i){return '<tr><td class="cd-rk">'+(i+1)+'</td><td class="cd-tm">'+teamLink(r.team,false,true)+'</td><td class="cd-c cd-y">'+zr(r.y)+'</td><td class="cd-c cd-r">'+zr(r.r)+'</td></tr>';}).join("")+'</tbody></table>';
+    foot="Sorted by most red cards, then yellows. Tap a team for its profile.";
+  }else{
+    const by={};
+    cards.forEach(function(c){const t=by[c.round]||(by[c.round]={y:0,r:0});if(c.kind==="y")t.y++;else t.r++;});
+    const keys=Object.keys(by).sort(function(a,b){return roundRank(a)-roundRank(b)||a.localeCompare(b);});
+    bodyHtml='<table class="cd-table"><thead><tr><th>Round</th><th class="cd-c">🟨</th><th class="cd-c">🟥</th></tr></thead><tbody>'+
+      keys.map(function(k){return '<tr><td class="cd-tm">'+escHTML(roundFull(k))+'</td><td class="cd-c cd-y">'+zr(by[k].y)+'</td><td class="cd-c cd-r">'+zr(by[k].r)+'</td></tr>';}).join("")+'</tbody></table>';
+    foot="Cards in each round of the tournament.";
+  }
+  box.innerHTML=toggle+summary+bodyHtml+'<div class="cd-foot">'+foot+'</div>';
+}
+function toggleCards(){toggleSection("cd-body","cd-toggle","cards");}
 function toggleResults(){toggleSection("rs-body","rs-toggle","results");}
 
 function buildBracket(){
@@ -4179,7 +4251,9 @@ function parseESPNEvents(data,ds){
           else if(d.redCard===true||/red card|second yellow|sent off|ejection/i.test(tx))k="r";
           else if(d.yellowCard===true||/yellow card/i.test(tx))k="y";
           if(!k||!nm)return;
-          evx.push({m:(d.clock&&d.clock.displayValue)||"",k:k,n:nm,p:/penalt/i.test(tx)});
+          const tid=(ath&&ath.team&&ath.team.id)||(d.team&&d.team.id);
+          const tm=(String(tid)===String(home.id))?homeName:((String(tid)===String(away.id))?awayName:"");
+          evx.push({m:(d.clock&&d.clock.displayValue)||"",k:k,n:nm,p:/penalt/i.test(tx),tm:tm});
         });
         evx.sort(function(a,b){return mevMin(a.m)-mevMin(b.m);});
       }
@@ -4279,6 +4353,7 @@ async function refreshScores(){
     buildScorers();
     buildBracket();
     buildPickem();
+    buildCards();
     buildResults();
     buildToday();
     buildFollowBar();
@@ -4351,6 +4426,7 @@ async function refreshScores(){
   buildRankings();
   buildBracket();
   buildPickem();
+  buildCards();
   buildResults();
   buildGrid();
   refreshScores(); // auto-pull live + final scores on load (works when hosted or in Claude's view)
