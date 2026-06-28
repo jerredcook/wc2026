@@ -1113,9 +1113,9 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
       <div class="th-title">🥉 Best Third-Placed Teams</div>
       <div class="th-sub">The 8 best of the 12 group thirds also reach the Round of 32 &middot; live race</div>
     </div>
-    <span class="th-toggle" id="th-toggle">▲ Hide</span>
+    <span class="th-toggle" id="th-toggle">▼ Show</span>
   </div>
-  <div id="th-body">
+  <div id="th-body" style="display:none">
     <div class="th-updated" id="th-updated">Fills in as group matches are played — the 8 best third-placed teams reach the Round of 32.</div>
     <div id="th-grid"></div>
     <div class="th-foot">Ranked by points, then goal difference, then goals scored across each team's three group games. FIFA then applies fair-play/disciplinary points and a drawing of lots to break any remaining ties — not modeled here — and uses a fixed table to assign which thirds land in which Round-of-32 slot. Provisional until all 12 groups finish.</div>
@@ -1129,9 +1129,9 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
       <div class="sc-title">⚽ Top Scorers — Golden Boot race</div>
       <div class="sc-sub">Most goals in the tournament &middot; built live from the match feed (own goals excluded)</div>
     </div>
-    <span class="sc-toggle" id="sc-toggle">▲ Hide</span>
+    <span class="sc-toggle" id="sc-toggle">▼ Show</span>
   </div>
-  <div id="sc-body">
+  <div id="sc-body" style="display:none">
     <div class="sc-updated" id="sc-updated"></div>
     <div id="sc-grid"></div>
     <div class="sc-foot">Penalties count and are flagged; own goals do not. Tap a scorer's country to open its profile. Ties share a rank, ordered by fewer penalties then name.</div>
@@ -1169,9 +1169,9 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
       <div class="rk-title">🏅 Team Rankings</div>
       <div class="rk-sub">All 48 qualified nations by FIFA World Ranking &middot; tap any team for its roster &amp; profile</div>
     </div>
-    <span class="rk-toggle" id="rk-toggle">▲ Hide</span>
+    <span class="rk-toggle" id="rk-toggle">▼ Show</span>
   </div>
-  <div id="rk-body">
+  <div id="rk-body" style="display:none">
     <div class="rk-controls" id="rk-controls"></div>
     <table class="rk-table">
       <thead><tr><th class="rc">#</th><th>Team</th><th class="rc">Confederation</th><th class="rc">Group</th></tr></thead>
@@ -1188,9 +1188,9 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
       <div class="bk-title">🏆 Bracket · Live</div>
       <div class="bk-sub">Round of 32 → Final &middot; both halves close on the trophy &middot; fills in as teams qualify and updates after every match</div>
     </div>
-    <span class="bk-toggle" id="bk-toggle">▼ Show</span>
+    <span class="bk-toggle" id="bk-toggle">▲ Hide</span>
   </div>
-  <div id="bk-body" style="display:none">
+  <div id="bk-body">
     <div class="bk-stage">
       <div class="bk-stagehead">
         <span class="bk-brand">Bracket · Live</span>
@@ -1261,11 +1261,11 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
       <div class="sd-title">🏟️ Stadiums &amp; Matches</div>
       <div class="sd-sub">All 16 venues, every fixture by date &middot; filter by country, group, or team</div>
     </div>
-    <span class="sd-toggle" id="sd-toggle">▲ Hide</span>
+    <span class="sd-toggle" id="sd-toggle">▼ Show</span>
   </div>
 </div>
 
-<div id="sd-body">
+<div id="sd-body" style="display:none">
 <div class="filter-panel">
   <div class="filter-row">
     <span class="filter-label">Country</span>
@@ -1467,6 +1467,31 @@ function applySavedSections(){
     if(prefs.sections[s.key]){body.style.display="none";tog.textContent="▼ Show";}
     else{body.style.display="";tog.textContent="▲ Hide";}
   });
+}
+/* Casual-friendly section order — the fun/core sections first, niche/expert
+   ones last. Each section is the parent of its (unique-id) body div, so we move
+   by body id (the Card Tracker shares the rs-section class with Results). */
+function reorderSections(){
+  const foot=document.querySelector("footer.site-foot");if(!foot)return;
+  const P=foot.parentNode,$=function(s){return document.querySelector(s);},
+        secOf=function(bid){var b=document.getElementById(bid);return b?b.parentElement:null;};
+  // Each section's top-level element(s), in the desired display order. Most are
+  // the single `-section` div; Stadiums' header and body are separate siblings;
+  // Results and the Card Tracker share the rs-section class, so go by body id.
+  const groups=[
+    [$(".bk-section")],                                 // Bracket  (open)
+    [$(".st-section")],                                 // Standings (open)
+    [$(".sc-section")],                                 // Top scorers
+    [secOf("rs-body")],                                 // Results
+    [$(".th-section")],                                 // Best third-placed
+    [secOf("cd-body")],                                 // Card tracker
+    [$(".sd-section"),document.getElementById("sd-body")], // Stadiums (header + separate body)
+    [$(".rk-section")],                                 // Rankings
+    [$(".pk-section")],                                 // Pick'em (parked)
+    [$(".fr-section")],                                 // Friendlies
+    [$(".hx-section")]                                  // History
+  ];
+  groups.forEach(function(g){g.forEach(function(el){if(el&&el.parentNode===P)P.insertBefore(el,foot);});});
 }
 function applySavedFilters(){
   const f=prefs.filters;if(!f)return;
@@ -4460,6 +4485,9 @@ async function refreshScores(){
 
   buildMatchIndex();     // assign match ids so rows/cards open the detail popover
   applySavedFilters();   // restore last country/group/team selection
+  reorderSections();     // casual-friendly order: fun/core up top, niche at the bottom
+  // One-time reset to the leaner default layout (essentials open, rest collapsed).
+  if(!prefs.layoutV2){delete prefs.sections;prefs.layoutV2=true;savePrefs();}
   applySavedSections();  // restore which sections were collapsed
   buildTzToggle();
   buildToday();
