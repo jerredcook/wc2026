@@ -334,6 +334,7 @@ html[data-theme="dark"] .tm-results:hover{background:#1b2839;border-color:#6fb1f
 .rs-round{margin-bottom:16px}
 .rs-rname{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#888;margin:0 0 4px}
 .rs-rn{color:#bbb;font-weight:700}
+.sg-today{display:inline-block;background:#0d8a4f;color:#fff;font-size:9px;font-weight:800;letter-spacing:.03em;padding:1px 6px;border-radius:8px;vertical-align:middle;margin-left:3px}
 .rs-m{padding:6px 4px;border-top:1px solid #f1f2f4;cursor:pointer;border-radius:6px}
 .rs-m:hover{background:#fafbfc}
 .rs-top{display:flex;align-items:center;gap:8px}
@@ -1086,6 +1087,18 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
   <div class="leg"><div class="leg-dot" style="background:#639922"></div>Mexico (3 venues)</div>
 </div>
 
+<!-- ══════════ FULL SCHEDULE ══════════ -->
+<div class="rs-section">
+  <div class="rs-head" tabindex="0" role="button" onclick="toggleSchedule()">
+    <div class="rs-titlewrap">
+      <div class="rs-title">🗓️ Full Schedule</div>
+      <div class="rs-sub">Every fixture by date — knockouts show who's playing &middot; kickoff in your timezone &middot; tap any match for detail</div>
+    </div>
+    <span class="rs-toggle" id="sg-toggle">▲ Hide</span>
+  </div>
+  <div id="sg-body"></div>
+</div>
+
 <!-- ══════════ GROUP STANDINGS ══════════ -->
 <div class="st-section">
   <div class="st-head" tabindex="0" role="button" onclick="toggleStandings()">
@@ -1439,6 +1452,7 @@ function toggleTheme(){const next=curTheme()==="dark"?"light":"dark";applyTheme(
 
 /* ── Collapsible sections (shared toggle + persistence) ── */
 const SECTIONS=[
+  {key:"schedule",body:"sg-body",tog:"sg-toggle"},
   {key:"standings",body:"st-body",tog:"st-toggle"},
   {key:"thirds",body:"th-body",tog:"th-toggle"},
   {key:"scorers",body:"sc-body",tog:"sc-toggle"},
@@ -1481,6 +1495,7 @@ function reorderSections(){
   // the single `-section` div; Stadiums' header and body are separate siblings;
   // Results and the Card Tracker share the rs-section class, so go by body id.
   const groups=[
+    [secOf("sg-body")],                                 // Full schedule (open, top)
     [$(".bk-section")],                                 // Bracket  (open)
     [$(".st-section")],                                 // Standings (open)
     [$(".sc-section")],                                 // Top scorers
@@ -1814,7 +1829,7 @@ function setFollow(name){
   prefs.follow=(prefs.follow===nm)?null:nm;
   savePrefs();
   buildFollowBar();
-  buildToday();buildGrid();buildStandings();buildThirds();buildScorers();buildRankings();buildBracket();
+  buildToday();buildSchedule();buildGrid();buildStandings();buildThirds();buildScorers();buildRankings();buildBracket();
   if(document.getElementById("tm-overlay").classList.contains("open")&&tmCurrent)openTeam(tmCurrent); // refresh card button
 }
 function setFollowOnly(v){prefs.followOnly=!!v;savePrefs();}
@@ -2732,6 +2747,7 @@ function setFilter(type,val,btn){
   setPref("filters",{country:state.country,group:state.group,team:state.team});
   buildGrid();
   buildResults();
+  buildSchedule();
 }
 
 function resetAll(){
@@ -2742,6 +2758,7 @@ function resetAll(){
   setPref("filters",{country:"all",group:"all",team:"all"});
   buildGrid();
   buildResults();
+  buildSchedule();
 }
 
 /* ══════════ GROUP STANDINGS (derived, never hardcoded) ══════════
@@ -2922,6 +2939,8 @@ function setTimeMode(mode,zone,btn){
   buildTzToggle();
   buildGrid();
   buildToday();
+  buildSchedule();
+  buildBracket();   // bracket cards show kickoff times too — refresh for the new zone
 }
 function buildTzToggle(){
   const el=document.getElementById("tzToggle");
@@ -2972,24 +2991,28 @@ function buildToday(){
   const stamp=document.getElementById("today-date");
   if(stamp)stamp.textContent=dateLabel+(tzState.mode!=='et'?(" · "+(tzAbbr(zone)||zone)):" · ET");
   if(!items.length){wrap.innerHTML='<div class="td-empty">No World Cup matches scheduled today.</div>';return;}
-  wrap.innerHTML=items.map(function(it){
-    const m=it.m,f=fmtInstant(it.ts),live=!!m.live,played=!!m.sc;
-    const g=(m._koH!=null)?(m._koH+" vs "+m._koA):m.g;   // knockout: real teams / slot labels
-    let mid;
-    if(g.includes(" vs ")){
-      if(played){
-        const p=g.split(" vs ").map(function(x){return x.trim();});
-        const sp=m.sc.split("-");
-        mid=teamLink(p[0],false,false)+rcMark(m.hr)+' <b>'+sp[0]+'–'+sp[1]+'</b> '+rcMark(m.ar)+teamLink(p[1],false,false);
-      }else mid=g.split(" vs ").map(function(x){return teamLink(x.trim(),false,false);}).join(" vs ");
-    }else mid=g;
-    const goal=m._flash?'<span class="goal-badge">⚽ GOAL</span>':"";
-    const xdTag=(!live&&!played&&m.xd)?' <span class="td-xd" title="kicks off after midnight ET">'+m.xd+'</span>':"";
-    const when=live?('<span class="td-live">● LIVE'+(m.clock?" "+String(m.clock).replace(/['′]/g,"")+"'":"")+'</span>')
-              :(played?'<span class="td-ft">FT</span>':'<span class="td-time">'+f.time+'</span>');
-    return '<div class="td-row'+(live?' td-rowlive':'')+(m._flash?' scored':'')+'" tabindex="0" role="button" data-match="'+m._id+'"><span class="td-when">'+when+'</span>'+
-      '<span class="td-game">'+mid+xdTag+goal+'</span><span class="td-meta">'+roundLabel(m.r)+' · '+it.city+'</span></div>'+((live||played)?mevHTML(m.ev):"");
-  }).join("");
+  wrap.innerHTML=items.map(function(it){return matchRowHTML(it.m,it.ts,it.city);}).join("");
+}
+/* One match row in the Today bar / Full Schedule: time-or-LIVE/FT, the matchup
+   (resolved teams or knockout slot labels), and round · city — plus the inline
+   goals/cards timeline once it's live or finished. */
+function matchRowHTML(m,ts,city){
+  const f=fmtInstant(ts),live=!!m.live,played=!!m.sc;
+  const g=(m._koH!=null)?(m._koH+" vs "+m._koA):m.g;   // knockout: real teams / slot labels
+  let mid;
+  if(g.includes(" vs ")){
+    if(played){
+      const p=g.split(" vs ").map(function(x){return x.trim();});
+      const sp=m.sc.split("-");
+      mid=teamLink(p[0],false,false)+rcMark(m.hr)+' <b>'+sp[0]+'–'+sp[1]+'</b> '+rcMark(m.ar)+teamLink(p[1],false,false);
+    }else mid=g.split(" vs ").map(function(x){return teamLink(x.trim(),false,false);}).join(" vs ");
+  }else mid=g;
+  const goal=m._flash?'<span class="goal-badge">⚽ GOAL</span>':"";
+  const xdTag=(!live&&!played&&m.xd)?' <span class="td-xd" title="kicks off after midnight ET">'+m.xd+'</span>':"";
+  const when=live?('<span class="td-live">● LIVE'+(m.clock?" "+String(m.clock).replace(/['′]/g,"")+"'":"")+'</span>')
+            :(played?'<span class="td-ft">FT</span>':'<span class="td-time">'+f.time+'</span>');
+  return '<div class="td-row'+(live?' td-rowlive':'')+(m._flash?' scored':'')+'" tabindex="0" role="button" data-match="'+m._id+'"><span class="td-when">'+when+'</span>'+
+    '<span class="td-game">'+mid+xdTag+goal+'</span><span class="td-meta">'+roundLabel(m.r)+' · '+city+'</span></div>'+((live||played)?mevHTML(m.ev):"");
 }
 
 /* ══════════ BEST THIRD-PLACED TEAMS ══════════
@@ -3757,6 +3780,67 @@ function jumpToResults(name){
   if(sec)setTimeout(function(){sec.scrollIntoView({behavior:"smooth",block:"start"});},60);
 }
 
+/* ══════════ FULL SCHEDULE — every fixture by date ══════════
+   All group + knockout fixtures live in stadiums[].m (knockouts carry _koH/_koA
+   from enrichKnockouts), so this is the same row renderer as the Today bar,
+   grouped chronologically by date. Defaults to upcoming-only; respects the
+   global country/group/team filters set in Stadiums & Matches. */
+function setScheduleMode(mode){prefs.sgmode=mode;savePrefs();buildSchedule();}
+function sgCollapseAll(){
+  const rounds=document.querySelectorAll("#sg-body .rs-round");
+  const anyOpen=[].some.call(rounds,function(r){return !r.classList.contains("collapsed");});
+  rounds.forEach(function(r){
+    const k=r.getAttribute("data-rk");
+    if(anyOpen){rsCollapsed[k]=1;r.classList.add("collapsed");}
+    else{delete rsCollapsed[k];r.classList.remove("collapsed");}
+  });
+}
+function buildSchedule(){
+  const box=document.getElementById("sg-body");if(!box)return;
+  const zone=activeZone();
+  const dayKey=function(ts){return new Date(ts).toLocaleDateString("en-US",{timeZone:zone,year:"numeric",month:"2-digit",day:"2-digit"});};
+  const todayKey=new Date().toLocaleDateString("en-US",{timeZone:zone,year:"numeric",month:"2-digit",day:"2-digit"});
+  const mode=prefs.sgmode==="all"?"all":"upcoming";
+  const all=[];
+  stadiums.forEach(function(s){
+    if(state.country!=="all"&&s.country!==state.country)return;
+    s.m.forEach(function(m){
+      if(!matchVisible(m))return;
+      const ts=matchInstant(m);if(ts==null)return;
+      if(mode==="upcoming"&&m.sc&&!m.live)return; // hide finished games in Upcoming
+      all.push({m:m,ts:ts,city:String(s.city).split(",")[0]});
+    });
+  });
+  const toggle='<div class="rs-modes"><span class="rs-mlbl">Show</span>'+
+    '<button class="rs-mode'+(mode==="upcoming"?" on":"")+'" onclick="setScheduleMode(\'upcoming\')">upcoming</button>'+
+    '<button class="rs-mode'+(mode==="all"?" on":"")+'" onclick="setScheduleMode(\'all\')">all</button>'+
+    '<button class="rs-collapse" onclick="sgCollapseAll()">collapse all</button></div>';
+  const filt=[];if(state.country!=="all")filt.push(state.country);if(state.group!=="all")filt.push("Group "+state.group);if(state.team!=="all")filt.push(state.team);
+  if(!all.length){
+    box.innerHTML=toggle+'<div class="rs-empty">'+(mode==="upcoming"
+      ?'No upcoming matches'+(filt.length?' for '+escHTML(filt.join(", ")):'')+' — switch to <b>all</b> for the full schedule, or check <b>Results</b> for completed games.'
+      :'No matches match the current filter'+(filt.length?' ('+escHTML(filt.join(", "))+')':'')+' — adjust filters in Stadiums &amp; Matches.')+'</div>';
+    return;
+  }
+  const byD={};
+  all.forEach(function(it){
+    const k=dayKey(it.ts);
+    if(!byD[k])byD[k]={items:[],mints:it.ts};
+    byD[k].items.push(it);if(it.ts<byD[k].mints)byD[k].mints=it.ts;
+  });
+  const keys=Object.keys(byD).sort(function(a,b){return byD[a].mints-byD[b].mints;});
+  box.innerHTML=toggle+
+    '<div class="rs-summary">'+all.length+' '+(mode==="upcoming"?'upcoming ':'')+'match'+(all.length!==1?'es':'')+(filt.length?' &middot; <b>'+escHTML(filt.join(" · "))+'</b>':'')+'</div>'+
+    keys.map(function(k){
+      const g=byD[k],ms=g.items.slice().sort(function(a,b){return a.ts-b.ts;});
+      const lbl=new Date(g.mints).toLocaleDateString("en-US",{timeZone:zone,weekday:"short",month:"short",day:"numeric"});
+      const todayPill=(k===todayKey)?' <span class="sg-today">Today</span>':'';
+      return '<div class="rs-round'+(rsCollapsed[k]?" collapsed":"")+'" data-rk="'+escHTML(k)+'">'+
+        '<div class="rs-rname" onclick="rsToggleRound(this)" tabindex="0" role="button">'+escHTML(lbl)+todayPill+' <span class="rs-rn">'+ms.length+'</span></div>'+
+        ms.map(function(it){return matchRowHTML(it.m,it.ts,it.city);}).join("")+'</div>';
+    }).join("");
+}
+
 /* ══════════ CARD TRACKER — yellows & reds by team or round ══════════
    Aggregated from the same goals/cards timeline (ev) already on each match. */
 function cardsData(){
@@ -3842,6 +3926,7 @@ function buildCards(){
 }
 function toggleCards(){toggleSection("cd-body","cd-toggle","cards");}
 function toggleResults(){toggleSection("rs-body","rs-toggle","results");}
+function toggleSchedule(){toggleSection("sg-body","sg-toggle","schedule");}
 
 function buildBracket(){
   resolveBracketFromStandings();
@@ -4489,10 +4574,11 @@ async function refreshScores(){
     buildPickem();
     buildCards();
     buildResults();
+    buildSchedule();
     buildToday();
     buildFollowBar();
     fireGoalNotifications(goals.concat(bgoals));
-    if(goals.length||bgoals.length)setTimeout(function(){clearFlash();clearBracketFlash();buildGrid();buildToday();buildBracket();},2200); // clear pulse after it plays
+    if(goals.length||bgoals.length)setTimeout(function(){clearFlash();clearBracketFlash();buildGrid();buildToday();buildSchedule();buildBracket();},2200); // clear pulse after it plays
     if(fromSnap){
       let cap="";try{cap=new Date(fromSnap.capturedAt).toLocaleDateString([],{year:"numeric",month:"short",day:"numeric"});}catch(e){}
       setLiveStatus('<span class="ok">✓ Archived</span> &middot; live source unavailable — showing the preserved snapshot'+(cap?' captured '+cap:'')+'.');
@@ -4566,6 +4652,7 @@ async function refreshScores(){
   buildPickem();
   buildCards();
   buildResults();
+  buildSchedule();
   buildGrid();
   refreshScores(); // auto-pull live + final scores on load (works when hosted or in Claude's view)
 
