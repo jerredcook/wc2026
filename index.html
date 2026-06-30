@@ -4394,15 +4394,18 @@ function parseESPNEvents(data,ds){
 }
 
 /* YYYYMMDD for each day from Jun 11 2026 → today (capped at the Jul 19 final). */
+/* The whole tournament window (Jun 11 → Jul 19), not just up to today — ESPN
+   already knows the upcoming knockout matchups (e.g. the R16 a winner advances
+   into), and we need those future dates to fill the bracket as rounds resolve. */
 function tournamentDates(){
   const out=[];
-  const start=new Date(2026,5,11), end=new Date(2026,6,19), now=new Date();
-  const last=now<end?now:end;
-  for(let d=new Date(start);d<=last;d.setDate(d.getDate()+1)){
+  const start=new Date(2026,5,11), end=new Date(2026,6,19);
+  for(let d=new Date(start);d<=end;d.setDate(d.getDate()+1)){
     out.push(""+d.getFullYear()+("0"+(d.getMonth()+1)).slice(-2)+("0"+d.getDate()).slice(-2));
   }
   return out;
 }
+function todayIso(){const n=new Date();return ""+n.getFullYear()+("0"+(n.getMonth()+1)).slice(-2)+("0"+n.getDate()).slice(-2);}
 
 async function fetchScoresFromESPN(){
   const base="https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
@@ -4413,8 +4416,10 @@ async function fetchScoresFromESPN(){
     const ev=parseESPNEvents(await res.json(),"");
     return {group:ev,events:ev};
   }
+  const ti=todayIso();
   const batches=await Promise.all(dates.map(function(ds){
-    return fetch(base+"?dates="+ds,{cache:"no-store"})
+    // Live freshness for today/past; let the browser cache slow-changing future dates.
+    return fetch(base+"?dates="+ds,{cache:ds>ti?"default":"no-store"})
       .then(function(r){return r.ok?r.json():null;})
       .then(function(j){return j?parseESPNEvents(j,ds):[];})
       .catch(function(){return [];});

@@ -52,7 +52,7 @@ A small **network-first** service worker ([`sw.js`](sw.js)) makes the installed 
 
 Live scores are fetched at runtime from three sources, tried in order:
 
-1. **ESPN's public scoreboard** (`site.api.espn.com/.../soccer/fifa.world/scoreboard`) — keyless and CORS-friendly, so it works in any normal browser **when the page is served over http(s)**. Each tournament day so far is fetched in parallel and merged, so one refresh backfills every completed result plus anything live right now.
+1. **ESPN's public scoreboard** (`site.api.espn.com/.../soccer/fifa.world/scoreboard`) — keyless and CORS-friendly, so it works in any normal browser **when the page is served over http(s)**. **Every** tournament day — past *and* upcoming (Jun 11 → Jul 19) — is fetched in parallel and merged, so one refresh backfills every completed result, anything live right now, *and* the upcoming knockout matchups ESPN already knows. That last part is what makes winners appear in the next round and best-third teams slot into the Round of 32 (today/past dates use a no-store fetch for live freshness; future dates are browser-cached so they're not re-hammered every 60 s).
 2. **Claude web search** (Anthropic API) — used as a fallback when the page is open inside Claude's artifact view.
 3. **The preserved snapshot** (`data/2026-snapshot.json`) — see *Preserving the live data* below.
 
