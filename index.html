@@ -406,9 +406,10 @@ html[data-theme="dark"] .bk-link.lit{stroke:rgba(233,199,103,.85)}
 .bk-cols.bk-trace .bk-m{opacity:.28;transition:opacity .2s,box-shadow .2s}
 .bk-cols.bk-trace .bk-m.bk-pathon{opacity:1;border-color:#f5d77a;border-top-color:#f5d77a;box-shadow:0 0 0 1px #f5d77a,0 0 14px rgba(245,215,122,.4)}
 @keyframes bkflash{0%,100%{box-shadow:0 0 0 0 rgba(233,199,103,0)}30%{box-shadow:0 0 0 3px rgba(233,199,103,.55)}}
-.bk-mdv{font-size:8px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;margin-bottom:5px;display:flex;justify-content:space-between;gap:6px;align-items:center}
-.bk-mdate{color:#9aa0b3;display:flex;align-items:center;gap:4px}
-.bk-mvenue{font-weight:600;text-align:right;text-transform:none;letter-spacing:0;color:#6f7488;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.bk-mdv{font-size:8px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;margin-bottom:5px;display:flex;justify-content:space-between;gap:6px;row-gap:2px;flex-wrap:wrap;align-items:center}
+.bk-mdate{color:#9aa0b3;display:flex;align-items:center;gap:4px;flex:none;white-space:nowrap}
+.bk-mno{background:#3a3f55;color:#cfd3e6;border-radius:4px;padding:0 4px;font-weight:800;letter-spacing:0;flex:none}
+.bk-mvenue{font-weight:600;text-align:right;text-transform:none;letter-spacing:0;color:#6f7488;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:0 1 auto;min-width:0}
 .bk-team{display:flex;align-items:center;gap:6px;padding:3px 0}
 .bk-team+.bk-team{border-top:1px solid rgba(255,255,255,.05)}
 .bk-code{font-size:10px;font-weight:900;color:#e9c767;background:rgba(212,175,55,.13);border:1px solid rgba(212,175,55,.32);
@@ -789,6 +790,7 @@ html[data-theme="dark"] .pp-link:hover{background:#263243}
 .mp-close{position:absolute;top:11px;right:11px;width:28px;height:28px;border:none;border-radius:50%;background:#f0f0f0;color:#666;font-size:15px;cursor:pointer;line-height:28px;text-align:center}
 .mp-close:hover{background:#e3e3e3}
 .mp-top{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+.mp-mno{font-size:10px;font-weight:800;letter-spacing:.02em;padding:2px 7px;border-radius:10px;white-space:nowrap;flex-shrink:0;background:#3a3f55;color:#cfd3e6}
 .mp-date{font-size:12px;color:#888;font-weight:600}
 .mp-status{font-size:10px;font-weight:800;letter-spacing:.04em;padding:2px 7px;border-radius:4px;text-transform:uppercase}
 .mp-status.live{color:#fff;background:#d6322c;animation:livepulse 1.3s ease-in-out infinite}
@@ -2041,7 +2043,7 @@ function loadH2H(home,away){
   fetch("data/wc/h2h.json",{cache:"force-cache"}).then(function(r){return r.ok?r.json():{};}).then(function(h){__h2h=h;render(h);}).catch(function(){});
 }
 function matchPopoverHTML(e){
-  let home,away,sc,live,clock,played,roundR,dateStr,instant,venueLine,locKey,locLine,homePh=false,awayPh=false,etStr="";
+  let home,away,sc,live,clock,played,roundR,dateStr,instant,venueLine,locKey,locLine,homePh=false,awayPh=false,etStr="",mno="";
   if(e.type==="s"){
     const m=e.m,s=e.s;
     const g=(m._koH!=null)?(m._koH+" vs "+m._koA):m.g;   // knockout: real teams / slot labels
@@ -2058,7 +2060,8 @@ function matchPopoverHTML(e){
     const rh=b.liveH&&!isSlotName(b.liveH),ra=b.liveA&&!isSlotName(b.liveA);
     home=rh?b.liveH:b.h;away=ra?b.liveA:b.a;homePh=!rh;awayPh=!ra;
     played=(b.hs!=null&&b.as!=null);sc=played?(b.hs+"-"+b.as):null;live=b.status==="LIVE";clock=b.minute;roundR=b.r;
-    instant=null;dateStr=b.d;
+    instant=(b._ts!=null?b._ts:null);etStr=(b._et?b._et+" ET":"");dateStr=b.d;
+    mno=(["Final","3rd"].indexOf(b.r)<0)?(b.r+"-"+b.no):"";
     venueLine=escHTML(b.ven||b.city);locKey="City";locLine=escHTML(b.city);
   }
   let status;
@@ -2089,7 +2092,7 @@ function matchPopoverHTML(e){
   }else{
     kick=mpRow("Date",escHTML(dateStr));
   }
-  const roundBadge='<span class="rbadge '+roundClass(roundR)+'">'+roundLabel(roundR)+'</span>';
+  const roundBadge='<span class="rbadge '+roundClass(roundR)+'">'+roundLabel(roundR)+'</span>'+(mno?'<span class="mp-mno">'+mno+'</span>':'');
   mpTeams={home:home,away:away,real:!!away&&!homePh&&!awayPh};
   return '<button class="mp-close" onclick="closeMatch()" aria-label="Close">✕</button>'+
     '<div class="mp-top">'+roundBadge+'<span class="mp-date">'+escHTML(dateStr)+'</span>'+status+'</div>'+
@@ -3262,6 +3265,7 @@ function enrichKnockouts(){
     else{m.sc=null;m.live=false;}
     if(bf._eid)m._eid=bf._eid;
     if(bf.ev)m.ev=bf.ev;
+    bf._ts=matchInstant(m);bf._et=m.t; // kickoff instant + ET time for the bracket card
   });});
 }
 function bkCard(m){
@@ -3269,8 +3273,14 @@ function bkCard(m){
   const played=(m.hs!=null&&m.as!=null);
   const badge=live?'<span class="bk-livebadge">●'+(m.minute?" "+String(m.minute).replace(/['′]/g,"")+"'":" LIVE")+'</span>'
             :(played?'<span class="bk-ftbadge">FT</span>':"");
+  const numL=(["Final","3rd"].indexOf(m.r)<0)?'<span class="bk-mno">'+m.r+'-'+m.no+'</span>':'';
+  let tm="";
+  if(m._ts!=null){
+    if(tzState.mode==='et'){if(m._et)tm=' · '+m._et+' ET';}
+    else{const f=fmtInstant(m._ts);tm=' · '+f.time+' '+f.tz;}
+  }
   return '<div class="bk-m bk-'+m.r.toLowerCase()+(m._flash?" scored":"")+'" tabindex="0" role="button" data-bk="'+m.r+'-'+m.no+'" data-match="'+m._id+'">'+
-    '<div class="bk-mdv"><span class="bk-mdate">'+m.d+badge+'</span><span class="bk-mvenue">'+m.city+'</span></div>'+
+    '<div class="bk-mdv"><span class="bk-mdate">'+numL+m.d+tm+badge+'</span><span class="bk-mvenue">'+m.city+'</span></div>'+
     bkTeamRow(m.h,m.liveH,played?m.hs:null,played?m.as:null,m._projH)+
     bkTeamRow(m.a,m.liveA,played?m.as:null,played?m.hs:null,m._projA)+
     '</div>';
