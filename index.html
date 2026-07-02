@@ -479,6 +479,10 @@ html[data-theme="dark"] .bk-link.lit{stroke:rgba(233,199,103,.85)}
 .td-xd{font-size:9px;font-weight:700;color:#b8860b;background:#fdf3d6;border-radius:3px;padding:0 4px;margin-left:2px;white-space:nowrap}
 html[data-theme="dark"] .td-xd{color:#e9c767;background:#33301f}
 .td-empty{font-size:12px;color:#aaa;padding:2px 0}
+.td-nextlbl{font-size:11px;font-weight:600;color:#888;letter-spacing:.02em;padding:2px 0 6px;border-bottom:1px solid #f0f0f0;margin-bottom:4px}
+.td-nextlbl b{color:#0d6b52;text-transform:uppercase;letter-spacing:.06em;font-size:10px}
+html[data-theme="dark"] .td-nextlbl{color:#9aa0b3;border-bottom-color:#2a2d35}
+html[data-theme="dark"] .td-nextlbl b{color:#34d39a}
 
 /* ── Time-zone toggle + auto-refresh (in the live bar) ── */
 .tz-toggle{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
@@ -2910,12 +2914,13 @@ function buildStandings(){
   const groups=computeStandings();
   const remain=remainingGroupFixtures();
   const keys=Object.keys(groups).sort();
-  let totalPlayed=0;
+  let totalPlayed=0,completeGroups=0;
   grid.innerHTML=keys.map(function(k){
     const G=groups[k];
     const rows=stSort(Object.keys(G.teams).map(function(t){return G.teams[t];}),G.matches);
     // Tiebreak tags only matter once the group is final; mid-stage order stays provisional.
     const gComplete=rows.length>0&&rows.every(function(r){return r.p>=3;});
+    if(gComplete)completeGroups++;
     const body=rows.map(function(r,i){
       totalPlayed+=r.p;
       const pos=i+1, gdv=r.gf-r.ga;
@@ -2942,15 +2947,40 @@ function buildStandings(){
       "</tr></thead><tbody>"+body+"</tbody></table>"+live+scn+"</div>";
   }).join("");
 
+  const allGroupsDone=keys.length>0&&completeGroups===keys.length;
   const stamp=document.getElementById("st-updated");
   if(stamp){
-    if(totalPlayed>0){
+    if(allGroupsDone){
+      stamp.innerHTML='<span class="ok">✓</span> Final group tables — all 12 groups complete. The top two of each group, plus the 8 best third-placed teams, advanced to the Round of 32.';
+    }else if(totalPlayed>0){
       const t=new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
       stamp.innerHTML='<span class="ok">✓</span> Reflecting all completed group matches &middot; as of '+t;
     }else{
       stamp.innerHTML='Waiting on scores — tap <strong>Refresh latest scores</strong> above to fill the tables.';
     }
   }
+  // Once the group stage is over, retitle the frozen tables so "— Live" doesn't mislead.
+  const title=document.querySelector('.st-title');
+  if(title)title.textContent=allGroupsDone?'📊 Group Stage — Final Tables':'📊 Group Standings — Live';
+  maybeKnockoutPhase(allGroupsDone);
+}
+/* One-time layout shift when the knockouts begin: the group tables are now frozen
+   history, so demote Standings + Best Thirds and surface what actually changes
+   daily — Results and the Golden Boot race. Runs once (prefs.koPhase), so it
+   never fights the user's own toggles afterward. */
+function maybeKnockoutPhase(allGroupsDone){
+  if(prefs.koPhase||!allGroupsDone)return;
+  prefs.koPhase=true;
+  if(!prefs.sections)prefs.sections={};
+  [["standings",true],["thirds",true],["results",false],["scorers",false]].forEach(function(pair){
+    const meta=SECTIONS.find(function(s){return s.key===pair[0];});
+    if(!meta)return;
+    const body=document.getElementById(meta.body),tog=document.getElementById(meta.tog);
+    if(body)body.style.display=pair[1]?"none":"";
+    if(tog)tog.textContent=pair[1]?"▼ Show":"▲ Hide";
+    prefs.sections[pair[0]]=pair[1];
+  });
+  savePrefs();
 }
 
 function toggleStandings(){toggleSection("st-body","st-toggle","standings");}
@@ -3015,7 +3045,20 @@ function buildToday(){
   const dateLabel=new Date().toLocaleDateString("en-US",{timeZone:zone,weekday:"short",month:"short",day:"numeric"});
   const stamp=document.getElementById("today-date");
   if(stamp)stamp.textContent=dateLabel+(tzState.mode!=='et'?(" · "+(tzAbbr(zone)||zone)):" · ET");
-  if(!items.length){wrap.innerHTML='<div class="td-empty">No World Cup matches scheduled today.</div>';return;}
+  if(!items.length){
+    // A rest day — don't dead-end. Point to the next fixture (with its day),
+    // reusing the same tappable row so it opens the match card too.
+    const nx=nextFixture();
+    if(nx){
+      const nf=fmtInstant(nx.ts);
+      const dow=new Date(nx.ts).toLocaleDateString("en-US",{timeZone:zone,weekday:"long"});
+      const ncity=String(nx.s.city).split(",")[0];
+      wrap.innerHTML='<div class="td-nextlbl">No matches today &middot; <b>next up</b> '+escHTML(dow+', '+nf.date)+'</div>'+matchRowHTML(nx.m,nx.ts,ncity);
+    }else{
+      wrap.innerHTML='<div class="td-empty">The World Cup is complete. 🏆</div>';
+    }
+    return;
+  }
   wrap.innerHTML=items.map(function(it){return matchRowHTML(it.m,it.ts,it.city);}).join("");
 }
 /* One match row in the Today bar / Full Schedule: time-or-LIVE/FT, the matchup
@@ -3117,16 +3160,17 @@ function toggleAuto(){
    nothing ever starts). Arm a one-shot timer for the next scheduled kickoff,
    and refresh whenever the tab becomes visible again after being away. */
 var kickTimer=null;
-function nextKickoffTs(){
+function nextFixture(){
   let best=null;
   stadiums.forEach(function(s){s.m.forEach(function(m){
     if(m.sc&&!m.live)return;               // finished
     const ts=matchInstant(m);
     if(ts==null||ts<=Date.now())return;    // unknown or already kicked off
-    if(best==null||ts<best)best=ts;
+    if(best==null||ts<best.ts)best={m:m,s:s,ts:ts};
   });});
   return best;
 }
+function nextKickoffTs(){const f=nextFixture();return f?f.ts:null;}
 function armKickoff(){
   if(kickTimer){clearTimeout(kickTimer);kickTimer=null;}
   if(!auto.on||anyLive())return;           // the live poll owns refreshing
@@ -4066,6 +4110,33 @@ function buildBracket(){
     applyBracketTrace();
   }
   drawBracketConnectors();
+  // On first render (and on open), land the horizontal scroll on the live / next
+  // match instead of the far-left Round of 32, which is finished by mid-tournament.
+  if(!bkScrolled){const b=document.getElementById("bk-body");if(b&&b.style.display!=="none"){bkScrolled=true;setTimeout(scrollBracketToLive,60);}}
+}
+var bkScrolled=false;
+/* Centre the bracket viewport on the match that matters now: a live game, else
+   the next one to kick off, else the Final. As rounds deepen this walks the view
+   inward toward the trophy. Only fired on open (not on every 60s rebuild). */
+function scrollBracketToLive(){
+  const scroll=document.querySelector('#bk-body .bk-scroll'),cols=document.getElementById('bk-cols');
+  if(!scroll||!cols||!scroll.clientWidth)return;
+  let focus=bracket.find(function(b){return b.status==="LIVE";});
+  if(!focus){
+    let best=null;
+    bracket.forEach(function(b){
+      if(b.hs!=null&&b.status!=="LIVE")return;              // finished
+      const ts=(b._ts!=null)?b._ts:bkSortTs(b);
+      if(ts==null)return;
+      if(best==null||ts<best.ts)best={b:b,ts:ts};
+    });
+    focus=best?best.b:bkGet("Final",1);
+  }
+  if(!focus)return;
+  const el=cols.querySelector('[data-bk="'+focus.r+'-'+focus.no+'"]');
+  if(!el)return;
+  const er=el.getBoundingClientRect(),sr=scroll.getBoundingClientRect();
+  scroll.scrollLeft+=(er.left+er.width/2)-(sr.left+sr.width/2);   // centre el; scrollLeft self-clamps
 }
 
 /* Knockout goals: flag changed bracket matches and return them for notifying. */
@@ -4133,7 +4204,12 @@ function drawBracketConnectors(){
   cols.insertBefore(svg,cols.firstChild);
 }
 
-function toggleBracket(){toggleSection("bk-body","bk-toggle","bracket");drawBracketConnectors();}
+function toggleBracket(){
+  toggleSection("bk-body","bk-toggle","bracket");
+  drawBracketConnectors();
+  const b=document.getElementById("bk-body");
+  if(b&&b.style.display!=="none"){bkScrolled=true;setTimeout(scrollBracketToLive,60);} // scroll to the action when opened
+}
 
 /* ══════════ FRIENDLIES RENDER + CONTROLS ══════════ */
 const frState={host:"all"};
@@ -4601,10 +4677,19 @@ function tournamentDates(){
   return out;
 }
 function todayIso(){const n=new Date();return ""+n.getFullYear()+("0"+(n.getMonth()+1)).slice(-2)+("0"+n.getDate()).slice(-2);}
+/* Only the calendar days that actually have a match (skips the ~5 rest days) —
+   derived from the schedule + bracket, incl. midnight-crossers (m.xd). */
+function fixtureDates(){
+  const set={},add=function(iso){if(iso)set[iso]=1;};
+  stadiums.forEach(function(s){s.m.forEach(function(m){add(isoOf(m.d));if(m.xd)add(isoOf(m.xd));});});
+  bracket.forEach(function(b){add(b.iso);});
+  return Object.keys(set).sort();
+}
+var _dateCache={};   // iso → parsed events for a *frozen* past day (final, immutable)
 
 async function fetchScoresFromESPN(){
   const base="https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
-  const dates=tournamentDates();
+  const dates=fixtureDates();
   if(!dates.length){
     const res=await fetch(base,{cache:"no-store"});
     if(!res.ok)throw new Error("espn "+res.status);
@@ -4613,11 +4698,19 @@ async function fetchScoresFromESPN(){
   }
   const ti=todayIso();
   const batches=await Promise.all(dates.map(function(ds){
-    // Live freshness for today/past; let the browser cache slow-changing future dates.
+    // A past day whose games are all final never changes — serve it from the
+    // in-memory cache and skip the network. This is the bulk of the savings:
+    // the 60s poll stops re-downloading ~20 immutable matchdays every minute.
+    if(ds<ti&&_dateCache[ds])return Promise.resolve(_dateCache[ds]);
     return fetch(base+"?dates="+ds,{cache:ds>ti?"default":"no-store"})
       .then(function(r){return r.ok?r.json():null;})
-      .then(function(j){return j?parseESPNEvents(j,ds):[];})
-      .catch(function(){return [];});
+      .then(function(j){
+        const arr=j?parseESPNEvents(j,ds):[];
+        // Freeze a past day once every game on it is FT.
+        if(ds<ti&&arr.length&&arr.every(function(e){return e.status==="FT";}))_dateCache[ds]=arr;
+        return arr;
+      })
+      .catch(function(){return _dateCache[ds]||[];});   // on error, fall back to any cached copy
   }));
   // Flat list (carries date+venue) feeds the bracket; merged feeds the group stage.
   const all=[];
