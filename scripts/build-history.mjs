@@ -50,6 +50,12 @@ const TOURNAMENTS = [
   { year: 2014, host: "Brazil",             start: "2014-06-11", end: "2014-07-14" },
   { year: 2018, host: "Russia",             start: "2018-06-13", end: "2018-07-16" },
   { year: 2022, host: "Qatar",              start: "2022-11-19", end: "2022-12-19" },
+  // 2026 is wired in ready for the post-Final run: after the July 19 final, run
+  // `node scripts/build-history.mjs && node scripts/build-h2h.mjs` to produce
+  // data/wc/2026.json (with penalty shootouts, winners, squads, Golden Boot) and
+  // a 2026-inclusive h2h.json — completing the 1930–2026 archive. Running it
+  // before the Final just yields a partial 2026.json that the real run overwrites.
+  { year: 2026, host: "USA / Canada / Mexico", start: "2026-06-11", end: "2026-07-19" },
 ];
 
 /* slug normalized (lowercased, alphanumerics only) → display round */

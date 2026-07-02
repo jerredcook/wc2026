@@ -237,36 +237,65 @@ async function main() {
 
   let existing = null;
   try { existing = JSON.parse(await readFile(path, "utf8")); } catch (e) { /* none yet */ }
-
-  // 3a) Protect the archive: never overwrite a good snapshot with fewer matches.
-  //     A run that comes back empty (ESPN down, queried the wrong dates, network
-  //     blocked) must not erase real preserved data — matches only accumulate.
   const existingPlayed = (existing && existing.counts && existing.counts.played) || 0;
-  if (events.length < existingPlayed) {
-    console.log(`✗ Only ${events.length} played match(es) this run, but the existing snapshot has ${existingPlayed}. ` +
-      `Keeping the existing archive (not overwriting). Likely ESPN was unreachable or returned no data.`);
-    return;
+
+  // 3) Non-destructive merge with the existing archive, so a flaky or partial ESPN
+  //    pull can never erase preserved data:
+  //    - events: union by match id, each kept at its best-known status
+  //      (FT > LIVE > UPCOMING; a tie keeps the fresher copy), so a match once
+  //      captured is never dropped even if a later run omits it;
+  //    - summaries: accumulate (existing, overlaid by this run) so a run that
+  //      fails to fetch a summary can never drop one we already have.
+  const rank = s => (s === "FT" ? 3 : (s === "LIVE" ? 2 : 1));
+  const byId = {};
+  for (const e of ((existing && existing.events) || [])) if (e.id) byId[e.id] = e;
+  for (const e of events) {
+    if (!e.id) continue;
+    const prev = byId[e.id];
+    if (!prev || rank(e.status) >= rank(prev.status)) byId[e.id] = e;   // best status; tie → fresher
+  }
+  const mergedEvents = Object.values(byId).filter(e => e.status === "FT" || e.status === "LIVE");
+  mergedEvents.sort((a, b) => a.date.localeCompare(b.date) || String(a.id).localeCompare(String(b.id)));
+
+  const rawMerged = Object.assign({}, ((existing && existing.summaries) || {}), summaries);  // existing, then new overlays
+  const mergedSummaries = {};
+  for (const id of Object.keys(rawMerged).sort()) mergedSummaries[id] = rawMerged[id];
+
+  const mThrough = mergedEvents.length ? mergedEvents.map(e => e.date).sort().slice(-1)[0] : "";
+  const summaryCount = Object.keys(mergedSummaries).length;
+
+  // Skip rewriting when nothing changed, so a scheduled run doesn't churn a commit.
+  const changed = !existing
+    || JSON.stringify(existing.events) !== JSON.stringify(mergedEvents)
+    || JSON.stringify(existing.summaries) !== JSON.stringify(mergedSummaries);
+  if (!changed) {
+    console.log(`✓ No change since last snapshot (${mergedEvents.length} matches, ${summaryCount} summaries) — leaving the file untouched.`);
+  } else {
+    const snapshot = {
+      capturedAt: new Date().toISOString(),
+      through: mThrough,
+      counts: { days: dates.length, eventsSeen: all.length, played: mergedEvents.length, summaries: summaryCount },
+      events: mergedEvents,
+      summaries: mergedSummaries
+    };
+    await mkdir(join(ROOT, "data"), { recursive: true });
+    await writeFile(path, JSON.stringify(snapshot));
+    console.log(`✓ wrote data/2026-snapshot.json — ${mergedEvents.length} matches, ${summaryCount} summaries (${(JSON.stringify(snapshot).length / 1024).toFixed(0)} KB)`);
   }
 
-  // 3b) Skip rewriting when the actual match data is unchanged, so a scheduled
-  //     run doesn't churn a commit just because the capture timestamp moved.
-  if (existing && JSON.stringify(existing.events) === JSON.stringify(events)
-      && JSON.stringify(existing.summaries) === JSON.stringify(summaries)) {
-    console.log(`✓ No change since last snapshot (${events.length} matches) — leaving the file untouched.`);
-    return;
+  // 4) Fail loudly if the archive has stalled: ESPN returned fewer matches than we
+  //    already hold AND nothing new was captured. The merge kept the data safe, but
+  //    a green run would hide a real outage (ESPN down / endpoint shape changed), so
+  //    exit non-zero to trigger a workflow-failure email. (A rest day with no new
+  //    matches is events.length === existingPlayed, so it does not trip this.)
+  if (!changed && events.length < existingPlayed) {
+    console.error(`✗ Archive has stalled: this run saw ${events.length} played/live match(es) from ESPN but the ` +
+      `archive holds ${existingPlayed}, and nothing new was captured. Check the ESPN endpoint/shape. (No data was lost.)`);
+    process.exitCode = 1;
+  } else if (events.length < existingPlayed) {
+    console.warn(`⚠ ESPN returned fewer matches (${events.length}) than the archive holds (${existingPlayed}), but new ` +
+      `data was captured and merged in — committing the union. The archive kept everything.`);
   }
-
-  const snapshot = {
-    capturedAt: new Date().toISOString(),
-    through,
-    counts: { days: dates.length, eventsSeen: all.length, played: events.length, summaries: got },
-    events,
-    summaries
-  };
-
-  await mkdir(join(ROOT, "data"), { recursive: true });
-  await writeFile(path, JSON.stringify(snapshot));
-  console.log(`✓ wrote data/2026-snapshot.json — ${events.length} matches, ${got} summaries (${(JSON.stringify(snapshot).length / 1024).toFixed(0)} KB)`);
 }
 
 main().catch(e => { console.error(e); process.exit(1); });

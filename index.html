@@ -2209,7 +2209,9 @@ function renderMatchEvents(box,d,archived){
 /* Lazy-load (and cache) the preserved live snapshot for popover fallback. */
 function getWCSnapshot(){
   if(window.__wcSnap)return Promise.resolve(window.__wcSnap);
-  return fetch("data/2026-snapshot.json",{cache:"force-cache"})
+  // "default" (not force-cache): the snapshot grows through the tournament, so
+  // revalidate against the server's ETag rather than pinning a stale copy.
+  return fetch("data/2026-snapshot.json",{cache:"default"})
     .then(function(r){return r.ok?r.json():null;})
     .then(function(s){window.__wcSnap=s;return s;})
     .catch(function(){return null;});
@@ -4714,14 +4716,19 @@ async function fetchScoresFromESPN(){
   }));
   // Flat list (carries date+venue) feeds the bracket; merged feeds the group stage.
   const all=[];
+  batches.forEach(function(arr){arr.forEach(function(r){all.push(r);});});
+  return {group:mergeGroupList(all),events:all};
+}
+/* Dedupe a flat event list down to one row per matchup (by team pair), keeping the
+   most-advanced status (FT > LIVE > UPCOMING) — the shape applyLive/standings want. */
+function mergeGroupList(events){
   const merged=[],seen={},rank=function(s){return s==="FT"?3:(s==="LIVE"?2:1);};
-  batches.forEach(function(arr){arr.forEach(function(r){
-    all.push(r);
+  events.forEach(function(r){
     const k=canon(r.home)+"|"+canon(r.away);
     if(!(k in seen)){seen[k]=merged.length;merged.push(r);}
     else if(rank(r.status)>=rank(merged[seen[k]].status)){merged[seen[k]]=r;}
-  });});
-  return {group:merged,events:all};
+  });
+  return merged;
 }
 
 async function refreshScores(){
@@ -4742,12 +4749,35 @@ async function refreshScores(){
   let fromSnap=null;
   if(!reached||!results||!results.length){
     try{
-      const snap=await fetch("data/2026-snapshot.json",{cache:"force-cache"}).then(function(r){return r.ok?r.json():null;});
+      const snap=await fetch("data/2026-snapshot.json",{cache:"default"}).then(function(r){return r.ok?r.json():null;});
       if(snap&&snap.events&&snap.events.length){
         window.__wcSnap=snap;
         results=snap.events;espnEvents=snap.events;reached=true;fromSnap=snap;
       }
     }catch(e){}
+  }
+  // 4) Guard against ESPN silently returning a PARTIAL tournament (e.g. dropping
+  //    older dates) with a non-empty response — which would sail past the checks
+  //    above and show an incomplete tournament. If this live pull is smaller than
+  //    the most complete one we've ever seen (persisted), fold the committed
+  //    snapshot in: archive as the base, live overriding per match id. Only runs on
+  //    a detected regression, so the healthy path never even loads the snapshot.
+  let mergedSnap=false;
+  if(reached&&espnEvents&&!fromSnap){
+    const seenMax=prefs.seenMax||0;
+    if(espnEvents.length<seenMax){
+      try{
+        const snap=await getWCSnapshot();
+        if(snap&&snap.events&&snap.events.length>espnEvents.length){
+          const byId={};
+          snap.events.forEach(function(e){if(e.id)byId[e.id]=e;});
+          espnEvents.forEach(function(e){if(e.id)byId[e.id]=e;});   // live wins per id
+          espnEvents=Object.keys(byId).map(function(k){return byId[k];});
+          results=mergeGroupList(espnEvents);mergedSnap=true;
+        }
+      }catch(e){}
+    }
+    if(espnEvents.length>(prefs.seenMax||0)){prefs.seenMax=espnEvents.length;savePrefs();}
   }
   const t=new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
   if(reached&&results){
@@ -4776,6 +4806,7 @@ async function refreshScores(){
       let cap="";try{cap=new Date(fromSnap.capturedAt).toLocaleDateString([],{year:"numeric",month:"short",day:"numeric"});}catch(e){}
       setLiveStatus('<span class="ok">✓ Archived</span> &middot; live source unavailable — showing the preserved snapshot'+(cap?' captured '+cap:'')+'.');
     }
+    else if(mergedSnap)setLiveStatus('<span class="ok">✓ Updated</span> '+n+' match'+(n!==1?"es":"")+' &middot; live feed was incomplete, so the rest was filled from the preserved archive &middot; '+t);
     else if(n>0)setLiveStatus('<span class="ok">✓ Updated</span> '+n+' match'+(n!==1?"es":"")+' &middot; last checked '+t);
     else setLiveStatus('<span class="ok">✓ Checked</span> &middot; no World Cup matches in progress right now &middot; '+t);
   }else{
