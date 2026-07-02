@@ -1,0 +1,42 @@
+name: Deploy to GitHub Pages
+
+# Publishes the site via the GitHub Actions Pages pipeline instead of the
+# built-in "deploy from a branch" path. That legacy path had no concurrency
+# control, so overlapping pushes (frequent commits + the daily snapshot bot)
+# collided and the superseded deploy died with "Deployment failed, try again
+# later." The concurrency group below serialises deploys so that can't happen.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# One deployment at a time. A newer push supersedes an older *pending* one
+# (cancelled, not failed); an in-progress deploy is allowed to finish.
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+      - name: Upload site
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "."          # serve the whole repo tree, as the branch deploy did (index.html, data/, sw.js, …)
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
