@@ -92,6 +92,8 @@ h1{font-size:22px;font-weight:600;margin-bottom:4px}
 .mscore .win{color:#0d6b52}
 .mscore .los{color:#9a9a9a}
 .ft{font-size:9px;font-weight:700;color:#0d6b52;background:#e2f5ee;border-radius:3px;padding:1px 5px;margin-left:5px;letter-spacing:.04em;white-space:nowrap}
+.pens-tag{font-size:9px;font-weight:700;color:#8a6d1a;background:#f7efd8;border-radius:3px;padding:1px 5px;margin-left:5px;letter-spacing:.02em;white-space:nowrap}
+html[data-theme="dark"] .pens-tag{color:#e9c767;background:#3a3320}
 .rbadge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:10px;white-space:nowrap;flex-shrink:0}
 .rb-group{background:#fef4dc;color:#7a5000}
 .rb-r32{background:#e2f5ee;color:#0d6b52}
@@ -427,6 +429,7 @@ html[data-theme="dark"] .bk-link.lit{stroke:rgba(233,199,103,.85)}
 .bk-tn.projd{color:#c7cbd8}
 .bk-proj{font-size:7px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#cdb978;border:1px dashed rgba(212,175,55,.6);border-radius:3px;padding:0 3px;margin-left:5px;vertical-align:middle;white-space:nowrap}
 .bk-sc{font-size:12px;font-weight:900;font-variant-numeric:tabular-nums;min-width:14px;text-align:right;color:#fff;margin-left:auto}
+.bk-pn{font-size:9px;font-weight:700;color:#9aa0b3;margin-left:2px}
 .bk-team.win .bk-sc{color:#f7e7ad}
 .bk-r32{border-top-color:#1f9159}.bk-r16{border-top-color:#1f7fd1}.bk-qf{border-top-color:#7d5cf0}.bk-sf{border-top-color:#d2554e}.bk-final{border-top-color:#e9c767}.bk-3rd{border-top-color:#8a8f9e}
 .bk-livebadge{font-size:8px;font-weight:800;color:#fff;background:#d6322c;border-radius:4px;padding:1px 5px;letter-spacing:.04em;animation:livepulse 1.3s ease-in-out infinite}
@@ -442,6 +445,7 @@ html[data-theme="dark"] .bk-link.lit{stroke:rgba(233,199,103,.85)}
 .bk-finalcard{width:100%}
 .bk-champ{margin-top:2px;font-size:12px;font-weight:800;color:#f7e7ad;display:flex;flex-direction:column;align-items:center;gap:2px}
 .bk-champ .lbl{font-size:8px;font-weight:800;letter-spacing:.14em;color:#9aa0b3;text-transform:uppercase}
+.bk-champpn{font-size:9px;font-weight:700;color:#9aa0b3}
 
 .bk-extra{margin-top:14px;display:flex;justify-content:center;position:relative;z-index:1}
 .bk-3rdcard{width:100%;max-width:300px}
@@ -806,7 +810,9 @@ html[data-theme="dark"] .pp-link:hover{background:#263243}
 .mp-tm.a{text-align:right}
 .mp-tm.ph{color:#999;font-style:italic;font-weight:600;font-size:14px}
 .mp-tm.win{color:#0d6b52}
-.mp-sc{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;color:#111;background:#f1f2f4;border-radius:8px;padding:4px 12px;white-space:nowrap}
+.mp-sc{font-size:22px;font-weight:800;font-variant-numeric:tabular-nums;color:#111;background:#f1f2f4;border-radius:8px;padding:4px 12px;white-space:nowrap;display:flex;flex-direction:column;align-items:center}
+.mp-pens{display:block;font-size:10px;font-weight:700;color:#8a6d1a;white-space:nowrap}
+html[data-theme="dark"] .mp-pens{color:#e9c767}
 .mp-vs{font-size:13px;font-weight:700;color:#aaa}
 .mp-info{border-top:1px solid #eee;padding-top:12px;display:flex;flex-direction:column;gap:9px}
 .mp-row{display:flex;gap:10px;font-size:13px;align-items:baseline}
@@ -1399,15 +1405,18 @@ function fixtureEvents(teamName){
   stadiums.forEach(function(s){
     s.m.forEach(function(m,i){
       const ts=matchInstant(m);if(ts==null)return;
-      const has=m.g.indexOf(" vs ")>=0;
+      // Knockout-resolved teams when known ("USA vs Winner R32-8"), so a
+      // nation's export includes its knockout run, not just the group games.
+      const g=matchTeamsStr(m);
+      const has=g.indexOf(" vs ")>=0;
       if(tk){
         if(!has)return;
-        const parts=m.g.split(" vs ").map(function(x){return canon(x.trim());});
+        const parts=g.split(" vs ").map(function(x){return canon(x.trim());});
         if(parts.indexOf(tk)<0)return;
       }
       evs.push({
         ts:ts,
-        summary:has?(m.g+" — "+m.r):(m.g+" — "+s.fifa),
+        summary:has?(g+" — "+m.r):(g+" — "+s.fifa),
         location:s.real+", "+s.city,
         desc:(m.sc?("Result: "+m.sc.replace("-","–")+" · "):"")+m.r+" · "+s.fifa,
         uid:"wc2026-"+i+"-"+canon(s.fifa).replace(/[^a-z0-9]/g,"").slice(0,10)+"@wc2026.app"
@@ -2062,14 +2071,15 @@ function loadH2H(home,away){
   fetch("data/wc/h2h.json",{cache:"force-cache"}).then(function(r){return r.ok?r.json():{};}).then(function(h){__h2h=h;render(h);}).catch(function(){});
 }
 function matchPopoverHTML(e){
-  let home,away,sc,live,clock,played,roundR,dateStr,instant,venueLine,locKey,locLine,homePh=false,awayPh=false,etStr="",mno="";
+  let home,away,sc,live,clock,played,roundR,dateStr,instant,venueLine,locKey,locLine,homePh=false,awayPh=false,etStr="",mno="",pens=null,winSide=null;
   if(e.type==="s"){
     const m=e.m,s=e.s;
-    const g=(m._koH!=null)?(m._koH+" vs "+m._koA):m.g;   // knockout: real teams / slot labels
+    const g=matchTeamsStr(m);   // knockout: real teams / slot labels
     const has=g.includes(" vs ");
     const parts=has?g.split(" vs ").map(function(x){return x.trim();}):[g,""];
     home=parts[0];away=parts[1];
     sc=m.sc;live=!!m.live;clock=m.clock;played=!!m.sc;roundR=m.r;
+    pens=m._pens||null;winSide=m._win||null;
     instant=matchInstant(m);dateStr=m.d;
     etStr=m.t?(m.t+" ET"+(m.xd?(" → "+m.xd+" next day"):"")):"";
     venueLine=escHTML(s.fifa)+'<span class="sub"> · '+escHTML(s.real)+'</span>';
@@ -2079,6 +2089,7 @@ function matchPopoverHTML(e){
     const rh=b.liveH&&!isSlotName(b.liveH),ra=b.liveA&&!isSlotName(b.liveA);
     home=rh?b.liveH:b.h;away=ra?b.liveA:b.a;homePh=!rh;awayPh=!ra;
     played=(b.hs!=null&&b.as!=null);sc=played?(b.hs+"-"+b.as):null;live=b.status==="LIVE";clock=b.minute;roundR=b.r;
+    pens=b.pens||null;winSide=b.win||null;
     instant=(b._ts!=null?b._ts:null);etStr=(b._et?b._et+" ET":"");dateStr=b.d;
     mno=(["Final","3rd"].indexOf(b.r)<0)?(b.r+"-"+b.no):"";
     venueLine=escHTML(b.ven||b.city);locKey="City";locLine=escHTML(b.city);
@@ -2094,8 +2105,10 @@ function matchPopoverHTML(e){
   }else{
     let hs=null,as=null;
     if(played&&sc){var sp=sc.split("-");hs=sp[0];as=sp[1];}
-    const hWin=played&&hs!=null&&Number(hs)>Number(as),aWin=played&&as!=null&&Number(as)>Number(hs);
-    const mid=played?('<span class="mp-sc">'+escHTML(hs)+'–'+escHTML(as)+'</span>'):'<span class="mp-vs">vs</span>';
+    const hWin=played&&hs!=null&&(Number(hs)>Number(as)||(!live&&winSide==="home"));
+    const aWin=played&&as!=null&&(Number(as)>Number(hs)||(!live&&winSide==="away"));
+    const pn=(played&&!live&&pens)?'<span class="mp-pens">'+pens.h+'–'+pens.a+' on penalties</span>':'';
+    const mid=played?('<span class="mp-sc">'+escHTML(hs)+'–'+escHTML(as)+pn+'</span>'):'<span class="mp-vs">vs</span>';
     teams='<div class="mp-teams">'+
       '<span class="mp-tm'+(homePh?" ph":"")+(hWin?" win":"")+'">'+escHTML(home)+'</span>'+mid+
       '<span class="mp-tm a'+(awayPh?" ph":"")+(aWin?" win":"")+'">'+escHTML(away)+'</span></div>';
@@ -2629,9 +2642,16 @@ function teamInMatch(team, matchStr){
   return parts[0].trim()===team||parts[1].trim()===team;
 }
 
+/* The fixture's matchup string, preferring the knockout-resolved teams
+   (enrichKnockouts' _koH/_koA) over the schedule placeholder ("Round of 32") —
+   so team filters, highlights and calendar exports see a nation's knockout run. */
+function matchTeamsStr(m){
+  return (m._koH!=null)?(m._koH+" vs "+m._koA):m.g;
+}
+
 function matchVisible(m){
   const groupOk=state.group==="all"||(m.r===`Group ${state.group}`);
-  const teamOk=state.team==="all"||teamInMatch(state.team,m.g);
+  const teamOk=state.team==="all"||teamInMatch(state.team,matchTeamsStr(m));
   return groupOk&&teamOk;
 }
 
@@ -2646,17 +2666,18 @@ function highlightGame(gameStr){
 /* Renders the match text. If the match has a final score (sc),
    shows "Home  H–A  Away  FT" with the winning number highlighted. */
 function gameHTML(m){
-  const g=(m._koH!=null)?(m._koH+" vs "+m._koA):m.g;   // knockout: real teams / slot labels
+  const g=matchTeamsStr(m);   // knockout: real teams / slot labels
   if(m.sc&&g.includes(" vs ")){
     const [home,away]=g.split(" vs ").map(x=>x.trim());
     const [hs,as_]=m.sc.split("-");
     const hN=Number(hs),aN=Number(as_);
-    const hCls=hN>aN?"win":(hN<aN?"los":"");
-    const aCls=aN>hN?"win":(aN<hN?"los":"");
+    const hCls=hN>aN?"win":(hN<aN?"los":(m._win==="home"?"win":(m._win==="away"?"los":"")));
+    const aCls=aN>hN?"win":(aN<hN?"los":(m._win==="away"?"win":(m._win==="home"?"los":"")));
     const homeEl=teamLink(home,state.team!=="all"&&home===state.team,false);
     const awayEl=teamLink(away,state.team!=="all"&&away===state.team,false);
+    const pn=(!m.live&&m._pens)?`<span class="pens-tag" title="penalty shootout">${m._pens.h}–${m._pens.a} pens</span>`:``;
     const tag=m.live?`<span class="live-badge">● LIVE</span>`+(m.clock?`<span class="live-min">${m.clock}'</span>`:``):`<span class="ft">FT</span>`;
-    return `${homeEl}${rcMark(m.hr)}<span class="mscore"><span class="${hCls}">${hs}</span>–<span class="${aCls}">${as_}</span></span>${rcMark(m.ar)}${awayEl}${tag}`;
+    return `${homeEl}${rcMark(m.hr)}<span class="mscore"><span class="${hCls}">${hs}</span>–<span class="${aCls}">${as_}</span></span>${rcMark(m.ar)}${awayEl}${pn}${tag}`;
   }
   return highlightGame(g);
 }
@@ -2705,7 +2726,7 @@ function buildGrid(){
     totalMatches+=visM.length;
     const homeHtml=s.home.map(h=>`<div class="teamrow"><span class="teamname">${h.n}</span><span class="sport ${sportClass(h.s)}">${h.s}</span></div>`).join("");
     const matchHtml=visM.map(m=>{
-      const hl=state.team!=="all"&&teamInMatch(state.team,m.g);
+      const hl=state.team!=="all"&&teamInMatch(state.team,matchTeamsStr(m));
       const played=!!m.sc;
       const cls=(hl?" highlight":"")+(played&&!hl?" played":"")+(m._flash?" scored":"");
       return`<div class="mrow${cls}" tabindex="0" role="button" data-match="${m._id}">${whenHTML(m)}<span class="mgame">${gameHTML(m)}</span><span class="rbadge ${roundClass(m.r)}">${roundLabel(m.r)}</span></div>`+(played?mevHTML(m.ev):"");
@@ -3002,13 +3023,14 @@ function buildToday(){
    goals/cards timeline once it's live or finished. */
 function matchRowHTML(m,ts,city){
   const f=fmtInstant(ts),live=!!m.live,played=!!m.sc;
-  const g=(m._koH!=null)?(m._koH+" vs "+m._koA):m.g;   // knockout: real teams / slot labels
+  const g=matchTeamsStr(m);   // knockout: real teams / slot labels
   let mid;
   if(g.includes(" vs ")){
     if(played){
       const p=g.split(" vs ").map(function(x){return x.trim();});
       const sp=m.sc.split("-");
-      mid=teamLink(p[0],false,false)+rcMark(m.hr)+' <b>'+sp[0]+'–'+sp[1]+'</b> '+rcMark(m.ar)+teamLink(p[1],false,false);
+      const pn=(!live&&m._pens)?' <span class="pens-tag" title="penalty shootout">'+m._pens.h+'–'+m._pens.a+' pens</span>':'';
+      mid=teamLink(p[0],false,false)+rcMark(m.hr)+' <b>'+sp[0]+'–'+sp[1]+'</b>'+pn+' '+rcMark(m.ar)+teamLink(p[1],false,false);
     }else mid=g.split(" vs ").map(function(x){return teamLink(x.trim(),false,false);}).join(" vs ");
   }else mid=g;
   const goal=m._flash?'<span class="goal-badge">⚽ GOAL</span>':"";
@@ -3088,6 +3110,39 @@ function toggleAuto(){
   setPref("auto",auto.on);
   if(auto.on)scheduleAuto();else{clearAuto();renderAuto();}
 }
+
+/* ── Kickoff wake-up ──
+   The 60s poll only runs while a match is live, so on its own the app would
+   sleep through the next kickoff (open the page at 2:45 for a 3:00 game and
+   nothing ever starts). Arm a one-shot timer for the next scheduled kickoff,
+   and refresh whenever the tab becomes visible again after being away. */
+var kickTimer=null;
+function nextKickoffTs(){
+  let best=null;
+  stadiums.forEach(function(s){s.m.forEach(function(m){
+    if(m.sc&&!m.live)return;               // finished
+    const ts=matchInstant(m);
+    if(ts==null||ts<=Date.now())return;    // unknown or already kicked off
+    if(best==null||ts<best)best=ts;
+  });});
+  return best;
+}
+function armKickoff(){
+  if(kickTimer){clearTimeout(kickTimer);kickTimer=null;}
+  if(!auto.on||anyLive())return;           // the live poll owns refreshing
+  const ts=nextKickoffTs();
+  if(ts==null)return;                      // tournament over — nothing to wake for
+  // Fire just after kickoff; if it's more than a day out (rest days), re-check
+  // in 24h — the timer re-arms itself through refreshScores.
+  const delay=Math.max(Math.min(ts-Date.now()+45000,86400000),5000);
+  kickTimer=setTimeout(function(){kickTimer=null;refreshScores();},delay);
+}
+document.addEventListener("visibilitychange",function(){
+  if(document.visibilityState!=="visible")return;
+  if(liveState.busy)return;
+  if(liveState.lastFetch&&Date.now()-liveState.lastFetch<30000)return; // just refreshed
+  refreshScores();
+});
 
 /* ══════════ GOAL FLASH + NOTIFICATIONS ══════════
    detectGoals() compares each fixture's score to the last one we saw. A change
@@ -3202,7 +3257,12 @@ function applyBracket(events){
     if(e.away&&!isSlotName(e.away))m.liveA=e.away;
     if(e.id)m._eid=e.id;
     if(e.ev)m.ev=e.ev; // goals & cards timeline for inline display
-    if(e.hs!=null&&e.as!=null){m.hs=e.hs;m.as=e.as;m.status=e.status;m.minute=e.minute;n++;}
+    if(e.hs!=null&&e.as!=null){
+      m.hs=e.hs;m.as=e.as;m.status=e.status;m.minute=e.minute;
+      m.pens=e.pens||null;m.win=e.win||null;   // shootout tally + winner for drawn knockouts
+      m.hr=e.hr||0;m.ar=e.ar||0;
+      n++;
+    }
   });
   return n;
 }
@@ -3236,10 +3296,10 @@ function slotShort(slot){
   return slot;
 }
 
-function bkTeamRow(slot,liveName,myScore,oppScore,proj){
+function bkTeamRow(slot,liveName,myScore,oppScore,proj,winFlag,myPens){
   const real=liveName&&!isSlotName(liveName);
-  const win=(myScore!=null&&oppScore!=null&&myScore>oppScore);
-  const sc=(myScore!=null)?'<span class="bk-sc">'+myScore+'</span>':"";
+  const win=(winFlag!=null)?!!winFlag:(myScore!=null&&oppScore!=null&&myScore>oppScore);
+  const sc=(myScore!=null)?'<span class="bk-sc">'+myScore+(myPens!=null?'<span class="bk-pn" title="penalty shootout">('+myPens+')</span>':'')+'</span>':"";
   let lead,label;
   if(real){
     const tr=teamRecord(liveName);
@@ -3288,8 +3348,11 @@ function enrichKnockouts(){
     const rh=bf.liveH&&!isSlotName(bf.liveH),ra=bf.liveA&&!isSlotName(bf.liveA);
     m._koH=rh?bf.liveH:slotLabel(bf.h);m._koHR=rh;
     m._koA=ra?bf.liveA:slotLabel(bf.a);m._koAR=ra;
-    if(bf.hs!=null&&bf.as!=null){m.sc=bf.hs+"-"+bf.as;m.live=(bf.status==="LIVE");m.clock=bf.minute;m.hr=0;m.ar=0;}
-    else{m.sc=null;m.live=false;}
+    if(bf.hs!=null&&bf.as!=null){
+      m.sc=bf.hs+"-"+bf.as;m.live=(bf.status==="LIVE");m.clock=bf.minute;
+      m.hr=bf.hr||0;m.ar=bf.ar||0;
+      m._pens=bf.pens||null;m._win=bf.win||null;   // shootout result for row/popover display
+    }else{m.sc=null;m.live=false;m._pens=null;m._win=null;}
     if(bf._eid)m._eid=bf._eid;
     if(bf.ev)m.ev=bf.ev;
     bf._ts=matchInstant(m);bf._et=m.t; // kickoff instant + ET time for the bracket card
@@ -3306,10 +3369,14 @@ function bkCard(m){
     if(tzState.mode==='et'){if(m._et)tm=' · '+m._et+' ET';}
     else{const f=fmtInstant(m._ts);tm=' · '+f.time+' '+f.tz;}
   }
+  // Winner gold: score, or the shootout winner when a knockout ends level.
+  const done=played&&!live;
+  const hw=done?(m.hs>m.as||m.win==="home"):null;
+  const aw=done?(m.as>m.hs||m.win==="away"):null;
   return '<div class="bk-m bk-'+m.r.toLowerCase()+(m._flash?" scored":"")+'" tabindex="0" role="button" data-bk="'+m.r+'-'+m.no+'" data-match="'+m._id+'">'+
     '<div class="bk-mdv"><span class="bk-mdate">'+numL+m.d+tm+badge+'</span><span class="bk-mvenue">'+m.city+'</span></div>'+
-    bkTeamRow(m.h,m.liveH,played?m.hs:null,played?m.as:null,m._projH)+
-    bkTeamRow(m.a,m.liveA,played?m.as:null,played?m.hs:null,m._projA)+
+    bkTeamRow(m.h,m.liveH,played?m.hs:null,played?m.as:null,m._projH,hw,m.pens?m.pens.h:null)+
+    bkTeamRow(m.a,m.liveA,played?m.as:null,played?m.hs:null,m._projA,aw,m.pens?m.pens.a:null)+
     '</div>';
 }
 /* ── "Road to the Final" — highlight one team's path through the knockout tree.
@@ -3346,13 +3413,15 @@ function applyBracketTrace(){
   cols.classList.add("bk-trace");
   keys.forEach(function(k){const el=cols.querySelector('.bk-m[data-bk="'+k+'"]');if(el)el.classList.add("bk-pathon");});
 }
-/* Champion line — only once the Final has a finished result. */
+/* Champion line — only once the Final has a finished result (a level Final is
+   decided by the shootout winner flag). */
 function bkChampHtml(fin){
-  if(fin.hs==null||fin.as==null||fin.status==="LIVE"||fin.hs===fin.as)return"";
-  const wname=fin.hs>fin.as?fin.liveH:fin.liveA;
+  if(fin.hs==null||fin.as==null||fin.status==="LIVE")return"";
+  const wname=fin.hs>fin.as?fin.liveH:(fin.as>fin.hs?fin.liveA:(fin.win==="home"?fin.liveH:(fin.win==="away"?fin.liveA:null)));
   if(!wname||isSlotName(wname))return"";
   const tr=teamRecord(wname);
-  return '<div class="bk-champ"><span class="lbl">Champions</span><span>'+(tr?tr.flag+" ":"")+wname+' 🏆</span></div>';
+  const pn=(fin.hs===fin.as&&fin.pens)?'<span class="bk-champpn">'+fin.pens.h+'–'+fin.pens.a+' on penalties</span>':"";
+  return '<div class="bk-champ"><span class="lbl">Champions</span><span>'+(tr?tr.flag+" ":"")+wname+' 🏆</span>'+pn+'</div>';
 }
 
 /* Place group finishers into the "Winner X" / "2nd X" Round-of-32 slots ahead of
@@ -3529,13 +3598,15 @@ function groupScenarioHTML(rows,played,rem){
    verified; flip PICKEM_ENABLED to true (and re-show #pk-section) to restore it. */
 const PICKEM_ENABLED=false;
 function bkChampName(fin){
-  if(!fin||fin.hs==null||fin.as==null||fin.status==="LIVE"||fin.hs===fin.as)return"";
-  const w=fin.hs>fin.as?fin.liveH:fin.liveA;return (w&&!isSlotName(w))?w:"";
+  if(!fin||fin.hs==null||fin.as==null||fin.status==="LIVE")return"";
+  const w=fin.hs>fin.as?fin.liveH:(fin.as>fin.hs?fin.liveA:(fin.win==="home"?fin.liveH:(fin.win==="away"?fin.liveA:null)));
+  return (w&&!isSlotName(w))?w:"";
 }
 function bkSortTs(b){const i=b.iso||"";return i.length<8?0:Date.UTC(+i.slice(0,4),+i.slice(4,6)-1,+i.slice(6,8),12);}
 function koWinner(b){
   if(b.hs==null||b.as==null||b.status==="LIVE")return null;
   if(b.hs>b.as)return b.liveH;if(b.as>b.hs)return b.liveA;
+  if(b.win==="home")return b.liveH;if(b.win==="away")return b.liveA; // decided on penalties
   const key="Winner "+b.r+"-"+b.no,nxt=bracket.find(function(m){return m.h===key||m.a===key;});
   if(nxt){const slot=nxt.h===key?nxt.liveH:nxt.liveA;if(slot&&!isSlotName(slot))return slot;}
   return null; // drawn, advancer not yet known
@@ -3694,12 +3765,12 @@ function results2026(){
   stadiums.forEach(function(s){s.m.forEach(function(m){
     if(m.g.indexOf(" vs ")<0||!m.sc)return;
     const p=m.g.split(" vs ").map(function(x){return x.trim();});
-    out.push({round:m.r,home:p[0],away:p[1],sc:m.sc,ev:m.ev,live:!!m.live,clock:m.clock,id:m._id,d:m.d,ts:matchInstant(m)||0,country:s.country});
+    out.push({round:m.r,home:p[0],away:p[1],sc:m.sc,pens:m._pens||null,win:m._win||null,ev:m.ev,live:!!m.live,clock:m.clock,id:m._id,d:m.d,ts:matchInstant(m)||0,country:s.country});
   });});
   bracket.forEach(function(b){
     if(b.hs==null||b.as==null)return;
     if(!(b.liveH&&!isSlotName(b.liveH))||!(b.liveA&&!isSlotName(b.liveA)))return;
-    out.push({round:b.r,home:b.liveH,away:b.liveA,sc:b.hs+"-"+b.as,ev:b.ev,live:b.status==="LIVE",clock:b.minute,id:b._id,d:b.d,ts:bkSortTs(b),country:cityCountry(b.city)});
+    out.push({round:b.r,home:b.liveH,away:b.liveA,sc:b.hs+"-"+b.as,pens:b.pens||null,win:b.win||null,ev:b.ev,live:b.status==="LIVE",clock:b.minute,id:b._id,d:b.d,ts:bkSortTs(b),country:cityCountry(b.city)});
   });
   return out;
 }
@@ -3713,13 +3784,14 @@ function rsVisible(m){
 function setResultsMode(mode){prefs.rsmode=mode;savePrefs();buildResults();}
 function rsRow(m){
   const sp=m.sc.split("-"),hs=+sp[0],as=+sp[1];
-  const hw=hs>as,aw=as>hs;
+  const hw=hs>as||(!m.live&&m.win==="home"),aw=as>hs||(!m.live&&m.win==="away");
+  const pn=(!m.live&&m.pens)?'<span class="pens-tag" title="penalty shootout">'+m.pens.h+'–'+m.pens.a+' pens</span>':'';
   const live=m.live?'<span class="rs-live">● LIVE'+(m.clock?" "+String(m.clock).replace(/['′]/g,"")+"'":"")+'</span>':'';
   return '<div class="rs-m" tabindex="0" role="button" data-match="'+m.id+'">'+
     '<div class="rs-top"><span class="rs-d">'+escHTML(m.d)+'</span>'+
       '<span class="rs-line"><span class="rs-tn h'+(hw?' w':'')+'">'+escHTML(m.home)+'</span>'+
       '<span class="rs-sc">'+hs+'–'+as+'</span>'+
-      '<span class="rs-tn a'+(aw?' w':'')+'">'+escHTML(m.away)+'</span></span>'+live+'</div>'+
+      '<span class="rs-tn a'+(aw?' w':'')+'">'+escHTML(m.away)+'</span></span>'+pn+live+'</div>'+
     mevHTML(m.ev)+'</div>';
 }
 function buildResults(){
@@ -4356,6 +4428,11 @@ function applyLive(results){
     if(!rk1||!rk2)return;
     for(const s of stadiums){
       for(const m of s.m){
+        // Group fixtures only: knockout scores flow in via the bracket
+        // (applyBracket → enrichKnockouts). Without this, a knockout rematch of
+        // a group pairing (possible from the QF on) would overwrite the
+        // completed group fixture and silently rewrite the final tables.
+        if(m.r.indexOf("Group")!==0)continue;
         if(!m.g.includes(" vs "))continue;
         const [h,a]=m.g.split(" vs ").map(x=>x.trim());
         const k1=canon(h),k2=canon(a);
@@ -4422,8 +4499,15 @@ function parseESPNEvents(data,ds){
       const stt=((ev.status||comp.status||{}).type)||{};
       const st=stt.state; // "pre" | "in" | "post"
       const status=st==="in"?"LIVE":(st==="post"?"FT":"UPCOMING");
-      const hs=status==="UPCOMING"?null:parseInt(home.score,10);
-      const as=status==="UPCOMING"?null:parseInt(away.score,10);
+      let hs=status==="UPCOMING"?null:parseInt(home.score,10);
+      let as=status==="UPCOMING"?null:parseInt(away.score,10);
+      hs=isNaN(hs)?null:hs;as=isNaN(as)?null:as;
+      // Penalty shootout: the score stays level — the shootout tally and the
+      // winner flag are separate fields (same parsing as build-history.mjs).
+      const phs=parseInt(home.shootoutScore,10),pas=parseInt(away.shootoutScore,10);
+      const pens=(isFinite(phs)&&isFinite(pas))?{h:phs,a:pas}:null;
+      const wflag=home.winner===true?"home":(away.winner===true?"away":null);
+      const win=(wflag&&(hs===as||pens))?wflag:null;
       const clk=(ev.status||comp.status||{}).displayClock;
       // Red cards: prefer the competitor field, else tally from play details.
       let hr=parseInt(home.redCards,10);if(isNaN(hr))hr=0;
@@ -4440,23 +4524,32 @@ function parseESPNEvents(data,ds){
       const homeName=(home.team&&(home.team.displayName||home.team.shortDisplayName||home.team.name))||"";
       const awayName=(away.team&&(away.team.displayName||away.team.shortDisplayName||away.team.name))||"";
       // Goal scorers (for the Golden Boot leaderboard) — own goals excluded.
+      // Scoring plays are chronological; anything beyond the match score
+      // (hs+as) is a shootout kick, so cap at the real total (own goals
+      // consume from the cap but credit no scorer).
+      const goalTotal=(hs||0)+(as||0);
       const goals=[];
       if(Array.isArray(comp.details)){
-        comp.details.forEach(function(d){
+        let accounted=0;
+        for(const d of comp.details){
+          if(!d.scoringPlay)continue;
+          if(accounted>=goalTotal)break;          // remaining plays are shootout kicks
+          accounted++;
           const tx=((d.type&&(d.type.text||d.type.name))||"")+"";
-          if(!d.scoringPlay||/own goal/i.test(tx))return;
+          if(/own goal/i.test(tx))continue;
           const ath=(d.athletesInvolved&&d.athletesInvolved[0])||null;
           const name=ath&&(ath.displayName||ath.shortName);
-          if(!name)return;
+          if(!name)continue;
           const tid=(ath.team&&ath.team.id)||(d.team&&d.team.id);
           const team=(String(tid)===String(home.id))?homeName:((String(tid)===String(away.id))?awayName:"");
           goals.push({scorer:name,team:team,pen:/penalt/i.test(tx)});
-        });
+        }
       }
       // Compact event timeline (goals + cards, by minute) for inline display —
       // straight from the scoreboard details, so no extra requests.
       const evx=[];
       if(Array.isArray(comp.details)){
+        let gAcc=0; // same shootout cap as `goals`: goal-kind entries beyond hs+as are shootout kicks
         comp.details.forEach(function(d){
           const tx=((d.type&&(d.type.text||d.type.name))||"")+"";
           const ath=(d.athletesInvolved&&d.athletesInvolved[0])||null;
@@ -4467,6 +4560,7 @@ function parseESPNEvents(data,ds){
           else if(d.redCard===true||/red card|second yellow|sent off|ejection/i.test(tx))k="r";
           else if(d.yellowCard===true||/yellow card/i.test(tx))k="y";
           if(!k||!nm)return;
+          if(k==="g"||k==="og"){gAcc++;if(gAcc>goalTotal)return;}
           const tid=(ath&&ath.team&&ath.team.id)||(d.team&&d.team.id);
           const tm=(String(tid)===String(home.id))?homeName:((String(tid)===String(away.id))?awayName:"");
           evx.push({m:(d.clock&&d.clock.displayValue)||"",k:k,n:nm,p:/penalt/i.test(tx),tm:tm});
@@ -4476,9 +4570,11 @@ function parseESPNEvents(data,ds){
       out.push({
         home:homeName,
         away:awayName,
-        hs:isNaN(hs)?null:hs,
-        as:isNaN(as)?null:as,
+        hs:hs,
+        as:as,
         hr:hr,ar:ar,
+        pens:pens,          // {h,a} shootout tally, or null
+        win:win,            // "home"/"away" when the score alone doesn't show the winner
         goals:goals,
         ev:evx,
         status:status,
@@ -4593,8 +4689,10 @@ async function refreshScores(){
     setLiveStatus('<span class="warn">Couldn\'t reach a live source from here</span> — showing saved scores. Works in Claude\'s view, or host the page over http(s) for a normal browser.');
   }
   liveState.busy=false;
+  liveState.lastFetch=Date.now();
   btn.disabled=false;
   scheduleAuto(); // keep polling while any match is live
+  armKickoff();   // …and when nothing is live, wake up at the next kickoff
 }
 
 (function init(){

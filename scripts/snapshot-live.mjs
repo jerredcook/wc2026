@@ -91,6 +91,13 @@ function parseEvents(data, ds) {
       const status = st === "in" ? "LIVE" : (st === "post" ? "FT" : "UPCOMING");
       let hs = status === "UPCOMING" ? null : parseInt(home.score, 10);
       let as = status === "UPCOMING" ? null : parseInt(away.score, 10);
+      hs = isNaN(hs) ? null : hs; as = isNaN(as) ? null : as;
+      // Penalty shootout: the score stays level — the tally and winner are
+      // separate fields (same parsing as build-history.mjs).
+      const phs = parseInt(home.shootoutScore, 10), pas = parseInt(away.shootoutScore, 10);
+      const pens = (Number.isFinite(phs) && Number.isFinite(pas)) ? { h: phs, a: pas } : null;
+      const wflag = home.winner === true ? "home" : (away.winner === true ? "away" : null);
+      const win = (wflag && (hs === as || pens)) ? wflag : null;
       const clk = (ev.status || comp.status || {}).displayClock;
       let hr = parseInt(home.redCards, 10); if (isNaN(hr)) hr = 0;
       let ar = parseInt(away.redCards, 10); if (isNaN(ar)) ar = 0;
@@ -105,23 +112,32 @@ function parseEvents(data, ds) {
       }
       const homeName = (home.team && (home.team.displayName || home.team.shortDisplayName || home.team.name)) || "";
       const awayName = (away.team && (away.team.displayName || away.team.shortDisplayName || away.team.name)) || "";
+      // Scoring plays are chronological; anything beyond the match score (hs+as)
+      // is a shootout kick, so cap at the real total (own goals consume from the
+      // cap but credit no scorer) — mirrors the app's parseESPNEvents.
+      const goalTotal = (hs || 0) + (as || 0);
       const goals = [];
       if (Array.isArray(comp.details)) {
-        comp.details.forEach(d => {
+        let accounted = 0;
+        for (const d of comp.details) {
+          if (!d.scoringPlay) continue;
+          if (accounted >= goalTotal) break;      // remaining plays are shootout kicks
+          accounted++;
           const tx = ((d.type && (d.type.text || d.type.name)) || "") + "";
-          if (!d.scoringPlay || /own goal/i.test(tx)) return;
+          if (/own goal/i.test(tx)) continue;
           const ath = (d.athletesInvolved && d.athletesInvolved[0]) || null;
           const name = ath && (ath.displayName || ath.shortName);
-          if (!name) return;
+          if (!name) continue;
           const tid = (ath.team && ath.team.id) || (d.team && d.team.id);
           const team = String(tid) === String(home.id) ? homeName : (String(tid) === String(away.id) ? awayName : "");
           goals.push({ scorer: name, team, pen: /penalt/i.test(tx) });
-        });
+        }
       }
       // Compact goals+cards timeline (by minute) — mirrors the app's parseESPNEvents,
       // so the inline display works in the snapshot fallback too.
       const evx = [];
       if (Array.isArray(comp.details)) {
+        let gAcc = 0; // same shootout cap as `goals`: goal-kind entries beyond hs+as are shootout kicks
         comp.details.forEach(d => {
           const tx = ((d.type && (d.type.text || d.type.name)) || "") + "";
           const ath = (d.athletesInvolved && d.athletesInvolved[0]) || null;
@@ -132,6 +148,7 @@ function parseEvents(data, ds) {
           else if (d.redCard === true || /red card|second yellow|sent off|ejection/i.test(tx)) k = "r";
           else if (d.yellowCard === true || /yellow card/i.test(tx)) k = "y";
           if (!k || !nm) return;
+          if (k === "g" || k === "og") { gAcc++; if (gAcc > goalTotal) return; }
           const tid = (ath && ath.team && ath.team.id) || (d.team && d.team.id);
           const tm = String(tid) === String(home.id) ? homeName : (String(tid) === String(away.id) ? awayName : "");
           evx.push({ m: (d.clock && d.clock.displayValue) || "", k, n: nm, p: /penalt/i.test(tx), tm });
@@ -139,9 +156,10 @@ function parseEvents(data, ds) {
         const mn = s => { const x = String(s || "").match(/(\d+)(?:'?\s*\+\s*(\d+))?/); return x ? +x[1] * 100 + (x[2] ? +x[2] : 0) : 9999; };
         evx.sort((a, b) => mn(a.m) - mn(b.m));
       }
-      hs = isNaN(hs) ? null : hs; as = isNaN(as) ? null : as;
       out.push({
-        home: homeName, away: awayName, hs, as, hr, ar, goals, ev: evx,
+        home: homeName, away: awayName, hs, as, hr, ar,
+        pens, win,        // shootout tally + winner for drawn knockouts
+        goals, ev: evx,
         status, minute: (status === "LIVE" && clk) ? clk : null,
         id: ev.id || "", date: ds || "",
         venue: (comp.venue && comp.venue.fullName) || ""
