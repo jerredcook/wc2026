@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="dark">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>%F0%9F%8F%86</text></svg>">
+<title>WC2026 — Deep Review & Roadmap</title>
+<style>
+  :root{
+    --pitch:#12151c;        /* deep midnight ground */
+    --turf:#1a1e27;         /* card surface */
+    --turf-2:#212633;       /* raised surface */
+    --chalk:#e9ecf3;        /* primary ink */
+    --chalk-dim:#9aa1b4;    /* muted ink */
+    --chalk-faint:#6d768c;  /* faintest labels */
+    --line:#2a3040;         /* hairline */
+    --line-soft:#222736;
+    --gold:#e9c767;         /* trophy accent (brand) */
+    --gold-pale:#f7e7ad;
+    --grass:#3ddc97;        /* resolved / positive */
+    --grass-dim:#1f6b4c;
+    --sev-high:#f26d63;     /* critical/high */
+    --sev-med:#e6a94b;      /* medium */
+    --sev-low:#828db0;      /* minor */
+    --serif:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+    --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,"Helvetica Neue",Arial,sans-serif;
+    --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0;background:var(--pitch);color:var(--chalk);font-family:var(--sans);
+    font-size:16px;line-height:1.62;-webkit-font-smoothing:antialiased;
+    background-image:radial-gradient(60rem 40rem at 78% -8%,rgba(233,199,103,.05),transparent 60%);}
+  .wrap{max-width:900px;margin:0 auto;padding:0 24px 120px}
+  p{margin:0 0 1em;max-width:68ch}
+  a{color:var(--gold-pale);text-decoration:none;border-bottom:1px solid rgba(247,231,173,.35)}
+  a:hover{border-bottom-color:var(--gold-pale)}
+  a:focus-visible,button:focus-visible{outline:2px solid var(--gold);outline-offset:3px;border-radius:3px}
+  code,.mono{font-family:var(--mono);font-variant-ligatures:none}
+
+  /* ── Masthead ── */
+  .masthead{padding:64px 0 40px;border-bottom:1px solid var(--line)}
+  .rule-gold{height:2px;background:linear-gradient(90deg,var(--gold),rgba(233,199,103,.15));border:0;margin:0 0 30px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.28em;text-transform:uppercase;
+    color:var(--gold);margin:0 0 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .eyebrow .dot{width:5px;height:5px;border-radius:50%;background:var(--gold);flex:none}
+  h1{font-family:var(--serif);font-weight:600;font-size:clamp(2.5rem,6vw,4rem);line-height:1.02;
+    letter-spacing:-.01em;margin:0 0 22px;text-wrap:balance;color:#fff}
+  h1 .sub{display:block;font-size:.42em;font-weight:500;color:var(--gold-pale);letter-spacing:0;margin-top:.5em}
+  .dek{font-size:1.18rem;color:var(--chalk-dim);max-width:60ch;font-family:var(--serif);font-style:italic}
+  .byline{margin-top:26px;font-family:var(--mono);font-size:12.5px;color:var(--chalk-faint);
+    letter-spacing:.02em;line-height:1.9}
+  .byline b{color:var(--chalk-dim);font-weight:600}
+
+  /* ── Scoreboard ── */
+  .scoreboard{display:grid;grid-template-columns:repeat(6,1fr);gap:1px;background:var(--line);
+    border:1px solid var(--line);border-radius:12px;overflow:hidden;margin:40px 0 12px}
+  .stat{background:var(--turf);padding:20px 16px;text-align:center}
+  .stat .n{font-family:var(--mono);font-size:2rem;font-weight:600;font-variant-numeric:tabular-nums;
+    color:var(--gold-pale);line-height:1}
+  .stat .n.green{color:var(--grass)}
+  .stat .l{margin-top:9px;font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--chalk-faint)}
+  .scorenote{font-family:var(--mono);font-size:11.5px;color:var(--chalk-faint);text-align:center;letter-spacing:.02em}
+
+  /* ── Section scaffolding ── */
+  section{padding:52px 0;border-top:1px solid var(--line-soft)}
+  .sec-head{margin:0 0 8px}
+  .sec-kicker{font-family:var(--mono);font-size:11.5px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--gold);margin:0 0 12px}
+  h2{font-family:var(--serif);font-weight:600;font-size:clamp(1.7rem,3.5vw,2.3rem);line-height:1.1;
+    margin:0 0 10px;letter-spacing:-.01em;text-wrap:balance;color:#fff}
+  .sec-lead{color:var(--chalk-dim);font-size:1.05rem;max-width:64ch;margin-bottom:30px}
+
+  /* ── Finding cards ── */
+  .cards{display:flex;flex-direction:column;gap:14px}
+  .card{background:var(--turf);border:1px solid var(--line);border-left-width:4px;border-radius:10px;
+    padding:18px 20px 18px}
+  .card.high{border-left-color:var(--sev-high)}
+  .card.med{border-left-color:var(--sev-med)}
+  .card.low{border-left-color:var(--sev-low)}
+  .card.done{border-left-color:var(--grass)}
+  .card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+  .card h3{font-size:1.06rem;font-weight:650;margin:0;line-height:1.35;color:var(--chalk);max-width:56ch}
+  .chips{display:flex;gap:7px;flex:none;flex-wrap:wrap}
+  .chip{font-family:var(--mono);font-size:10.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;
+    padding:3px 9px;border-radius:20px;white-space:nowrap;border:1px solid transparent}
+  .chip.high{color:var(--sev-high);background:rgba(242,109,99,.1);border-color:rgba(242,109,99,.3)}
+  .chip.med{color:var(--sev-med);background:rgba(230,169,75,.1);border-color:rgba(230,169,75,.3)}
+  .chip.low{color:var(--sev-low);background:rgba(130,141,176,.12);border-color:rgba(130,141,176,.3)}
+  .chip.done{color:var(--grass);background:rgba(61,220,151,.1);border-color:rgba(61,220,151,.35)}
+  .chip.open{color:var(--chalk-faint);background:transparent;border-color:var(--line)}
+  .card p{margin:11px 0 0;color:var(--chalk-dim);font-size:.96rem;max-width:70ch}
+  .loc{display:inline-block;margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--gold-pale);
+    background:rgba(247,231,173,.06);border:1px solid rgba(247,231,173,.14);border-radius:6px;
+    padding:3px 9px;letter-spacing:0}
+  .card .fixnote{margin-top:11px;font-size:.9rem;color:var(--grass)}
+  .card .fixnote::before{content:"→ ";color:var(--grass)}
+
+  /* ── Verdict prose ── */
+  .verdict p{font-size:1.12rem;line-height:1.68}
+  .verdict .lead::first-letter{font-family:var(--serif);font-size:3.4em;line-height:.8;float:left;
+    padding:6px 12px 0 0;color:var(--gold);font-weight:600}
+  .pullquote{font-family:var(--serif);font-style:italic;font-size:1.5rem;line-height:1.4;color:var(--gold-pale);
+    border-left:3px solid var(--gold);padding:6px 0 6px 26px;margin:30px 0;max-width:38ch;text-wrap:balance}
+
+  /* ── Strengths ── */
+  .strengths{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .str{background:linear-gradient(180deg,rgba(61,220,151,.05),transparent);border:1px solid var(--line);
+    border-radius:10px;padding:16px 18px}
+  .str h4{margin:0 0 6px;font-size:.98rem;font-weight:650;color:var(--chalk);display:flex;gap:9px;align-items:baseline}
+  .str h4 .tick{color:var(--grass);font-family:var(--mono);flex:none}
+  .str p{margin:0;font-size:.9rem;color:var(--chalk-dim)}
+
+  /* ── Roadmap ── */
+  .lane{border:1px solid var(--line);border-radius:12px;overflow:hidden;margin-bottom:16px;background:var(--turf)}
+  .lane-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    padding:16px 20px;background:var(--turf-2);border-bottom:1px solid var(--line)}
+  .lane-head h3{margin:0;font-family:var(--serif);font-size:1.25rem;font-weight:600;color:#fff}
+  .lane-head .when{font-family:var(--mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+  .lane ul{list-style:none;margin:0;padding:8px 0}
+  .lane li{display:flex;gap:14px;align-items:baseline;padding:10px 20px;border-top:1px solid var(--line-soft)}
+  .lane li:first-child{border-top:0}
+  .lane li .eff{font-family:var(--mono);font-size:10px;letter-spacing:.05em;text-transform:uppercase;
+    color:var(--chalk-faint);border:1px solid var(--line);border-radius:5px;padding:2px 7px;flex:none;min-width:74px;text-align:center}
+  .lane li .eff.s{color:var(--grass);border-color:rgba(61,220,151,.3)}
+  .lane li .eff.m{color:var(--sev-med);border-color:rgba(230,169,75,.3)}
+  .lane li span.t{color:var(--chalk-dim);font-size:.98rem}
+  .lane li span.t b{color:var(--chalk);font-weight:600}
+
+  /* ── Minor notes ── */
+  .notes{columns:2;column-gap:28px}
+  .notes .note{break-inside:avoid;margin:0 0 14px;padding-left:16px;position:relative;font-size:.92rem;color:var(--chalk-dim)}
+  .notes .note::before{content:"";position:absolute;left:0;top:.62em;width:6px;height:6px;border-radius:50%;background:var(--sev-low)}
+  .notes .note b{color:var(--chalk);font-weight:600}
+  .notes .note code{font-size:.86em;color:var(--gold-pale)}
+
+  /* ── Method / footer ── */
+  .method{background:var(--turf);border:1px solid var(--line);border-radius:12px;padding:26px 28px;margin-top:8px}
+  .method p{font-size:.96rem;color:var(--chalk-dim)}
+  .method p:last-child{margin-bottom:0}
+  footer{padding:44px 0 0;border-top:1px solid var(--line-soft);color:var(--chalk-faint);
+    font-family:var(--mono);font-size:12px;letter-spacing:.02em;text-align:center;line-height:1.9}
+
+  @media (max-width:720px){
+    .scoreboard{grid-template-columns:repeat(3,1fr)}
+    .strengths{grid-template-columns:1fr}
+    .notes{columns:1}
+    .wrap{padding:0 18px 90px}
+  }
+  @media (prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="masthead">
+    <hr class="rule-gold">
+    <p class="eyebrow"><span class="dot"></span> Technical Review &nbsp;·&nbsp; Adversarial multi-agent audit</p>
+    <h1>A deep review of WC2026<span class="sub">The World Cup app, read six ways — and what to do with the next 18 days.</span></h1>
+    <p class="dek">A full read of the codebase through six independent lenses, with every claimed defect handed to a separate skeptic to refute before it was allowed to stand.</p>
+    <p class="byline">
+      <b>Subject</b> &nbsp; index.html (~4,680 lines, single-file vanilla JS) · snapshot pipeline · PWA<br>
+      <b>Method</b> &nbsp; 37 AI reviewers · 6 lenses · 31 findings, each adversarially verified<br>
+      <b>As of</b> &nbsp; July 2, 2026 — group stage complete, Round of 32 underway, Final on the 19th
+    </p>
+
+    <div class="scoreboard" role="img" aria-label="Review tallies">
+      <div class="stat"><div class="n">6</div><div class="l">Lenses</div></div>
+      <div class="stat"><div class="n">31</div><div class="l">Confirmed</div></div>
+      <div class="stat"><div class="n">0</div><div class="l">Refuted</div></div>
+      <div class="stat"><div class="n green">7</div><div class="l">Shipped</div></div>
+      <div class="stat"><div class="n">24</div><div class="l">Open</div></div>
+      <div class="stat"><div class="n">40</div><div class="l">Strengths</div></div>
+    </div>
+    <p class="scorenote">Every finding below was reproduced from the actual code and data — nothing is speculative.</p>
+  </header>
+
+  <section class="verdict">
+    <p class="sec-kicker">The verdict</p>
+    <p class="lead">You've built something genuinely good. For a single 4,680-line HTML file with no framework and no build step, the engineering is well above hobby baseline: every score lives in exactly one place and all eleven sections derive from it, so they can never disagree. The 2026 tiebreaker logic is faithful down to recursive head-to-head before goal difference. There's a real modal focus trap, keyboard activation, reduced-motion support, and a three-tier data fallback that degrades to a self-contained archive instead of a blank page.</p>
+
+    <p class="pullquote">The single-file, no-build decision is still the right call — it's what keeps deployment a git-push and lets the app run from a file on disk.</p>
+
+    <p>But the review found real bugs, and a cluster of them were time-critical — one was corrupting data you intend to keep forever. Seven of those have now been fixed and shipped. What remains splits cleanly into three jobs: protect the permanent archive before July 20, sharpen the live experience for the knockout run, and a longer tail of cleanup for after the Final. This document lays out all of it — what's strong, every confirmed defect with its exact location, and a prioritized roadmap.</p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Resolved this session</p>
+    <h2>Seven fixes already shipped</h2>
+    <p class="sec-lead">The urgent batch — the two deadline-bound risks (a penalty-shootout Final with no champion; group tables corrupted by a rematch) plus the biggest live-experience and knockout gaps. Committed and verified against live ESPN data.</p>
+    <div class="cards">
+
+      <div class="card done">
+        <div class="card-top">
+          <h3>Penalty shootouts are now first-class, end to end</h3>
+          <div class="chips"><span class="chip high">was critical ×3</span><span class="chip done">Shipped</span></div>
+        </div>
+        <p>The parser read only the 90-minute score, so a drawn knockout tie showed no winner (a shootout Final could never crown a champion) and shootout kicks were counted as goals — <b>Netherlands 1–1 Morocco carried seven "goals"</b> into the Golden Boot. Now the shootout tally and winner flag are parsed (in both the app and the snapshot script), goal/timeline events are capped at the real score, and the tally + gold-highlighted winner render across the bracket, rows, popover and champion line. The archive was re-captured clean.</p>
+        <span class="loc">index.html parseESPNEvents · snapshot-live.mjs · bkChampHtml / koWinner</span>
+        <div class="fixnote">Both R32 shootouts now recorded correctly; zero phantom goals in the snapshot.</div>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <h3>A knockout rematch can no longer corrupt the group tables</h3>
+          <div class="chips"><span class="chip high">was high</span><span class="chip done">Shipped</span></div>
+        </div>
+        <p>Live results were matched to fixtures by team pair in either order, with no round or date check. From the quarterfinals on, two teams that met in the group stage can meet again — and the knockout score would have overwritten the completed group fixture, silently rewriting the final tables. Now live scores apply only to group fixtures; knockout scores flow through the bracket.</p>
+        <span class="loc">index.html · applyLive() 4351–4376</span>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <h3>The app wakes itself for kickoffs</h3>
+          <div class="chips"><span class="chip med">was medium</span><span class="chip done">Shipped</span></div>
+        </div>
+        <p>Auto-refresh only armed while a match was <em>already</em> live, so opening the app at 2:45 for a 3:00 kickoff left it frozen forever. A one-shot timer now fires at the next scheduled kickoff (re-arming across rest days), and the page refreshes when the tab regains focus.</p>
+        <span class="loc">index.html · armKickoff() + visibilitychange</span>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <h3>Team filters now follow a nation into the knockouts</h3>
+          <div class="chips"><span class="chip high">was high</span><span class="chip done">Shipped</span></div>
+        </div>
+        <p>Filtering to a team read the fixture's placeholder string ("Round of 32"), never the resolved teams — so with any filter active, <b>every knockout match vanished</b> from the Schedule and grid. A shared helper now resolves knockout teams; filtering to France surfaces her R16 tie.</p>
+        <span class="loc">index.html · matchVisible() / matchTeamsStr()</span>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <h3>Calendar export includes a team's knockout run</h3>
+          <div class="chips"><span class="chip high">was high</span><span class="chip done">Shipped</span></div>
+        </div>
+        <p>The same root cause meant "Add England's matches to your calendar" exported only the three group games and silently dropped the knockout fixtures fans care about most. France's export went from 3 events to 5 — group games plus R32 and R16.</p>
+        <span class="loc">index.html · fixtureEvents() 1396</span>
+      </div>
+
+      <div class="card done">
+        <div class="card-top">
+          <h3>Red cards now render on knockout matches</h3>
+          <div class="chips"><span class="chip low">bonus</span><span class="chip done">Shipped</span></div>
+        </div>
+        <p>A side effect of the shootout plumbing: red-card counts were being dropped when copying scores onto bracket slots. They now flow through to knockout rows.</p>
+        <span class="loc">index.html · applyBracket / enrichKnockouts</span>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Before July 20 · highest stakes</p>
+    <h2>Protecting the permanent archive</h2>
+    <p class="sec-lead">Your stated goal is that this site outlives ESPN's feed and stays a complete record. The snapshot <em>as captured today</em> is not yet that record — these are the gaps between "it works now" and "it's safe forever."</p>
+    <div class="cards">
+
+      <div class="card high">
+        <div class="card-top">
+          <h3>The snapshot's safety guard only counts events — it can clobber good data</h3>
+          <div class="chips"><span class="chip high">High</span><span class="chip open">Open</span></div>
+        </div>
+        <p>The overwrite guard compares only <code>events.length</code>. Match <em>summaries</em> (goals, lineups, commentary) aren't guarded at all — a run where the summary endpoint hiccups passes the guard and can overwrite good archived detail with less. Fix: union-merge events by id, and never let a summary shrink.</p>
+        <span class="loc">scripts/snapshot-live.mjs · 226–231</span>
+      </div>
+
+      <div class="card high">
+        <div class="card-top">
+          <h3>The daily capture Action can fail silently, forever</h3>
+          <div class="chips"><span class="chip high">High</span><span class="chip open">Open</span></div>
+        </div>
+        <p>Every failure mode is a green run: the fetch helper swallows errors and returns null, an empty parse yields <code>[]</code>, and the shrink-guard exits 0. If ESPN changes shape or blocks the runner mid-tournament, the workflow keeps "succeeding" daily with no commit and no alert. Make the guard exit 1, and add a staleness check that fails when the archive stops advancing.</p>
+        <span class="loc">scripts/snapshot-live.mjs · getJSON 42–52 · snapshot.yml</span>
+      </div>
+
+      <div class="card med">
+        <div class="card-top">
+          <h3>Snapshot fallback is all-or-nothing</h3>
+          <div class="chips"><span class="chip med">Medium</span><span class="chip open">Open</span></div>
+        </div>
+        <p>The committed snapshot is only consulted when the live path returns <em>zero</em> results. The likely post-tournament failure is ESPN returning <em>partial</em> data (dropping old dates) with a non-empty length — which passes the check, so the archive is never consulted and users see an incomplete tournament. Merge the snapshot under live data, keyed by match id.</p>
+        <span class="loc">index.html · refreshScores 4548 / 4554</span>
+      </div>
+
+      <div class="card med">
+        <div class="card-top">
+          <h3>force-cache can pin users to a stale, pre-Final snapshot</h3>
+          <div class="chips"><span class="chip med">Medium</span><span class="chip open">Open</span></div>
+        </div>
+        <p>Both snapshot fetches use <code>cache:'force-cache'</code>, which returns any cached copy without revalidating. A browser that cached the snapshot on July 10 could, a year later when ESPN is gone, show that stale mid-tournament copy indefinitely. Switch to <code>default</code> so it revalidates against the ETag.</p>
+        <span class="loc">index.html · 2195 (getWCSnapshot) · 4556 (refreshScores)</span>
+      </div>
+
+      <div class="card med">
+        <div class="card-top">
+          <h3>The snapshot drops upcoming fixtures — pure-archive mode loses future pairings</h3>
+          <div class="chips"><span class="chip med">Medium</span><span class="chip open">Open</span></div>
+        </div>
+        <p>The capture keeps only FT/LIVE events, but the live app deliberately reads the full window because ESPN already knows the upcoming knockout matchups. In snapshot-only mode, the bracket loses those known-but-unplayed pairings, and a drawn match's advancer is unknowable until its next game is captured.</p>
+        <span class="loc">scripts/snapshot-live.mjs · 199</span>
+      </div>
+
+      <div class="card med">
+        <div class="card-top">
+          <h3>2026 is never folded into the historical archive</h3>
+          <div class="chips"><span class="chip med">Medium</span><span class="chip open">Open · post-final</span></div>
+        </div>
+        <p>The tournaments table ends at 2022, and the head-to-head index is built only from the archived year files. Unless a 2026 entry is added and the two build scripts re-run after the Final, the History section and the popover H2H will permanently exclude this World Cup — even though the live snapshot has richer data than the historical files.</p>
+        <span class="loc">scripts/build-history.mjs 30–53 · build-h2h.mjs</span>
+      </div>
+
+      <div class="card med">
+        <div class="card-top">
+          <h3>~70 lines of feed parsing are hand-duplicated app ↔ snapshot</h3>
+          <div class="chips"><span class="chip med">Medium</span><span class="chip open">Open</span></div>
+        </div>
+        <p>The snapshot script's parser is a manual port of the app's, and the h2h builder re-implements the app's name normalizer with a "MUST match" comment. Any future edit to one and not the other silently corrupts the archive. A tiny shared module (one <code>&lt;script src&gt;</code>, no build step) would end the drift risk — and make this logic unit-testable.</p>
+        <span class="loc">snapshot-live.mjs 80–152 · build-h2h.mjs 16–22</span>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The next 18 days · live experience</p>
+    <h2>Sharpening the knockout run</h2>
+    <p class="sec-lead">Small, high-leverage changes for a dad-and-son checking scores daily through to the Final — most reuse data and helpers the app already has.</p>
+    <div class="cards">
+
+      <div class="card med">
+        <div class="card-top">
+          <h3>~39 ESPN requests every 60 seconds during live play</h3>
+          <div class="chips"><span class="chip med">Medium</span><span class="chip open">Open</span></div>
+        </div>
+        <p>Every refresh re-fetches all 39 tournament days, most with <code>no-store</code> — roughly 2,300 requests an hour on a phone, nearly all of them immutable finished days. Poll only today ±1 on the live loop; keep the full-window pull for initial load and the manual Refresh. Better battery, less rate-limit exposure.</p>
+        <span class="loc">index.html · fetchScoresFromESPN 4509–4536</span>
+      </div>
+
+      <div class="card med">
+        <div class="card-top">
+          <h3>The group-stage UI still owns the default layout</h3>
+          <div class="chips"><span class="chip med">Medium</span><span class="chip open">Open</span></div>
+        </div>
+        <p>Groups ended June 27, yet "Group Standings — <em>Live</em>" sits open in slot three while Results and the Golden Boot — the things that actually change daily now — start collapsed. A one-time "knockout phase" flag (like the existing layout migration) should demote the frozen tables and promote the live sections.</p>
+        <span class="loc">index.html · defaults 1115 · reorderSections</span>
+      </div>
+
+      <div class="card med">
+        <div class="card-top">
+          <h3>The bracket opens scrolled to the dead left edge on phones</h3>
+          <div class="chips"><span class="chip med">Medium</span><span class="chip open">Open</span></div>
+        </div>
+        <p>The bracket is 1,260px wide inside a scroller, so a ~390px phone opens showing only the left Round-of-32 column — matches that are all finished after July 3 — with the trophy and the live rounds two screens to the right, hinted only by buried prose. Auto-scroll to the current round after render.</p>
+        <span class="loc">index.html · .bk-cols 395–396 · buildBracket</span>
+      </div>
+
+      <div class="card med">
+        <div class="card-top">
+          <h3>"Tap any match for detail" usually opens a team profile</h3>
+          <div class="chips"><span class="chip med">Medium</span><span class="chip open">Open</span></div>
+        </div>
+        <p>Team-name links are given priority over the enclosing match row and fill most of a short row's width, so a tap usually lands on the team card instead of the match card the subtitle promises. Worth rebalancing the hit areas — also the son-friendliness fix.</p>
+        <span class="loc">index.html · click handler 1888–1894 · teamLink</span>
+      </div>
+
+      <div class="card med">
+        <div class="card-top">
+          <h3>Rest days dead-end the hero section</h3>
+          <div class="chips"><span class="chip med">Medium</span><span class="chip open">Open</span></div>
+        </div>
+        <p>Five of the remaining days have no fixtures, and on those days the Today bar — the page hero — says only "No World Cup matches scheduled today." Show the next one instead: "Next: Quarterfinals — Thu Jul 9, 2:00 PM." The kickoff instant is already computed.</p>
+        <span class="loc">index.html · buildToday empty state 2997</span>
+      </div>
+
+      <div class="card med">
+        <div class="card-top">
+          <h3>Offline mode shows no scores, despite claiming "saved scores"</h3>
+          <div class="chips"><span class="chip med">Medium</span><span class="chip open">Open</span></div>
+        </div>
+        <p>The service worker precaches only the shell — the snapshot is never cached, and is fetched only when the live path fully fails, which never happens online. So the installed app offline shows an empty tournament while the status line promises otherwise. Precache the snapshot and fall to it when offline.</p>
+        <span class="loc">sw.js · SHELL list 8 · refreshScores</span>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Robustness &amp; correctness</p>
+    <h2>Cleanup worth doing</h2>
+    <div class="cards">
+
+      <div class="card med">
+        <div class="card-top">
+          <h3>ESPN-sourced team names are rendered unescaped in places</h3>
+          <div class="chips"><span class="chip med">Medium</span><span class="chip open">Open</span></div>
+        </div>
+        <p>The escaping helper is used diligently in most render paths, but feed-derived names flow raw into the bracket and knockout rows. Escaping at the two funnels every name passes through — <code>teamLink</code> and <code>bkTeamRow</code> — closes the whole class in about six edits, with no visual change.</p>
+        <span class="loc">index.html · teamLink 1682 · bkTeamRow 3248</span>
+      </div>
+
+      <div class="card med">
+        <div class="card-top">
+          <h3>A dead call to api.anthropic.com delays the real fallback</h3>
+          <div class="chips"><span class="chip med">Medium</span><span class="chip open">Open</span></div>
+        </div>
+        <p>A leftover from the artifact era posts to the Anthropic API with no key — from GitHub Pages it always fails, adding a guaranteed-failing round-trip before the snapshot fallback, and its user-facing message misleads. Pure deletion: ~25 lines gone, one failure mode removed.</p>
+        <span class="loc">index.html · fetchLiveScores 4330–4348</span>
+      </div>
+
+      <div class="card low">
+        <div class="card-top">
+          <h3>"Road to the Final" traces a semifinal loser into the Final</h3>
+          <div class="chips"><span class="chip low">Low</span><span class="chip open">Open</span></div>
+        </div>
+        <p>The path tracer picks a team's deepest appearance and, on a tie between the semifinal and third-place slots, keeps the earlier one — so a losing semifinalist's traced road runs into the Final rather than the third-place match.</p>
+        <span class="loc">index.html · traceBracketPath 3328–3331</span>
+      </div>
+
+      <div class="card low">
+        <div class="card-top">
+          <h3>The README documents a flag that doesn't exist</h3>
+          <div class="chips"><span class="chip low">Low</span><span class="chip open">Open</span></div>
+        </div>
+        <p>The docs describe <code>--full</code> and a "capture up to today" default; the script actually defaults to the full window and takes <code>--today</code>. Harmless today, but exactly the kind of thing that will mislead you at the one moment it matters — the manual post-Final capture.</p>
+        <span class="loc">README 72–77 vs snapshot-live.mjs 36–40</span>
+      </div>
+
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Minor notes</p>
+    <h2>The smaller stuff</h2>
+    <p class="sec-lead">Low-severity observations — worth a pass, none urgent.</p>
+    <div class="notes">
+      <p class="note"><b>App identity is still "Stadiums."</b> The title tag and H1 say "All 16 Stadiums" — it stopped being a stadiums page a month ago.</p>
+      <p class="note"><b>Developer jargon leaks into user copy</b> — "Claude's view," "served over http(s)," "file://" in status and empty-state text.</p>
+      <p class="note"><b>Korea DPR maps to South Korea</b> in the alias table. Latent (North Korea isn't in 2026), but wrong if the historical archive ever routes through it.</p>
+      <p class="note"><b>Sub-9px type &amp; low-contrast metadata</b> on bracket cards fall below comfortable legibility.</p>
+      <p class="note"><b>The follow bar hides kickoff times</b> for knockout matches even though the time is now known.</p>
+      <p class="note"><b>The snapshot workflow has no pull/rebase before push</b> — a race with your own push can silently lose a day's capture.</p>
+      <p class="note"><b>The service worker caches error responses</b> (no <code>res.ok</code> check), which can poison the offline shell mid-deploy.</p>
+      <p class="note"><b>manifest.webmanifest is 55KB</b> of inlined base64 icons — and Bubblewrap can't consume data-URI icons, blocking a Play Store TWA.</p>
+      <p class="note"><b>Toggle-pill CSS is copy-pasted ten times</b> — every style tweak is a 10–15 edit tax the section registry could remove.</p>
+      <p class="note"><b>Parked Pick'em still runs in the hot path</b> — invoked on every refresh though it early-returns.</p>
+      <p class="note"><b>Wholesale 60s innerHTML rebuilds drop keyboard focus</b> during live matches.</p>
+      <p class="note"><b>No .gitignore</b> — <code>.claude/</code> sits untracked-but-unignored in every status.</p>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">Credit where due</p>
+    <h2>What's genuinely strong</h2>
+    <p class="sec-lead">Forty strengths were catalogued across the six lenses. The ones that matter most:</p>
+    <div class="strengths">
+      <div class="str"><h4><span class="tick">✓</span> One source of truth</h4><p>Every fixture lives in one place; all eleven sections are pure recomputations, so scores can never disagree between them.</p></div>
+      <div class="str"><h4><span class="tick">✓</span> Faithful football rules</h4><p>The 2026 tiebreakers are implemented down to recursive head-to-head before goal difference, with an honest "disciplinary points not modelled" caveat.</p></div>
+      <div class="str"><h4><span class="tick">✓</span> Degrades to an archive</h4><p>A three-tier fallback ends at a committed snapshot with an honest "Archived" status line — the app becomes a self-contained record, not a blank page.</p></div>
+      <div class="str"><h4><span class="tick">✓</span> Real accessibility</h4><p>A MutationObserver focus trap with a nesting stack, Enter/Space activation on every row, focus-visible outlines, reduced-motion support — unusual for a hobby single-file app.</p></div>
+      <div class="str"><h4><span class="tick">✓</span> Thoughtful time zones</h4><p>Local-zone default with a one-time migration, an ET/local/picked toggle, and midnight-crossing games shown in gold with a "→ next-day" tag.</p></div>
+      <div class="str"><h4><span class="tick">✓</span> Update rollout is solved</h4><p>The service worker is network-first with skipWaiting and cache cleanup, correctly scoped to same-origin — a git-push reaches online users on next load.</p></div>
+      <div class="str"><h4><span class="tick">✓</span> Bracket craft</h4><p>Plain-language slot labels, projected-placement tags with tooltips, a "road to the final" tracer, and connectors that light up as results land.</p></div>
+      <div class="str"><h4><span class="tick">✓</span> A greppable 4,680 lines</h4><p>A consistent two-letter prefix convention across CSS, ids and functions, with banner comments — what keeps a single file navigable without modules.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <p class="sec-kicker">The plan</p>
+    <h2>Roadmap</h2>
+    <p class="sec-lead">In priority order. The urgent batch is already done; here's what's left, bucketed by when it matters.</p>
+
+    <div class="lane">
+      <div class="lane-head"><h3>This week — before the quarterfinals</h3><span class="when">Live quality</span></div>
+      <ul>
+        <li><span class="eff s">small</span><span class="t"><b>Narrow the 60s poll</b> to today ±1 — cut ~39 requests/tick to ~3.</span></li>
+        <li><span class="eff s">small</span><span class="t"><b>Auto-scroll the bracket</b> to the current round on open.</span></li>
+        <li><span class="eff s">small</span><span class="t"><b>Rest-day "Next up" line</b> in the Today bar.</span></li>
+        <li><span class="eff s">small</span><span class="t"><b>Knockout-phase layout</b> — demote Standings, promote Results + Golden Boot.</span></li>
+        <li><span class="eff s">small</span><span class="t"><b>Escape names</b> at teamLink / bkTeamRow; <b>delete</b> the dead Anthropic call.</span></li>
+      </ul>
+    </div>
+
+    <div class="lane">
+      <div class="lane-head"><h3>Before July 20 — protect the archive</h3><span class="when">Do not skip</span></div>
+      <ul>
+        <li><span class="eff s">small</span><span class="t"><b>Union-merge snapshot writes</b>; never let summaries shrink.</span></li>
+        <li><span class="eff s">small</span><span class="t"><b>Make the Action fail loudly</b> — exit 1 on a stalled archive, email on failure.</span></li>
+        <li><span class="eff s">small</span><span class="t"><b>Merge snapshot under partial live data</b>; drop <code>force-cache</code>.</span></li>
+        <li><span class="eff m">medium</span><span class="t"><b>On July 20:</b> verify 104 matches + 104 summaries, then fold 2026 into the historical archive + h2h index.</span></li>
+      </ul>
+    </div>
+
+    <div class="lane">
+      <div class="lane-head"><h3>After the Final — the longer tail</h3><span class="when">When quiet</span></div>
+      <ul>
+        <li><span class="eff m">medium</span><span class="t"><b>Archive mode</b> — snapshot-first, ESPN never, "Champions: X" framing, refresh chrome hidden.</span></li>
+        <li><span class="eff m">medium</span><span class="t"><b>Minimal test harness</b> — <code>node --test</code> over the pure logic, no build step; ends the parser-drift risk.</span></li>
+        <li><span class="eff s">small</span><span class="t"><b>Bigger tap targets</b> + real PNG icons + assetlinks.json, if a Play Store TWA is still wanted.</span></li>
+        <li><span class="eff s">small</span><span class="t"><b>Rename the app</b> off "Stadiums"; de-jargon the user copy; add a <code>.gitignore</code>.</span></li>
+      </ul>
+    </div>
+
+    <p style="margin-top:26px;color:var(--chalk-dim)">One thing worth <b style="color:var(--chalk)">not</b> doing: the single-file architecture, string-concatenated rendering, and rebuild-everything pattern are all defensible and should be left alone. Changing them mid-tournament is risk without user-visible gain.</p>
+  </section>
+
+  <section>
+    <p class="sec-kicker">How this was made</p>
+    <h2>Method</h2>
+    <div class="method">
+      <p>Six specialist reviewers read the whole codebase in parallel, each through one lens — architecture, correctness, product &amp; UX, data pipeline, PWA &amp; performance, and testing &amp; sustainability. Every high- or medium-severity claim was then handed to a separate, independent verifier whose only instruction was to <em>refute</em> it against the real code and data, defaulting to "not a real bug" when it couldn't reproduce the reasoning.</p>
+      <p>Thirty-one findings went through that gauntlet. All thirty-one survived; none were refuted. That's why this document states them as fact rather than suspicion — each one was reproduced from a specific line of code or a specific row in the committed snapshot. The seven marked <span style="color:var(--grass)">Shipped</span> were fixed and verified against live ESPN data in the same session.</p>
+    </div>
+  </section>
+
+  <footer>
+    WC2026 Deep Review &nbsp;·&nbsp; generated July 2, 2026 &nbsp;·&nbsp; 37 reviewers, 6 lenses, 31 verified findings<br>
+    Your code, read carefully. — Claude
+  </footer>
+
+</div>
+</body>
+</html>
