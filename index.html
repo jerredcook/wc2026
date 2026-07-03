@@ -1218,14 +1218,14 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
   <div class="rk-head" tabindex="0" role="button" onclick="toggleRankings()">
     <div class="rk-titlewrap">
       <div class="rk-title">🏅 Team Rankings</div>
-      <div class="rk-sub">All 48 qualified nations &middot; FIFA ranking at kickoff and now, with movement &middot; tap any team for its roster &amp; profile</div>
+      <div class="rk-sub">All 48 qualified nations &middot; FIFA ranking at the World Cup's start (June 11) and now, with the movement between &middot; tap any team for its roster &amp; profile</div>
     </div>
     <span class="rk-toggle" id="rk-toggle">▼ Show</span>
   </div>
   <div id="rk-body" style="display:none">
     <div class="rk-controls" id="rk-controls"></div>
     <table class="rk-table">
-      <thead><tr><th class="rc">At<br>kickoff</th><th>Team</th><th class="rc">Now</th><th class="rc">Confed.</th><th class="rc">Group</th></tr></thead>
+      <thead><tr><th class="rc">At WC<br>start</th><th>Team</th><th class="rc">Now</th><th class="rc">Confed.</th><th class="rc">Group</th></tr></thead>
       <tbody id="rk-tbody"></tbody>
     </table>
     <div class="rk-note">FIFA World Ranking is approximate. Click a row to open the team's profile — roster, head coach, World Cup history, and a fact about the country.</div>
@@ -1721,17 +1721,17 @@ function teamLink(name,hl,withFlag){
   const fol=(prefs.follow&&t.name===prefs.follow);
   return '<span class="tlink'+(hl?' hl':'')+(fol?' followed':'')+'" data-team="'+t.name+'">'+(fol?'<span class="folstar">★</span>':'')+flag+name+rankChip(t)+'</span>';
 }
-/* Rank chip: the CURRENT FIFA rank first, with the kickoff rank in parens when it
-   has changed — e.g. #1(2) means "now 1st, seeded 2nd". The current number is
-   coloured green when it's climbed, red when it's dropped (lower number = better).
-   Shows everywhere team names appear. */
+/* Rank chip: the CURRENT FIFA rank first, with the World-Cup-start rank in parens
+   when it has changed — e.g. #1(2) means "now 1st, seeded 2nd at the start of the
+   tournament". The current number is green when it's climbed, red when it's
+   dropped (lower number = better). Shows everywhere team names appear. */
 function rankChip(t){
   const nw=rankNow(t.name);
   if(nw&&nw.r!=null&&nw.r!==t.rank){
     const up=nw.r<t.rank;
-    return '<span class="trank" title="FIFA rank · now #'+nw.r+', #'+t.rank+' at kickoff">#<span class="'+(up?'trk-up':'trk-dn')+'">'+nw.r+'</span><span class="trk-was">('+t.rank+')</span></span>';
+    return '<span class="trank" title="FIFA rank · now #'+nw.r+' · #'+t.rank+' at the World Cup&#39;s start (Jun 11)">#<span class="'+(up?'trk-up':'trk-dn')+'">'+nw.r+'</span><span class="trk-was">('+t.rank+')</span></span>';
   }
-  return '<span class="trank" title="FIFA World Ranking (#'+t.rank+' at kickoff)">#'+t.rank+'</span>';
+  return '<span class="trank" title="FIFA World Ranking · #'+t.rank+' at the World Cup&#39;s start (Jun 11)">#'+t.rank+'</span>';
 }
 
 /* ══════════ FIFA RANKINGS TABLE ══════════ */
@@ -1751,7 +1751,7 @@ function loadRankings(){
     if(ov&&ov.classList.contains("open")&&tmCurrent)openTeam(tmCurrent); // fill live rank into an open card
   }).catch(function(){});
 }
-/* "Now" rank + movement vs the kickoff rank (lower number = better, so a smaller
+/* "Now" rank + movement vs the World-Cup-start rank (lower number = better, so a smaller
    current rank is an improvement). */
 function rankMoveHTML(startRank,name){
   const now=rankNow(name);
@@ -1788,8 +1788,8 @@ function buildRankings(){
   }).join("");
   const note=document.querySelector('.rk-note');
   if(note)note.innerHTML=__ranks
-    ? '<b>At kickoff</b> = FIFA ranking when the tournament began (used for seeding); <b>Now</b> = the current FIFA ranking (updated '+escHTML(__ranks.updated)+'), with the change since kickoff. FIFA publishes on fixed dates, so "Now" moves when they do. Click a row for the team profile.'
-    : 'Ranked by FIFA World Ranking at kickoff. Live "Now" ranking loads from the daily feed. Click a row to open the team\'s profile — roster, head coach, World Cup history, and a fact about the country.';
+    ? '<b>At WC start</b> = the FIFA ranking on the World Cup\'s opening day, June 11 (the seeding order); <b>Now</b> = the current FIFA ranking (updated '+escHTML(__ranks.updated)+'), with the change since. FIFA publishes on fixed dates, so "Now" moves when they do. Click a row for the team profile.'
+    : 'Ranked by FIFA World Ranking as of the World Cup\'s start (June 11). Live "Now" ranking loads from the daily feed. Click a row to open the team\'s profile — roster, head coach, World Cup history, and a fact about the country.';
 }
 function toggleRankings(){toggleSection("rk-body","rk-toggle","rankings");}
 
@@ -1877,7 +1877,7 @@ function openTeam(name){
       '<div class="tm-flag">'+t.flag+'</div>'+
       '<div class="tm-name">'+t.name+'</div>'+
       '<div class="tm-nick">'+t.nick+'</div>'+
-      '<span class="tm-rankpill">FIFA Rank #'+t.rank+' at kickoff'+(function(){var nw=rankNow(t.name);return (nw&&nw.r!=null)?' &middot; <span class="tm-ranknow">now #'+nw.r+(nw.r<t.rank?' ▲':(nw.r>t.rank?' ▼':''))+'</span>':'';})()+'</span>'+
+      '<span class="tm-rankpill">FIFA Rank #'+t.rank+' at the WC start'+(function(){var nw=rankNow(t.name);return (nw&&nw.r!=null)?' &middot; <span class="tm-ranknow">now #'+nw.r+(nw.r<t.rank?' ▲':(nw.r>t.rank?' ▼':''))+'</span>':'';})()+'</span>'+
       '<button class="tm-follow'+(fol?' on':'')+'" onclick="setFollow(\''+t.name.replace(/'/g,"\\'")+'\')">'+(fol?'★ Following':'☆ Follow')+'</button>'+
     '</div>'+
     '<div class="tm-body">'+
