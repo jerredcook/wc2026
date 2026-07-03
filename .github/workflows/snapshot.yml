@@ -28,7 +28,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"   # current LTS; the scripts use only stable Node APIs (global fetch, fs/promises)
 
       - name: Capture live snapshot
         run: node scripts/snapshot-live.mjs

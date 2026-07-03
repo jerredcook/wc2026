@@ -1,10 +1,12 @@
 name: Deploy to GitHub Pages
 
-# Publishes the site via the GitHub Actions Pages pipeline instead of the
-# built-in "deploy from a branch" path. That legacy path had no concurrency
-# control, so overlapping pushes (frequent commits + the daily snapshot bot)
-# collided and the superseded deploy died with "Deployment failed, try again
-# later." The concurrency group below serialises deploys so that can't happen.
+# Publishes the site via the GitHub Actions Pages pipeline (build_type: workflow),
+# with a concurrency guard so overlapping pushes can't collide.
+#
+# "Error: Deployment failed, try again later." is a *GitHub Pages backend* hiccup —
+# transient, and GitHub literally asks you to retry. So the deploy step retries
+# automatically (3 attempts with backoff). A single blip now self-heals and the
+# run still goes green; the job only fails if GitHub Pages is down for minutes.
 
 on:
   push:
@@ -16,8 +18,6 @@ permissions:
   pages: write
   id-token: write
 
-# One deployment at a time. A newer push supersedes an older *pending* one
-# (cancelled, not failed); an in-progress deploy is allowed to finish.
 concurrency:
   group: "pages"
   cancel-in-progress: false
@@ -27,7 +27,7 @@ jobs:
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
+      url: ${{ steps.deploy1.outputs.page_url || steps.deploy2.outputs.page_url || steps.deploy3.outputs.page_url }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -36,7 +36,27 @@ jobs:
       - name: Upload site
         uses: actions/upload-pages-artifact@v3
         with:
-          path: "."          # serve the whole repo tree, as the branch deploy did (index.html, data/, sw.js, …)
-      - name: Deploy to GitHub Pages
-        id: deployment
+          path: "."          # serve the whole repo tree (index.html, data/, sw.js, …)
+
+      # ── Deploy with automatic retry on the transient "try again later" backend error ──
+      - name: Deploy to GitHub Pages (attempt 1)
+        id: deploy1
         uses: actions/deploy-pages@v4
+        continue-on-error: true
+
+      - name: Backend blip — wait, then retry
+        if: steps.deploy1.outcome == 'failure'
+        run: echo "Attempt 1 hit the Pages backend ('try again later'). Waiting 30s…"; sleep 30
+      - name: Deploy to GitHub Pages (attempt 2)
+        id: deploy2
+        if: steps.deploy1.outcome == 'failure'
+        uses: actions/deploy-pages@v4
+        continue-on-error: true
+
+      - name: Still failing — wait longer, then final attempt
+        if: steps.deploy1.outcome == 'failure' && steps.deploy2.outcome == 'failure'
+        run: echo "Attempt 2 failed too. Waiting 60s before the final attempt…"; sleep 60
+      - name: Deploy to GitHub Pages (attempt 3, final)
+        id: deploy3
+        if: steps.deploy1.outcome == 'failure' && steps.deploy2.outcome == 'failure'
+        uses: actions/deploy-pages@v4   # no continue-on-error: if this fails, Pages is genuinely down → fail loudly
