@@ -934,6 +934,13 @@ html[data-theme="dark"] .site-foot a{color:#34d39a;border-color:#2c5a48}
 .hx-toggle:hover{background:#f0f0f0}
 .hx-foot{font-size:10.5px;color:#9a9a9a;margin-top:11px;line-height:1.5}
 #hx-grid{margin-top:8px}
+.hx-modes{display:flex;align-items:center;gap:6px;margin:2px 0 12px;flex-wrap:wrap}
+.hx-mlbl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#999;margin-right:2px}
+.hx-mode{font-size:12px;font-weight:700;color:#666;background:#f1f2f4;border:1px solid #e2e4e8;border-radius:14px;padding:4px 14px;cursor:pointer}
+.hx-mode.on{background:#0d6b52;border-color:#0d6b52;color:#fff}
+html[data-theme="dark"] .hx-mode{background:#23262e;border-color:#31343d;color:#aab0b8}
+html[data-theme="dark"] .hx-mode.on{background:#0d8a4f;border-color:#0d8a4f;color:#fff}
+html[data-theme="dark"] .hx-mlbl{color:#7a808a}
 .hx-item{border-bottom:1px solid #f0f0f0}.hx-item:last-child{border-bottom:none}
 .hx-row{display:flex;align-items:center;gap:9px;padding:9px 6px;cursor:pointer;flex-wrap:wrap}
 .hx-row:hover{background:#f7f7f8}
@@ -2253,10 +2260,10 @@ function getWCSnapshot(){
     .then(function(s){window.__wcSnap=s;return s;})
     .catch(function(){return null;});
 }
-function loadMatchEvents(eid){
+function loadMatchEvents(eid,league){
   const box=document.getElementById("mpEvents");if(!box)return;
   box.innerHTML='<div class="mp-ev-loading">Loading match events…</div>';
-  fetch("https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event="+encodeURIComponent(eid),{cache:"no-store"})
+  fetch("https://site.api.espn.com/apis/site/v2/sports/soccer/"+(league||"fifa.world")+"/summary?event="+encodeURIComponent(eid),{cache:"no-store"})
    .then(function(r){return r.ok?r.json():null;})
    .then(function(d){
      if(!box.isConnected)return;
@@ -4311,11 +4318,30 @@ const HISTORY=[
  {y:1934,host:"Italy",hf:"🇮🇹",c:"Italy",cf:"🇮🇹",r:"Czechoslovakia",rf:"🇨🇿",sc:"2–1 (a.e.t.)",p3:"Germany",p3f:"🇩🇪",p4:"Austria",p4f:"🇦🇹",boot:"Oldřich Nejedlý",bf:"🇨🇿",bg:5,tm:16,ma:17,go:70,v:"Stadio Nazionale PNF, Rome",fact:"The first World Cup decided in extra time, and the first won by a host nation in Europe."},
  {y:1930,host:"Uruguay",hf:"🇺🇾",c:"Uruguay",cf:"🇺🇾",r:"Argentina",rf:"🇦🇷",sc:"4–2",p3:"United States",p3f:"🇺🇸",p4:"Yugoslavia",p4f:"🇷🇸",boot:"Guillermo Stábile",bf:"🇦🇷",bg:8,tm:13,ma:18,go:70,v:"Estadio Centenario, Montevideo",fact:"The very first World Cup — 13 invited teams, and host Uruguay crowned the inaugural champion."}
 ];
-const hxOpen={}; // which tournaments are expanded
+/* Women's World Cup, 1991–2023. Detail (match-by-match, scorers, squads) loads
+   from data/wwc/<year>.json for the ESPN-covered years (2003–2023); the first
+   three (1991/1995/1999) show this summary — final, podium, Golden Boot, stats. */
+const HISTORY_W=[
+ {y:2023,host:"Australia & New Zealand",hf:"🇦🇺🇳🇿",c:"Spain",cf:"🇪🇸",r:"England",rf:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",sc:"1–0",p3:"Sweden",p3f:"🇸🇪",p4:"Australia",p4f:"🇦🇺",boot:"Hinata Miyazawa",bf:"🇯🇵",bg:5,tm:32,ma:64,go:164,v:"Stadium Australia, Sydney",fact:"Spain's first title, days after co-hosts Australia's run gripped the nation — and the first 32-team Women's World Cup."},
+ {y:2019,host:"France",hf:"🇫🇷",c:"USA",cf:"🇺🇸",r:"Netherlands",rf:"🇳🇱",sc:"2–0",p3:"Sweden",p3f:"🇸🇪",p4:"England",p4f:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",boot:"Megan Rapinoe",bf:"🇺🇸",bg:6,tm:24,ma:52,go:146,v:"Parc Olympique Lyonnais, Lyon",fact:"The USA's back-to-back crown; Rapinoe took the Golden Boot and Golden Ball amid a very public fight for equal pay."},
+ {y:2015,host:"Canada",hf:"🇨🇦",c:"USA",cf:"🇺🇸",r:"Japan",rf:"🇯🇵",sc:"5–2",p3:"England",p3f:"🏴󠁧󠁢󠁥󠁮󠁧󠁿",p4:"Germany",p4f:"🇩🇪",boot:"Célia Šašić",bf:"🇩🇪",bg:6,tm:24,ma:52,go:146,v:"BC Place, Vancouver",fact:"Carli Lloyd's hat-trick inside 16 minutes — one from the halfway line — in a 5–2 final rout."},
+ {y:2011,host:"Germany",hf:"🇩🇪",c:"Japan",cf:"🇯🇵",r:"USA",rf:"🇺🇸",sc:"2–2 (3–1 pens)",p3:"Sweden",p3f:"🇸🇪",p4:"France",p4f:"🇫🇷",boot:"Homare Sawa",bf:"🇯🇵",bg:5,tm:16,ma:32,go:86,v:"Commerzbank-Arena, Frankfurt",fact:"Japan became the first Asian side to win it, on penalties, months after the Tōhoku earthquake and tsunami."},
+ {y:2007,host:"China",hf:"🇨🇳",c:"Germany",cf:"🇩🇪",r:"Brazil",rf:"🇧🇷",sc:"2–0",p3:"USA",p3f:"🇺🇸",p4:"Norway",p4f:"🇳🇴",boot:"Marta",bf:"🇧🇷",bg:7,tm:16,ma:32,go:111,v:"Hongkou Stadium, Shanghai",fact:"Germany didn't concede a single goal all tournament; Marta won the Golden Boot and Golden Ball."},
+ {y:2003,host:"USA",hf:"🇺🇸",c:"Germany",cf:"🇩🇪",r:"Sweden",rf:"🇸🇪",sc:"2–1 (a.e.t.)",p3:"USA",p3f:"🇺🇸",p4:"Canada",p4f:"🇨🇦",boot:"Birgit Prinz",bf:"🇩🇪",bg:7,tm:16,ma:32,go:107,v:"Home Depot Center, Carson",fact:"Germany's first title, settled by Nia Künzer's golden-goal header — moved to the USA after the SARS outbreak in China."},
+ {y:1999,host:"USA",hf:"🇺🇸",c:"USA",cf:"🇺🇸",r:"China",rf:"🇨🇳",sc:"0–0 (5–4 pens)",p3:"Brazil",p3f:"🇧🇷",p4:"Norway",p4f:"🇳🇴",boot:"Sun Wen & Sissi",bf:"🇨🇳",bg:7,tm:16,ma:32,go:123,v:"Rose Bowl, Pasadena",fact:"Brandi Chastain's shootout winner and iconic celebration before 90,000+ at the Rose Bowl."},
+ {y:1995,host:"Sweden",hf:"🇸🇪",c:"Norway",cf:"🇳🇴",r:"Germany",rf:"🇩🇪",sc:"2–0",p3:"USA",p3f:"🇺🇸",p4:"China",p4f:"🇨🇳",boot:"Ann Kristin Aarønes",bf:"🇳🇴",bg:6,tm:12,ma:26,go:99,v:"Råsunda Stadium, Solna",fact:"Norway's title — they conceded just once all tournament, scoring 23 in six games."},
+ {y:1991,host:"China",hf:"🇨🇳",c:"USA",cf:"🇺🇸",r:"Norway",rf:"🇳🇴",sc:"2–1",p3:"Sweden",p3f:"🇸🇪",p4:"Germany",p4f:"🇩🇪",boot:"Michelle Akers",bf:"🇺🇸",bg:10,tm:12,ma:26,go:99,v:"Tianhe Stadium, Guangzhou",fact:"The very first Women's World Cup; Michelle Akers scored both in the final. Games were 80 minutes long."}
+];
+var hxEd="m"; // History edition: "m" men's | "w" women's
+const hxOpen={}; // which tournaments are expanded (keyed by year; men's and women's years don't collide)
 function toggleHistory(y){hxOpen[y]=!hxOpen[y];buildHistory();}
 function buildHistory(){
   const grid=document.getElementById("hx-grid");if(!grid)return;
-  grid.innerHTML=HISTORY.map(function(h){
+  const LIST=hxEd==="w"?HISTORY_W:HISTORY;
+  const toggle='<div class="hx-modes"><span class="hx-mlbl">Edition</span>'+
+    '<button class="hx-mode'+(hxEd==="m"?" on":"")+'" onclick="setHistoryEdition(\'m\')">Men’s</button>'+
+    '<button class="hx-mode'+(hxEd==="w"?" on":"")+'" onclick="setHistoryEdition(\'w\')">Women’s</button></div>';
+  grid.innerHTML=toggle+LIST.map(function(h){
     const open=!!hxOpen[h.y];
     const head='<div class="hx-row" tabindex="0" role="button" aria-expanded="'+open+'" onclick="toggleHistory('+h.y+')">'+
       '<span class="hx-y">'+h.y+'</span>'+
@@ -4339,7 +4365,17 @@ function buildHistory(){
       '<div class="hx-matches" id="hx-m-'+h.y+'"><div class="hx-mload">Loading match results…</div></div></div>';
     return '<div class="hx-item hx-on">'+head+detail+'</div>';
   }).join("");
-  HISTORY.forEach(function(h){ if(hxOpen[h.y]) loadWC(h.y); }); // lazy-pull match data for expanded tournaments
+  LIST.forEach(function(h){ if(hxOpen[h.y]) loadWC(h.y); }); // lazy-pull match data for expanded tournaments
+  const sub=document.querySelector('.hx-sub');
+  if(sub)sub.textContent=hxEd==="w"
+    ?'Every Women’s World Cup champion since 1991 · tap a tournament for the final, top 4, Golden Boot & stats'
+    :'Every men’s World Cup champion since 1930 · tap a tournament for the final, top 4, Golden Boot & stats';
+}
+function setHistoryEdition(ed){
+  if(hxEd===ed)return;
+  hxEd=ed;
+  for(const k in hxOpen)delete hxOpen[k];   // collapse all when switching editions
+  buildHistory();
 }
 function toggleHistorySection(){toggleSection("hx-body","hx-toggle","history");}
 
@@ -4349,20 +4385,22 @@ function toggleHistorySection(){toggleSection("hx-body","hx-toggle","history");}
    (ESPN's historical venues are unreliable for old tournaments, so they're not
    shown here — match results/scorers are accurate.) ── */
 const wcCache={};
+function wcKey(year){return hxEd+"-"+year;}        // cache/detail keyed by edition (men's vs women's years never collide, but paths differ)
 function loadWC(year){
-  if(wcCache[year]){renderWCMatches(year);return;}
-  fetch("data/wc/"+year+".json",{cache:"force-cache"})
+  const ck=wcKey(year);
+  if(wcCache[ck]){renderWCMatches(year);return;}
+  fetch((hxEd==="w"?"data/wwc/":"data/wc/")+year+".json",{cache:"force-cache"})
     .then(function(r){return r.ok?r.json():null;})
     .then(function(d){
       const box=document.getElementById("hx-m-"+year);
-      if(d){wcCache[year]=d;renderWCMatches(year);}
-      else if(box)box.innerHTML='<div class="hx-mload">Match results unavailable.</div>';
+      if(d){wcCache[ck]=d;renderWCMatches(year);}
+      else if(box)box.innerHTML='<div class="hx-mload">Match-by-match results aren’t on file for this edition — the summary above covers the final, podium and Golden Boot.</div>';
     })
     .catch(function(){const box=document.getElementById("hx-m-"+year);if(box)box.innerHTML='<div class="hx-mload">Match results unavailable — needs a connection (or http(s) hosting).</div>';});
 }
 function renderWCMatches(year){
   const box=document.getElementById("hx-m-"+year);if(!box)return;
-  const data=wcCache[year];if(!data){box.innerHTML="";return;}
+  const data=wcCache[wcKey(year)];if(!data){box.innerHTML="";return;}
   const byRound={};data.matches.forEach(function(m){(byRound[m.round]=byRound[m.round]||[]).push(m);});
   const sc=(data.scorers||[]).slice(0,8);
   const scHtml = sc.length ? ('<div class="hx-scorers"><div class="hx-rname">Top scorers</div>'+sc.map(function(s){
@@ -4397,7 +4435,7 @@ function renderWCMatches(year){
     }).join("");
 }
 function openHistMatch(year,eid){
-  const data=wcCache[year];if(!data)return;
+  const data=wcCache[wcKey(year)];if(!data)return;
   const m=data.matches.find(function(x){return x.eid===eid;});if(!m)return;
   const card=document.getElementById("mp-card");
   const played=m.hs!=null&&m.as!=null;
@@ -4414,11 +4452,11 @@ function openHistMatch(year,eid){
   card.scrollTop=0;
   document.getElementById("mp-overlay").classList.add("open");
   document.body.style.overflow="hidden";
-  if(m.eid)loadMatchEvents(m.eid);
+  if(m.eid)loadMatchEvents(m.eid,hxEd==="w"?"fifa.wwc":"fifa.world");
 }
 /* A team's tournament squad (aggregated from matchday rosters), grouped by line. */
 function openHistSquad(year,team){
-  const data=wcCache[year];if(!data||!data.squads)return;
+  const data=wcCache[wcKey(year)];if(!data||!data.squads)return;
   const sq=data.squads[team]||[];if(!sq.length)return;
   const groups={GK:[],DF:[],MF:[],FW:[],"":[]};
   sq.forEach(function(p){(groups[p.p]!==undefined?groups[p.p]:groups[""]).push(p);});

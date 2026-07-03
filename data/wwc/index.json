@@ -1,0 +1,44 @@
+[
+ {
+  "year": 2023,
+  "host": "Australia & New Zealand",
+  "matches": 64,
+  "goals": 164,
+  "champion": "Spain"
+ },
+ {
+  "year": 2019,
+  "host": "France",
+  "matches": 52,
+  "goals": 146,
+  "champion": "United States"
+ },
+ {
+  "year": 2015,
+  "host": "Canada",
+  "matches": 52,
+  "goals": 146,
+  "champion": "United States"
+ },
+ {
+  "year": 2011,
+  "host": "Germany",
+  "matches": 32,
+  "goals": 86,
+  "champion": "Japan"
+ },
+ {
+  "year": 2007,
+  "host": "China",
+  "matches": 34,
+  "goals": 111,
+  "champion": "Germany"
+ },
+ {
+  "year": 2003,
+  "host": "USA",
+  "matches": 32,
+  "goals": 107,
+  "champion": "Germany"
+ }
+]

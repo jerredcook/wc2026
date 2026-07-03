@@ -5,17 +5,21 @@
    tournament to data/wc/<year>.json, plus a manifest data/wc/index.json.
    Re-runnable; historical data is stable so this is a one-time snapshot.
 
-   Usage:  node scripts/build-history.mjs            (all tournaments)
+   Usage:  node scripts/build-history.mjs            (all men's tournaments → data/wc)
            node scripts/build-history.mjs 1970 2018  (only those years)
+           node scripts/build-history.mjs --women    (Women's World Cups → data/wwc)
+           node scripts/build-history.mjs --women 2019
 */
 import { mkdir, writeFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { dirname, join } from "node:path";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const OUT = join(ROOT, "data", "wc");
-const BASE = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/scoreboard";
-const OF_BASE = "https://raw.githubusercontent.com/openfootball/world-cup.json/master"; // CC0 venues
+const WOMEN = process.argv.includes("--women");           // build the Women's World Cup archive (ESPN fifa.wwc)
+const LEAGUE = WOMEN ? "fifa.wwc" : "fifa.world";
+const OUT = join(ROOT, "data", WOMEN ? "wwc" : "wc");
+const BASE = `https://site.api.espn.com/apis/site/v2/sports/soccer/${LEAGUE}/scoreboard`;
+const OF_BASE = "https://raw.githubusercontent.com/openfootball/world-cup.json/master"; // CC0 venues (men's only; skipped for --women)
 
 /* Normalize a nation for matching ESPN ↔ openfootball (their spellings differ). */
 const NALIAS = { germanyfr:"westgermany", frgermany:"westgermany",
@@ -27,7 +31,7 @@ function pairKey(a,b){ return [nt(a),nt(b)].sort().join("~"); }
 function splitGround(g){ const i=String(g||"").lastIndexOf(", "); return i<0?{name:g||"",city:""}:{name:g.slice(0,i),city:g.slice(i+2)}; }
 
 /* Tournament windows (a day or two of buffer each side). 2022 was in winter. */
-const TOURNAMENTS = [
+const MENS_TOURNAMENTS = [
   { year: 1930, host: "Uruguay",            start: "1930-07-12", end: "1930-07-31" },
   { year: 1934, host: "Italy",              start: "1934-05-26", end: "1934-06-11" },
   { year: 1938, host: "France",             start: "1938-06-03", end: "1938-06-20" },
@@ -57,6 +61,20 @@ const TOURNAMENTS = [
   // before the Final just yields a partial 2026.json that the real run overwrites.
   { year: 2026, host: "USA / Canada / Mexico", start: "2026-06-11", end: "2026-07-19" },
 ];
+
+/* Women's World Cups on ESPN (fifa.wwc). ESPN's core API only reaches back to
+   2003; 1991/1995/1999 are covered by the hand-authored HISTORY_W summaries in
+   the app (finals, podium, Golden Boot). */
+const WWC_TOURNAMENTS = [
+  { year: 2003, host: "USA",                    start: "2003-09-19", end: "2003-10-13" },
+  { year: 2007, host: "China",                  start: "2007-09-09", end: "2007-10-01" },
+  { year: 2011, host: "Germany",                start: "2011-06-25", end: "2011-07-18" },
+  { year: 2015, host: "Canada",                 start: "2015-06-05", end: "2015-07-06" },
+  { year: 2019, host: "France",                 start: "2019-06-06", end: "2019-07-08" },
+  { year: 2023, host: "Australia & New Zealand", start: "2023-07-19", end: "2023-08-21" },
+];
+
+const TOURNAMENTS = WOMEN ? WWC_TOURNAMENTS : MENS_TOURNAMENTS;
 
 /* slug normalized (lowercased, alphanumerics only) → display round */
 const ROUND_N = {
@@ -164,7 +182,7 @@ async function loadOpenfootball(year){
   return { byPair, stadiums, have: ms.length>0 };
 }
 
-const SUMMARY = "https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event=";
+const SUMMARY = `https://site.api.espn.com/apis/site/v2/sports/soccer/${LEAGUE}/summary?event=`;
 const POS_ORDER = { GK:0, DF:1, MF:2, FW:3, "":4 };
 /* Normalize ESPN's granular position labels (G, CD-L, CF-R, AM, RM, ST, SUB…)
    to the four broad lines. Order of tests matters. */
@@ -218,7 +236,7 @@ async function buildTournament(t){
 
   // Fix venues from openfootball (ESPN's historical venues are unreliable) and
   // build the host-stadiums list. Match by team pair, disambiguating by date.
-  const of = await loadOpenfootball(t.year);
+  const of = WOMEN ? { byPair:{}, stadiums:[], have:false } : await loadOpenfootball(t.year);
   let vfixed = 0;
   if(of.have){
     for(const m of matches){
@@ -281,4 +299,4 @@ for(const t of list){
 }
 manifest.sort((a,b)=>b.year-a.year);
 await writeFile(join(OUT, "index.json"), JSON.stringify(manifest, null, 1));
-console.log(`\n✓ wrote ${list.length} tournament file(s) + index.json to data/wc/`);
+console.log(`\n✓ wrote ${list.length} tournament file(s) + index.json to data/${WOMEN ? "wwc" : "wc"}/`);
