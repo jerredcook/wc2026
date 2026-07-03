@@ -614,8 +614,13 @@ html[data-theme="dark"] .mrow.scored,html[data-theme="dark"] .td-row.scored,html
 .tlink:hover{border-bottom-color:currentColor;color:#1565c0}
 html[data-theme="dark"] .tlink:hover{color:#7db4ff}
 .tflag{margin-right:4px}
-.trank{font-size:.72em;font-weight:700;color:#9aa3ad;margin-left:3px;vertical-align:.35em;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.trank{font-size:.72em;font-weight:700;color:#9aa3ad;margin-left:3px;vertical-align:.35em;font-variant-numeric:tabular-nums;letter-spacing:-.02em;white-space:nowrap}
 html[data-theme="dark"] .trank{color:#7e858f}
+.trk{margin-left:1px;font-weight:800}
+.trk-up{color:#0d8a4f}
+.trk-dn{color:#c9432f}
+html[data-theme="dark"] .trk-up{color:#34d39a}
+html[data-theme="dark"] .trk-dn{color:#f26d63}
 
 /* ── FIFA rankings section ── */
 .rk-section{background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
@@ -1713,7 +1718,17 @@ function teamLink(name,hl,withFlag){
   if(!t)return hl?'<span class="hl">'+name+'</span>':name;
   const flag=withFlag?'<span class="tflag">'+t.flag+'</span>':'';
   const fol=(prefs.follow&&t.name===prefs.follow);
-  return '<span class="tlink'+(hl?' hl':'')+(fol?' followed':'')+'" data-team="'+t.name+'">'+(fol?'<span class="folstar">★</span>':'')+flag+name+'<span class="trank" title="FIFA World Ranking">#'+t.rank+'</span></span>';
+  return '<span class="tlink'+(hl?' hl':'')+(fol?' followed':'')+'" data-team="'+t.name+'">'+(fol?'<span class="folstar">★</span>':'')+flag+name+rankChip(t)+'</span>';
+}
+/* Rank chip: the kickoff rank, plus the current FIFA rank with ▲/▼ movement when
+   it has changed (lower number = better). Shows everywhere team names appear. */
+function rankChip(t){
+  const nw=rankNow(t.name);
+  if(nw&&nw.r!=null&&nw.r!==t.rank){
+    const up=nw.r<t.rank;
+    return '<span class="trank" title="FIFA rank · #'+t.rank+' at kickoff, #'+nw.r+' now">#'+t.rank+'<span class="trk '+(up?'trk-up':'trk-dn')+'">'+(up?'▲':'▼')+nw.r+'</span></span>';
+  }
+  return '<span class="trank" title="FIFA World Ranking (#'+t.rank+' at kickoff)">#'+t.rank+'</span>';
 }
 
 /* ══════════ FIFA RANKINGS TABLE ══════════ */
@@ -1727,7 +1742,8 @@ function loadRankings(){
   fetch("data/rankings.json",{cache:"default"}).then(function(r){return r.ok?r.json():null;}).then(function(d){
     if(!d||!d.ranks)return;
     __ranks=d;
-    buildRankings();
+    // Re-render everywhere the rank chip appears so "now" shows without a refresh.
+    buildRankings();buildToday();buildSchedule();buildGrid();buildStandings();buildFollowBar();
     var ov=document.getElementById("tm-overlay");
     if(ov&&ov.classList.contains("open")&&tmCurrent)openTeam(tmCurrent); // fill live rank into an open card
   }).catch(function(){});
