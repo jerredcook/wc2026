@@ -637,6 +637,15 @@ html[data-theme="dark"] .trank{color:#7e858f}
 .rk-tn{font-weight:600;color:#1a1a1a}
 .rk-conf{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;background:#eef1f6;color:#5566aa;white-space:nowrap}
 .rk-grp{color:#888}
+.rk-nowcell{white-space:nowrap}
+.rk-now{font-weight:800;color:#1a1a1a}
+.rk-up{font-size:10px;font-weight:800;color:#0d8a4f;margin-left:4px}
+.rk-dn{font-size:10px;font-weight:800;color:#d23f3f;margin-left:4px}
+.rk-eq,.rk-nn{color:#bbb;font-weight:700;margin-left:4px}
+.tm-ranknow{opacity:.85;font-weight:800}
+html[data-theme="dark"] .rk-rank,html[data-theme="dark"] .rk-tn,html[data-theme="dark"] .rk-now{color:#e9ecf3}
+html[data-theme="dark"] .rk-up{color:#34d39a}
+html[data-theme="dark"] .rk-dn{color:#f26d63}
 
 /* ── Team info popup ── */
 .tm-overlay{position:fixed;inset:0;background:rgba(15,17,22,.55);display:none;align-items:flex-start;justify-content:center;padding:30px 14px;z-index:1000;overflow-y:auto;-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
@@ -1196,14 +1205,14 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
   <div class="rk-head" tabindex="0" role="button" onclick="toggleRankings()">
     <div class="rk-titlewrap">
       <div class="rk-title">🏅 Team Rankings</div>
-      <div class="rk-sub">All 48 qualified nations by FIFA World Ranking &middot; tap any team for its roster &amp; profile</div>
+      <div class="rk-sub">All 48 qualified nations &middot; FIFA ranking at kickoff and now, with movement &middot; tap any team for its roster &amp; profile</div>
     </div>
     <span class="rk-toggle" id="rk-toggle">▼ Show</span>
   </div>
   <div id="rk-body" style="display:none">
     <div class="rk-controls" id="rk-controls"></div>
     <table class="rk-table">
-      <thead><tr><th class="rc">#</th><th>Team</th><th class="rc">Confederation</th><th class="rc">Group</th></tr></thead>
+      <thead><tr><th class="rc">At<br>kickoff</th><th>Team</th><th class="rc">Now</th><th class="rc">Confed.</th><th class="rc">Group</th></tr></thead>
       <tbody id="rk-tbody"></tbody>
     </table>
     <div class="rk-note">FIFA World Ranking is approximate. Click a row to open the team's profile — roster, head coach, World Cup history, and a fact about the country.</div>
@@ -1702,6 +1711,29 @@ function teamLink(name,hl,withFlag){
 
 /* ══════════ FIFA RANKINGS TABLE ══════════ */
 const rkState={conf:"all"};
+/* Current FIFA ranking (data/rankings.json, refreshed daily by the Action). Lets
+   the app show each team's live rank next to its start-of-tournament rank. */
+var __ranks=null;
+function rkKey(s){return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");}
+function rankNow(name){return (__ranks&&__ranks.ranks&&__ranks.ranks[rkKey(name)])||null;}
+function loadRankings(){
+  fetch("data/rankings.json",{cache:"default"}).then(function(r){return r.ok?r.json():null;}).then(function(d){
+    if(!d||!d.ranks)return;
+    __ranks=d;
+    buildRankings();
+    var ov=document.getElementById("tm-overlay");
+    if(ov&&ov.classList.contains("open")&&tmCurrent)openTeam(tmCurrent); // fill live rank into an open card
+  }).catch(function(){});
+}
+/* "Now" rank + movement vs the kickoff rank (lower number = better, so a smaller
+   current rank is an improvement). */
+function rankMoveHTML(startRank,name){
+  const now=rankNow(name);
+  if(!now||now.r==null)return '<span class="rk-nn">—</span>';
+  const d=startRank-now.r;
+  const mv=d>0?'<span class="rk-up">▲'+d+'</span>':(d<0?'<span class="rk-dn">▼'+(-d)+'</span>':'<span class="rk-eq">—</span>');
+  return '<span class="rk-now">'+now.r+'</span>'+mv;
+}
 function buildRankingsControls(){
   const el=document.getElementById("rk-controls");
   if(!el)return;
@@ -1724,9 +1756,14 @@ function buildRankings(){
     return '<tr class="rk-row" tabindex="0" role="button" data-team="'+r.name+'">'+
       '<td class="rc rk-rank">'+r.rank+'</td>'+
       '<td><span class="tflag">'+r.flag+'</span><span class="rk-tn">'+r.name+'</span></td>'+
+      '<td class="rc rk-nowcell">'+rankMoveHTML(r.rank,r.name)+'</td>'+
       '<td class="rc"><span class="rk-conf">'+r.conf+'</span></td>'+
       '<td class="rc rk-grp">'+r.group+'</td></tr>';
   }).join("");
+  const note=document.querySelector('.rk-note');
+  if(note)note.innerHTML=__ranks
+    ? '<b>At kickoff</b> = FIFA ranking when the tournament began (used for seeding); <b>Now</b> = the current FIFA ranking (updated '+escHTML(__ranks.updated)+'), with the change since kickoff. FIFA publishes on fixed dates, so "Now" moves when they do. Click a row for the team profile.'
+    : 'Ranked by FIFA World Ranking at kickoff. Live "Now" ranking loads from the daily feed. Click a row to open the team\'s profile — roster, head coach, World Cup history, and a fact about the country.';
 }
 function toggleRankings(){toggleSection("rk-body","rk-toggle","rankings");}
 
@@ -1814,7 +1851,7 @@ function openTeam(name){
       '<div class="tm-flag">'+t.flag+'</div>'+
       '<div class="tm-name">'+t.name+'</div>'+
       '<div class="tm-nick">'+t.nick+'</div>'+
-      '<span class="tm-rankpill">FIFA Rank #'+t.rank+'</span>'+
+      '<span class="tm-rankpill">FIFA Rank #'+t.rank+' at kickoff'+(function(){var nw=rankNow(t.name);return (nw&&nw.r!=null)?' &middot; <span class="tm-ranknow">now #'+nw.r+(nw.r<t.rank?' ▲':(nw.r>t.rank?' ▼':''))+'</span>':'';})()+'</span>'+
       '<button class="tm-follow'+(fol?' on':'')+'" onclick="setFollow(\''+t.name.replace(/'/g,"\\'")+'\')">'+(fol?'★ Following':'☆ Follow')+'</button>'+
     '</div>'+
     '<div class="tm-body">'+
@@ -4873,6 +4910,7 @@ async function refreshScores(){
   buildScorers();
   buildRankingsControls();
   buildRankings();
+  loadRankings();          // pull the current FIFA ranking, then refresh the table/card
   buildBracket();
   enrichKnockouts();     // fill knockout fixtures with their bracket teams/scores
   buildPickem();

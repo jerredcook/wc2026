@@ -1,4 +1,4 @@
-name: Daily 2026 snapshot
+name: Daily snapshot + FIFA ranking
 
 # Preserve the live 2026 World Cup data. Runs on GitHub's runners (which can
 # reach ESPN — the Anthropic cloud sandbox cannot), captures every played match
@@ -33,16 +33,23 @@ jobs:
       - name: Capture live snapshot
         run: node scripts/snapshot-live.mjs
 
-      - name: Commit if the snapshot changed
+      # Runs even if the snapshot stalls (if: always) — rankings come from a
+      # different source (FIFA), so one outage shouldn't block the other.
+      - name: Fetch FIFA world ranking
+        if: always()
+        run: node scripts/fetch-rankings.mjs
+
+      - name: Commit changed data
+        if: always()
         run: |
-          if [ -n "$(git status --porcelain data/2026-snapshot.json)" ]; then
-            git config user.name  "github-actions[bot]"
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git add data/2026-snapshot.json
-            git commit -m "Update 2026 live snapshot ($(date -u +%Y-%m-%d))"
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -n "$(git status --porcelain data/2026-snapshot.json data/rankings.json)" ]; then
+            git add data/2026-snapshot.json data/rankings.json
+            git commit -m "Update live data — snapshot + FIFA ranking ($(date -u +%Y-%m-%d))"
             git pull --rebase origin main   # avoid losing the capture to a race with a manual push
             git push
-            echo "Pushed updated snapshot."
+            echo "Pushed updated data."
           else
-            echo "No snapshot changes — nothing to commit."
+            echo "No data changes — nothing to commit."
           fi
