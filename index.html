@@ -644,6 +644,13 @@ html[data-theme="dark"] .trk-was{color:#71767f}
 .rk-conf{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;background:#eef1f6;color:#5566aa;white-space:nowrap}
 .rk-grp{color:#888}
 .rk-nowcell{white-space:nowrap}
+.rk-ptscell{white-space:nowrap}
+.rk-pts{font-weight:700;font-variant-numeric:tabular-nums;color:#1a1a1a}
+.rk-pd{font-size:10px;font-weight:800;margin-left:4px;font-variant-numeric:tabular-nums}
+.rk-pd.up{color:#0d8a4f}.rk-pd.dn{color:#c9432f}
+html[data-theme="dark"] .rk-pts{color:#e9ecf3}
+html[data-theme="dark"] .rk-pd.up{color:#34d39a}
+html[data-theme="dark"] .rk-pd.dn{color:#f26d63}
 .rk-now{font-weight:800;color:#1a1a1a}
 .rk-up{font-size:10px;font-weight:800;color:#0d8a4f;margin-left:4px}
 .rk-dn{font-size:10px;font-weight:800;color:#d23f3f;margin-left:4px}
@@ -1225,7 +1232,7 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
   <div id="rk-body" style="display:none">
     <div class="rk-controls" id="rk-controls"></div>
     <table class="rk-table">
-      <thead><tr><th class="rc">At WC<br>start</th><th>Team</th><th class="rc">Now</th><th class="rc">Confed.</th><th class="rc">Group</th></tr></thead>
+      <thead><tr><th class="rc">At WC<br>start</th><th>Team</th><th class="rc">Now</th><th class="rc" title="Today's FIFA points (change since June 11)">Points</th><th class="rc">Confed.</th><th class="rc">Group</th></tr></thead>
       <tbody id="rk-tbody"></tbody>
     </table>
     <div class="rk-note">FIFA World Ranking is approximate. Click a row to open the team's profile — roster, head coach, World Cup history, and a fact about the country.</div>
@@ -1820,12 +1827,28 @@ function buildRankings(){
   if(!tb)return;
   let rows=Object.keys(TEAMS).map(function(n){return Object.assign({name:n},TEAMS[n]);});
   if(rkState.conf!=="all")rows=rows.filter(function(r){return r.conf===rkState.conf;});
-  rows.sort(function(a,b){return a.rank-b.rank;});
+  // Order by TODAY's rank (the tab is "Team Rankings" — it should read as the
+  // current table); the "At WC start" column carries the seeding rank.
+  rows.sort(function(a,b){
+    const na=rankNow(a.name),nb=rankNow(b.name);
+    return ((na?na.r:a.rank)-(nb?nb.r:b.rank))||(a.rank-b.rank);
+  });
   tb.innerHTML=rows.map(function(r){
+    // Points (this tab only): today's computed points + change since June 11 —
+    // makes it visible how close the top teams actually are.
+    const nw=rankNow(r.name);
+    const off=(__ranks&&__ranks.ranks&&__ranks.ranks[rkKey(r.name)])||null;
+    let ptsCell='<span class="rk-nn">—</span>';
+    if(nw&&nw.p!=null){
+      const d=(off&&off.p!=null)?(nw.p-off.p):null;
+      ptsCell='<span class="rk-pts">'+nw.p.toFixed(2)+'</span>'+
+        ((d!=null&&Math.abs(d)>=0.005)?'<span class="rk-pd '+(d>0?'up':'dn')+'">'+(d>0?'+':'−')+Math.abs(d).toFixed(1)+'</span>':'');
+    }
     return '<tr class="rk-row" tabindex="0" role="button" data-team="'+r.name+'">'+
       '<td class="rc rk-rank">'+r.rank+'</td>'+
       '<td><span class="tflag">'+r.flag+'</span><span class="rk-tn">'+r.name+'</span></td>'+
       '<td class="rc rk-nowcell">'+rankMoveHTML(r.rank,r.name)+'</td>'+
+      '<td class="rc rk-ptscell">'+ptsCell+'</td>'+
       '<td class="rc"><span class="rk-conf">'+r.conf+'</span></td>'+
       '<td class="rc rk-grp">'+r.group+'</td></tr>';
   }).join("");
@@ -4929,6 +4952,7 @@ async function refreshScores(){
     scorersReached=!!espnEvents; // ESPN feed carries per-goal scorer detail; the Claude fallback doesn't
     aggregateScorers(espnEvents);
     computeLiveRanks();   // a finished match moves today's calculated FIFA ranking immediately
+    buildRankings();      // …and the Team Rankings tab must re-render to show it
     buildGrid();
     buildStandings();
     buildThirds();
