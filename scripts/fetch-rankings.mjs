@@ -19,7 +19,7 @@ import { dirname, join } from "node:path";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const GENDER = process.argv.includes("--women") ? "women" : "men";
 const PAGE = `https://inside.fifa.com/fifa-world-ranking/${GENDER}`;
-const OVERVIEW = id => `https://inside.fifa.com/api/ranking-overview?locale=en&dateId=${id}`;
+const OVERVIEW = n => `https://inside.fifa.com/api/ranking-overview?locale=en&dateId=id${n}`;   // numeric id in, "idNNNNN" on the wire
 
 /* FIFA's display name → the app's TEAMS name, for the handful that differ.
    (Verified against the current men's table; extend for women's as needed.) */
@@ -42,20 +42,68 @@ async function getText(u) {
   return r.text();
 }
 
+/* Fetch a release's table; null if the id doesn't exist / isn't a full table. */
+async function getRelease(id) {
+  try {
+    const d = JSON.parse(await getText(OVERVIEW(id)));
+    const rows = d.rankings || [];
+    if (rows.length < 150) return null;
+    return { id, rows, updated: (rows[0].lastUpdateDate || "").slice(0, 10), next: (rows[0].nextUpdateDate || "").slice(0, 10) };
+  } catch { return null; }
+}
+/* Probe the dateId space upward from a floor until a full window is empty, and
+   return the highest live release. FIFA's ranking page embeds a STALE release
+   list (it once topped out ~10 months behind), so the page max is only a floor —
+   never the answer. Consecutive releases sit ≤ ~75 ids apart; a 160-id window
+   gives >2× margin. Cost on a no-new-release day: one empty window. */
+const WINDOW = 160, CONC = 8;
+async function probeLatest(floor) {
+  let base = floor, best = null;
+  for (;;) {
+    const idsToTry = Array.from({ length: WINDOW }, (_, i) => base + 1 + i);
+    const hits = [];
+    let i = 0;
+    await Promise.all(Array.from({ length: CONC }, async () => {
+      while (i < idsToTry.length) {
+        const n = idsToTry[i++];
+        const rel = await getRelease(n);
+        if (rel) hits.push(rel);
+      }
+    }));
+    if (!hits.length) return best;          // a whole window of misses → done
+    hits.sort((a, b) => a.id - b.id);
+    best = hits[hits.length - 1];
+    base = best.id;                          // keep climbing from the newest hit
+  }
+}
+
 async function main() {
-  // 1) The latest release is the highest dateId listed on the ranking page.
+  // 1) Floor from the ranking page's embedded (possibly stale) release list,
+  //    and from the last release we stored — whichever is higher.
   const html = await getText(PAGE);
-  const ids = [...html.matchAll(/id(\d{4,6})/g)].map(m => Number(m[1]));
-  if (!ids.length) throw new Error("no ranking dateIds found on the FIFA page (layout changed?)");
-  const latest = "id" + Math.max(...ids);
+  const pageIds = [...html.matchAll(/id(\d{4,6})/g)].map(m => Number(m[1]));
+  if (!pageIds.length) throw new Error("no ranking dateIds found on the FIFA page (layout changed?)");
+  const path = join(ROOT, "data", "rankings.json");
+  let existing = null;
+  try { existing = JSON.parse(await readFile(path, "utf8")); } catch { /* none yet */ }
+  const storedId = existing && existing.gender === GENDER ? Number(String(existing.dateId || "").replace(/\D/g, "")) || 0 : 0;
+  const floor = Math.max(...pageIds, storedId);
 
-  // 2) The full 200+ team table for that release.
-  const data = JSON.parse(await getText(OVERVIEW(latest)));
-  const rows = data.rankings || [];
-  if (rows.length < 150) throw new Error(`only ${rows.length} teams for ${latest} — refusing to write a partial ranking`);
+  // 2) The page floor itself must be live; then probe above it for anything newer.
+  const atFloor = await getRelease(floor);
+  const probed = await probeLatest(floor);
+  const pick = [atFloor, probed].filter(Boolean)
+    .sort((a, b) => String(a.updated).localeCompare(String(b.updated)))  // newest lastUpdateDate wins
+    .pop();
+  if (!pick) throw new Error(`no live ranking release found at or above id${floor}`);
+  const latest = "id" + pick.id;
+  const rows = pick.rows;
+  console.log(`  release discovery: page/stored floor id${floor}` +
+    (probed && probed.id !== floor ? ` → probed up to id${pick.id}` : " (nothing newer above it)") +
+    ` — using ${latest}, updated ${pick.updated}`);
 
-  const updated = (rows[0].lastUpdateDate || "").slice(0, 10);
-  const next = (rows[0].nextUpdateDate || "").slice(0, 10);
+  const updated = pick.updated;
+  const next = pick.next;
 
   const ranks = {};
   for (const row of rows) {
@@ -68,10 +116,7 @@ async function main() {
   for (const k of Object.keys(ranks).sort()) sorted[k] = ranks[k];
 
   const out = { source: "FIFA", gender: GENDER, dateId: latest, updated, next, count: Object.keys(sorted).length, ranks: sorted };
-  const path = join(ROOT, "data", "rankings.json");
 
-  let existing = null;
-  try { existing = JSON.parse(await readFile(path, "utf8")); } catch { /* none yet */ }
   if (existing && JSON.stringify(existing.ranks) === JSON.stringify(sorted) && existing.dateId === latest) {
     console.log(`✓ Rankings unchanged (${out.count} teams, FIFA ${GENDER} updated ${updated}) — leaving the file.`);
     return;
