@@ -103,7 +103,10 @@ async function main() {
     ` — using ${latest}, updated ${pick.updated}`);
 
   const updated = pick.updated;
-  const next = pick.next;
+  // The API often leaves nextUpdateDate empty, but the ranking page embeds it —
+  // e.g. "2026-07-20", the post-Final release. Surface it so the app can say so.
+  let next = pick.next;
+  if (!next) { const m = html.match(/"nextUpdateDate":"(\d{4}-\d{2}-\d{2})/); if (m) next = m[1]; }
 
   const ranks = {};
   for (const row of rows) {
@@ -117,7 +120,7 @@ async function main() {
 
   const out = { source: "FIFA", gender: GENDER, dateId: latest, updated, next, count: Object.keys(sorted).length, ranks: sorted };
 
-  if (existing && JSON.stringify(existing.ranks) === JSON.stringify(sorted) && existing.dateId === latest) {
+  if (existing && JSON.stringify(existing.ranks) === JSON.stringify(sorted) && existing.dateId === latest && (existing.next || "") === (next || "")) {
     console.log(`✓ Rankings unchanged (${out.count} teams, FIFA ${GENDER} updated ${updated}) — leaving the file.`);
     return;
   }
