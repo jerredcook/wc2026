@@ -448,6 +448,18 @@ html[data-theme="dark"] .bk-link.lit{stroke:rgba(233,199,103,.85)}
 .bk-champpn{font-size:9px;font-weight:700;color:#9aa0b3}
 
 .bk-extra{margin-top:14px;display:flex;justify-content:center;position:relative;z-index:1}
+#bk-odds{position:relative;z-index:1;max-width:520px;margin:16px auto 2px}
+.bk-oddstitle{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#e9c767;text-align:center;margin-bottom:8px}
+.bk-oddsgrid{display:flex;flex-direction:column;gap:4px}
+.bk-oddrow{display:flex;align-items:center;gap:8px;padding:3px 6px;border-radius:7px;cursor:pointer}
+.bk-oddrow:hover{background:rgba(233,199,103,.07)}
+.bk-oddteam{flex:0 0 132px;font-size:12px;font-weight:700;color:#e9ecf3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bk-oddbar{flex:1;height:7px;background:rgba(255,255,255,.08);border-radius:4px;overflow:hidden}
+.bk-oddfill{display:block;height:100%;background:linear-gradient(90deg,#e9c767,#f7e7ad);border-radius:4px}
+.bk-oddpct{flex:0 0 44px;text-align:right;font-size:12px;font-weight:800;color:#f7e7ad;font-variant-numeric:tabular-nums}
+.bk-oddfin{flex:0 0 74px;text-align:right;font-size:9.5px;font-weight:600;color:#9aa0b3;font-variant-numeric:tabular-nums;white-space:nowrap}
+.bk-oddsfoot{font-size:9.5px;color:#6f7488;text-align:center;margin-top:8px;line-height:1.5}
+@media (max-width:520px){.bk-oddfin{display:none}.bk-oddteam{flex-basis:110px}}
 .bk-3rdcard{width:100%;max-width:300px}
 .bk-3rdcard .bk-coltitle{text-align:center;margin-bottom:6px}
 .bk-foot{font-size:10.5px;color:#9a9a9a;margin-top:11px;line-height:1.55}
@@ -471,6 +483,40 @@ html[data-theme="dark"] .bk-link.lit{stroke:rgba(233,199,103,.85)}
 .td-rowlive{background:#fffafa;border-radius:6px;padding-left:6px;padding-right:6px}
 .td-when{min-width:74px;flex-shrink:0;font-variant-numeric:tabular-nums}
 .td-time{font-weight:700;color:#555}
+.td-tminus{display:block;font-size:9px;font-weight:700;color:#0d8a4f;letter-spacing:.02em}
+html[data-theme="dark"] .td-tminus{color:#34d39a}
+
+/* ── The Story of 2026 ── */
+.sy-hero{text-align:center;padding:18px 10px 14px;background:linear-gradient(180deg,#181b23,#232838);border-radius:12px;margin-bottom:14px}
+.sy-crown{font-size:34px;line-height:1}
+.sy-champ{font-size:26px;font-weight:800;color:#f7e7ad;margin-top:4px}
+.sy-champsub{font-size:10px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#9aa0b3;margin-top:3px}
+.sy-finline{font-size:12.5px;color:#cfd3e0;margin-top:9px}
+.sy-stats{display:flex;flex-wrap:wrap;gap:6px 18px;justify-content:center;font-size:12px;color:#777;margin-bottom:16px}
+.sy-stats b{color:#1a1a1a;font-size:14px}
+.sy-cols{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:14px}
+@media (max-width:640px){.sy-cols{grid-template-columns:1fr}}
+.sy-block{min-width:0}
+.sy-bt{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#888;margin-bottom:7px}
+.sy-btsub{font-weight:600;text-transform:none;letter-spacing:0;color:#aab}
+.sy-roadrow,.sy-uprow,.sy-bootrow,.sy-shrow{display:flex;align-items:center;gap:7px;padding:4px 0;border-bottom:1px solid #f3f4f6;font-size:12.5px;flex-wrap:wrap}
+.sy-roadround{flex:0 0 64px;font-size:10px;font-weight:700;color:#999;text-transform:uppercase}
+.sy-roadsc{font-weight:800;font-variant-numeric:tabular-nums;background:#f1f3f5;border-radius:5px;padding:0 7px}
+.sy-upr{font-size:10px;color:#999;font-weight:700}
+.sy-upsc{font-weight:800;font-variant-numeric:tabular-nums;background:#f1f3f5;border-radius:5px;padding:0 7px}
+.sy-upgap{margin-left:auto;font-size:10px;color:#c98a00;font-weight:700;white-space:nowrap}
+.sy-bootname{font-weight:700}
+.sy-bootg{margin-left:auto;font-weight:800;color:#0d6b52}
+.sy-bootp{font-weight:600;color:#c98a00;font-size:10px}
+.sy-shpens{font-weight:700;color:#8a6d1a}
+.sy-none{font-size:12px;color:#999;padding:4px 0}
+html[data-theme="dark"] .sy-stats{color:#8a9099}
+html[data-theme="dark"] .sy-stats b{color:#e9ecf3}
+html[data-theme="dark"] .sy-roadrow,html[data-theme="dark"] .sy-uprow,html[data-theme="dark"] .sy-bootrow,html[data-theme="dark"] .sy-shrow{border-color:#2a2d35}
+html[data-theme="dark"] .sy-roadsc,html[data-theme="dark"] .sy-upsc{background:#23262e;color:#e9ecf3}
+html[data-theme="dark"] .sy-bootg{color:#34d39a}
+html[data-theme="dark"] .sy-shpens{color:#e9c767}
+html[data-theme="dark"] .sy-bt{color:#8a9099}
 .td-live{font-size:10px;font-weight:800;color:#fff;background:#d6322c;border-radius:3px;padding:1px 6px;letter-spacing:.03em;white-space:nowrap;animation:livepulse 1.3s ease-in-out infinite}
 .td-ft{font-size:10px;font-weight:700;color:#0d6b52;background:#e2f5ee;border-radius:3px;padding:1px 6px;letter-spacing:.04em}
 .td-game{flex:1;color:#1a1a1a;line-height:1.25}
@@ -676,6 +722,7 @@ html[data-theme="dark"] .rk-dn{color:#f26d63}
 .tm-name{font-size:23px;font-weight:800;margin-top:8px;line-height:1.1}
 .tm-nick{font-size:13px;opacity:.92;margin-top:3px}
 .tm-rankpill{display:inline-block;margin-top:11px;font-size:12px;font-weight:700;background:rgba(255,255,255,.22);border-radius:20px;padding:4px 13px}
+.tm-odds{margin-left:6px}
 .tm-x{position:absolute;top:13px;right:14px;width:30px;height:30px;border:none;border-radius:50%;background:rgba(255,255,255,.22);color:#fff;font-size:17px;cursor:pointer;line-height:1}
 .tm-x:hover{background:rgba(255,255,255,.38)}
 .tm-body{padding:16px 22px 22px}
@@ -846,6 +893,28 @@ html[data-theme="dark"] .pp-link:hover{background:#263243}
 .mp-pens{display:block;font-size:10px;font-weight:700;color:#8a6d1a;white-space:nowrap}
 html[data-theme="dark"] .mp-pens{color:#e9c767}
 .mp-vs{font-size:13px;font-weight:700;color:#aaa}
+.mp-preview{margin:2px 0 14px;padding:11px 13px;background:#f7f8fa;border:1px solid #ecedf1;border-radius:10px;display:flex;flex-direction:column;gap:7px}
+.mp-we{display:flex;align-items:center;gap:8px}
+.mp-wet{font-size:11px;font-weight:600;color:#555;white-space:nowrap}
+.mp-wet b{font-size:12.5px;color:#0d6b52}
+.mp-weta{text-align:right}
+.mp-webar{flex:1;min-width:56px;height:8px;background:#dfe3e9;border-radius:5px;overflow:hidden}
+.mp-wefill{display:block;height:100%;background:linear-gradient(90deg,#0d8a4f,#35b47e);border-radius:5px}
+.mp-wesub{font-size:9.5px;color:#9aa;text-align:center;margin-top:-3px}
+.mp-pvrank{font-size:11.5px;font-weight:700;color:#333;text-align:center;font-variant-numeric:tabular-nums}
+.mp-pvvs{color:#aab;font-weight:600;margin:0 4px}
+.mp-pvform{display:flex;justify-content:space-between;align-items:center}
+.mp-faces{font-size:11.5px;color:#555;text-align:center}
+.mp-faces b{color:#0d6b52}
+.mp-pvodds{font-size:11px;font-weight:600;color:#8a6d1a;text-align:center}
+html[data-theme="dark"] .mp-preview{background:#23262e;border-color:#31343d}
+html[data-theme="dark"] .mp-wet{color:#aab0b8}
+html[data-theme="dark"] .mp-wet b{color:#34d39a}
+html[data-theme="dark"] .mp-webar{background:#31343d}
+html[data-theme="dark"] .mp-pvrank{color:#cfd3da}
+html[data-theme="dark"] .mp-faces{color:#aab0b8}
+html[data-theme="dark"] .mp-faces b{color:#34d39a}
+html[data-theme="dark"] .mp-pvodds{color:#e9c767}
 .mp-info{border-top:1px solid #eee;padding-top:12px;display:flex;flex-direction:column;gap:9px}
 .mp-row{display:flex;gap:10px;font-size:13px;align-items:baseline}
 .mp-k{flex-shrink:0;width:64px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#aaa;padding-top:1px}
@@ -1273,9 +1342,22 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
         <div class="bk-cols" id="bk-cols"></div>
       </div>
       <div class="bk-extra" id="bk-extra"></div>
+      <div id="bk-odds"></div>
     </div>
     <div class="bk-foot">The code chips show the official 2026 path: <strong>1·C</strong> / <strong>2·C</strong> are the Group&nbsp;C winner and runner-up; <strong>3·ABCDF</strong> is the best-third-placed team assigned to that slot (which of the eight qualifying thirds lands where is set by a FIFA lookup table after the group stage). <strong>W·1</strong> on a later round means the winner of the feeding match. The two sides of the draw close inward on the Final and the trophy in the centre — scroll sideways to follow either half.</div>
   </div>
+</div>
+
+<!-- ══════════ THE STORY OF 2026 — appears once the Final is decided ══════════ -->
+<div class="rs-section" id="sy-section" style="display:none">
+  <div class="rs-head" tabindex="0" role="button" onclick="toggleStory()">
+    <div class="rs-titlewrap">
+      <div class="rs-title">📖 The Story of 2026</div>
+      <div class="rs-sub">The whole tournament on one page — champion's road, biggest upsets, Golden Boot, records</div>
+    </div>
+    <span class="rs-toggle" id="sy-toggle">▲ Hide</span>
+  </div>
+  <div id="sy-body"></div>
 </div>
 
 <!-- ══════════ PICK'EM (parked — hidden via PICKEM_ENABLED) ══════════ -->
@@ -1519,6 +1601,7 @@ const SECTIONS=[
   {key:"results",body:"rs-body",tog:"rs-toggle"},
   {key:"rankings",body:"rk-body",tog:"rk-toggle"},
   {key:"bracket",body:"bk-body",tog:"bk-toggle"},
+  {key:"story",body:"sy-body",tog:"sy-toggle"},
   {key:"pickem",body:"pk-body",tog:"pk-toggle"},
   {key:"friendlies",body:"fr-body",tog:"fr-toggle"},
   {key:"history",body:"hx-body",tog:"hx-toggle"},
@@ -1555,6 +1638,7 @@ function reorderSections(){
   // Results and the Card Tracker share the rs-section class, so go by body id.
   const groups=[
     [secOf("sg-body")],                                 // Full schedule (open, top)
+    [$("#sy-section")],                                 // Story of 2026 (hidden until the Final is decided)
     [$(".bk-section")],                                 // Bracket  (open)
     [$(".st-section")],                                 // Standings (open)
     [$(".sc-section")],                                 // Top scorers
@@ -1819,13 +1903,74 @@ function computeLiveRanks(){
   const live={};order.forEach(function(k,i){live[k]={r:i+1,p:Math.round(pts[k]*100)/100};});
   __ranksLive={ranks:live,applied:applied};
 }
+
+/* ══════════ WIN EXPECTANCY + TITLE ODDS ══════════
+   FIFA's own We = 1/(10^(−ΔP/600)+1) gives a head-to-head expectancy from the
+   live-computed points; Monte-Carlo-ing the remaining knockout tree with it
+   (points updating inside each simulation) yields live title / reach-the-final
+   odds. Recomputed after every result — no external data needed. */
+function teamPts(name){const n=rankNow(name);return (n&&n.p!=null)?n.p:null;}
+function winExpect(a,b){
+  const pa=teamPts(a),pb=teamPts(b);
+  if(pa==null||pb==null)return null;
+  return 1/(Math.pow(10,-(pa-pb)/600)+1);
+}
+var __odds=null;
+function simulateOdds(N){
+  __odds=null;
+  if(!__ranks||!__ranks.ranks)return;
+  const ORDER={R32:0,R16:1,QF:2,SF:3,Final:4};
+  const rem=bracket.filter(function(b){return b.r!=="3rd"&&!koWinner(b);})
+    .sort(function(a,b){return ORDER[a.r]-ORDER[b.r]||a.no-b.no;});
+  if(!rem.length)return;                      // champion decided — the Story takes over
+  N=N||4000;
+  // Canonicalize every name to its TEAMS key — feed names ("United States",
+  // "Bosnia-Herzegovina") differ from the app's ("USA", "Bosnia"), and the
+  // points map, odds keys and card-pill lookups all use the canonical form.
+  const cName=function(n){const t=teamRecord(n);return t?t.name:n;};
+  const base={};
+  Object.keys(TEAMS).forEach(function(n){const p=teamPts(n);if(p!=null)base[n]=p;});
+  const won0={};
+  bracket.forEach(function(b){const w=koWinner(b);if(w&&b.r!=="3rd")won0["Winner "+b.r+"-"+b.no]=cName(w);});
+  function slotTeam(b,side,won){
+    const nm=side==="h"?b.liveH:b.liveA;
+    if(nm&&!isSlotName(nm))return cName(nm);  // already resolved by the live feed
+    return won[side==="h"?b.h:b.a]||null;     // else the simulated feed winner (already canonical)
+  }
+  const title={},finals={};
+  for(let s=0;s<N;s++){
+    const pts=Object.assign({},base),won=Object.assign({},won0);
+    for(let i=0;i<rem.length;i++){
+      const b=rem[i];
+      const h=slotTeam(b,"h",won),a=slotTeam(b,"a",won);
+      if(!h||!a)continue;
+      const ph=pts[h],pa=pts[a];
+      const we=(ph!=null&&pa!=null)?1/(Math.pow(10,-(ph-pa)/600)+1):0.5;
+      const hw=Math.random()<we;
+      const I=(b.r==="QF"||b.r==="SF"||b.r==="Final")?60:50;
+      if(ph!=null&&pa!=null){if(hw)pts[h]+=I*(1-we);else pts[a]+=I*we;}   // knockout: loser protected
+      const w=hw?h:a;
+      won["Winner "+b.r+"-"+b.no]=w;
+      if(b.r==="Final"){
+        title[w]=(title[w]||0)+1;
+        finals[h]=(finals[h]||0)+1;finals[a]=(finals[a]||0)+1;
+      }
+    }
+  }
+  const t={},f={};
+  Object.keys(title).forEach(function(k){t[k]=title[k]/N;});
+  Object.keys(finals).forEach(function(k){f[k]=finals[k]/N;});
+  __odds={title:t,final:f,n:N};
+}
+function pctOdds(x){if(x==null)return "—";const p=x*100;return p>=99.95?"100%":(p>=99.5?"99%+":(p<1?"<1%":Math.round(p)+"%"));}
 function loadRankings(){
   fetch("data/rankings.json",{cache:"default"}).then(function(r){return r.ok?r.json():null;}).then(function(d){
     if(!d||!d.ranks)return;
     __ranks=d;
     computeLiveRanks();
+    simulateOdds();
     // Re-render everywhere the rank chip appears so "now" shows without a refresh.
-    buildRankings();buildToday();buildSchedule();buildGrid();buildStandings();buildFollowBar();
+    buildRankings();buildToday();buildSchedule();buildGrid();buildStandings();buildFollowBar();buildBracket();
     var ov=document.getElementById("tm-overlay");
     if(ov&&ov.classList.contains("open")&&tmCurrent)openTeam(tmCurrent); // fill live rank into an open card
   }).catch(function(){});
@@ -1987,6 +2132,8 @@ function openTeam(name){
       '<div class="tm-name">'+t.name+'</div>'+
       '<div class="tm-nick">'+t.nick+'</div>'+
       '<span class="tm-rankpill">FIFA Rank #'+t.rank+' at the WC start'+(function(){var nw=rankNow(t.name);return (nw&&nw.r!=null)?' &middot; <span class="tm-ranknow">now #'+nw.r+(nw.r<t.rank?' ▲':(nw.r>t.rank?' ▼':''))+'</span>':'';})()+'</span>'+
+      (function(){if(!__odds)return '';var o=__odds.title[t.name];var f=__odds.final[t.name];if(o==null&&f==null)return '';
+        return '<span class="tm-rankpill tm-odds" title="Monte-Carlo of the remaining bracket from today\'s FIFA points">🏆 title '+pctOdds(o||0)+' &middot; reach final '+pctOdds(f||0)+'</span>';})()+
       '<button class="tm-follow'+(fol?' on':'')+'" onclick="setFollow(\''+t.name.replace(/'/g,"\\'")+'\')">'+(fol?'★ Following':'☆ Follow')+'</button>'+
     '</div>'+
     '<div class="tm-body">'+
@@ -2247,7 +2394,7 @@ function loadH2H(home,away){
   fetch("data/wc/h2h.json",{cache:"force-cache"}).then(function(r){return r.ok?r.json():{};}).then(function(h){__h2h=h;render(h);}).catch(function(){});
 }
 function matchPopoverHTML(e){
-  let home,away,sc,live,clock,played,roundR,dateStr,instant,venueLine,locKey,locLine,homePh=false,awayPh=false,etStr="",mno="",pens=null,winSide=null;
+  let home,away,sc,live,clock,played,roundR,dateStr,instant,venueLine,locKey,locLine,homePh=false,awayPh=false,etStr="",mno="",pens=null,winSide=null,bref=null;
   if(e.type==="s"){
     const m=e.m,s=e.s;
     const g=matchTeamsStr(m);   // knockout: real teams / slot labels
@@ -2260,6 +2407,7 @@ function matchPopoverHTML(e){
     etStr=m.t?(m.t+" ET"+(m.xd?(" → "+m.xd+" next day"):"")):"";
     venueLine=escHTML(s.fifa)+'<span class="sub"> · '+escHTML(s.real)+'</span>';
     locKey="Location";locLine=escHTML(s.city)+' · cap. '+escHTML(s.cap);
+    if(KO_ROUNDS[m.r])bref=bracketFixture(isoOf(m.d),s.real)||(m.xd?bracketFixture(isoOf(m.xd),s.real):null);
   }else{
     const b=e.b;
     const rh=b.liveH&&!isSlotName(b.liveH),ra=b.liveA&&!isSlotName(b.liveA);
@@ -2269,6 +2417,7 @@ function matchPopoverHTML(e){
     instant=(b._ts!=null?b._ts:null);etStr=(b._et?b._et+" ET":"");dateStr=b.d;
     mno=(["Final","3rd"].indexOf(b.r)<0)?(b.r+"-"+b.no):"";
     venueLine=escHTML(b.ven||b.city);locKey="City";locLine=escHTML(b.city);
+    bref=b;
   }
   let status;
   if(live)status='<span class="mp-status live">● LIVE'+(clock?" "+String(clock).replace(/['′]/g,"")+"'":"")+'</span>';
@@ -2302,9 +2451,51 @@ function matchPopoverHTML(e){
   }
   const roundBadge='<span class="rbadge '+roundClass(roundR)+'">'+roundLabel(roundR)+'</span>'+(mno?'<span class="mp-mno">'+mno+'</span>':'');
   mpTeams={home:home,away:away,real:!!away&&!homePh&&!awayPh};
+
+  // ── Pre-match preview (upcoming matches with both teams known): win
+  //    expectancy from today's points, ranks/points, recent form, what the
+  //    winner earns, and each side's live title odds. ──
+  let preview="";
+  if(!played&&!live&&away){
+    const tH=teamRecord(home),tA=teamRecord(away);
+    if(tH&&tA){
+      const we=winExpect(tH.name,tA.name);
+      let bar="";
+      if(we!=null){
+        const l=Math.round(we*100),r=100-l;
+        bar='<div class="mp-we"><span class="mp-wet">'+escHTML(home)+' <b>'+l+'%</b></span>'+
+            '<span class="mp-webar"><span class="mp-wefill" style="width:'+l+'%"></span></span>'+
+            '<span class="mp-wet mp-weta"><b>'+r+'%</b> '+escHTML(away)+'</span></div>'+
+            '<div class="mp-wesub">win expectancy — FIFA’s own formula on today’s points</div>';
+      }
+      const nH=rankNow(tH.name),nA=rankNow(tA.name);
+      const ranksLine=(nH&&nA&&nH.p!=null&&nA.p!=null)
+        ?'<div class="mp-pvrank">#'+nH.r+' · '+nH.p.toFixed(1)+' pts <span class="mp-pvvs">vs</span> #'+nA.r+' · '+nA.p.toFixed(1)+' pts</div>':"";
+      const fH=formDots(tH.name,5,false),fA=formDots(tA.name,5,false);
+      const form=(fH||fA)?'<div class="mp-pvform"><span>'+fH+'</span><span>'+fA+'</span></div>':"";
+      let faces="";
+      if(bref&&bref.r!=="Final"&&bref.r!=="3rd"&&KO_ROUNDS[bref.r]){
+        const key="Winner "+bref.r+"-"+bref.no;
+        const nxt=bracket.find(function(x){return x.h===key||x.a===key;});
+        if(nxt){
+          const oppRaw=nxt.h===key?(nxt.liveA&&!isSlotName(nxt.liveA)?nxt.liveA:slotShort(nxt.a))
+                                  :(nxt.liveH&&!isSlotName(nxt.liveH)?nxt.liveH:slotShort(nxt.h));
+          faces='<div class="mp-faces">Winner faces <b>'+escHTML(oppRaw)+'</b> · '+escHTML(nxt.r==="Final"?"the Final":(nxt.r==="SF"?"Semifinal":(nxt.r==="QF"?"Quarterfinal":"Round of "+nxt.r.replace("R",""))))+' · '+escHTML(nxt.d)+' · '+escHTML(nxt.city)+'</div>';
+        }
+      }
+      let oddsLine="";
+      if(__odds){
+        const oH=__odds.title[tH.name],oA=__odds.title[tA.name];
+        if(oH!=null||oA!=null)oddsLine='<div class="mp-pvodds">🏆 Title odds — '+escHTML(home)+' '+pctOdds(oH||0)+' · '+escHTML(away)+' '+pctOdds(oA||0)+'</div>';
+      }
+      if(bar||ranksLine||form||faces||oddsLine)preview='<div class="mp-preview">'+bar+ranksLine+form+faces+oddsLine+'</div>';
+    }
+  }
+
   return '<button class="mp-close" onclick="closeMatch()" aria-label="Close">✕</button>'+
     '<div class="mp-top">'+roundBadge+'<span class="mp-date">'+escHTML(dateStr)+'</span>'+status+'</div>'+
     teams+
+    preview+
     '<div class="mp-info">'+kick+mpRow("Venue",venueLine)+mpRow(locKey,locLine)+'</div>'+
     '<div class="mp-h2h" id="mpH2H"></div>'+
     '<div class="mp-events" id="mpEvents"></div>';
@@ -3253,7 +3444,7 @@ function matchRowHTML(m,ts,city){
   const goal=m._flash?'<span class="goal-badge">⚽ GOAL</span>':"";
   const xdTag=(!live&&!played&&m.xd)?' <span class="td-xd" title="kicks off after midnight ET">'+m.xd+'</span>':"";
   const when=live?('<span class="td-live">● LIVE'+(m.clock?" "+String(m.clock).replace(/['′]/g,"")+"'":"")+'</span>')
-            :(played?'<span class="td-ft">FT</span>':'<span class="td-time">'+f.time+'</span>');
+            :(played?'<span class="td-ft">FT</span>':'<span class="td-time">'+f.time+'</span>'+tminusHTML(ts));
   return '<div class="td-row'+(live?' td-rowlive':'')+(m._flash?' scored':'')+'" tabindex="0" role="button" data-match="'+m._id+'"><span class="td-when">'+when+'</span>'+
     '<span class="td-game">'+mid+xdTag+goal+'</span><span class="td-meta">'+roundLabel(m.r)+' · '+city+'</span></div>'+((live||played)?mevHTML(m.ev):"");
 }
@@ -3362,6 +3553,64 @@ document.addEventListener("visibilitychange",function(){
   refreshScores();
 });
 
+/* ── Kickoff countdown ──
+   Upcoming rows in the Today bar / Full Schedule carry a live "in 2h 14m"
+   T-minus when kickoff is inside 12 hours; a light 30s ticker keeps every
+   visible countdown current without any rebuild. */
+function fmtTminus(ms){
+  if(ms<=60000)return "kicking off…";       // inside a minute (or past) — the next refresh flips it to LIVE
+  const m=Math.round(ms/60000);
+  if(m<60)return "in "+m+"m";
+  return "in "+Math.floor(m/60)+"h "+("0"+(m%60)).slice(-2)+"m";
+}
+function tminusHTML(ts){
+  if(ts==null)return "";
+  const d=ts-Date.now();
+  if(d<=0||d>43200000)return "";           // only inside the next 12 hours
+  return '<span class="td-tminus" data-kts="'+ts+'">'+fmtTminus(d)+'</span>';
+}
+function tickCountdowns(){
+  document.querySelectorAll(".td-tminus").forEach(function(el){
+    const ts=+el.getAttribute("data-kts");
+    if(!ts)return;
+    const d=ts-Date.now();
+    if(d<-1800000){el.remove();return;}   // 30+ min past kickoff with no rebuild yet — drop it
+    el.textContent=fmtTminus(d);
+  });
+}
+setInterval(tickCountdowns,30000);
+
+/* ── Pre-kickoff reminder ──
+   When goal alerts are on (the existing 🔔 toggle), also fire one notification
+   ~15 minutes before the next kickoff. Re-armed by every refresh, like the
+   kickoff wake-up above. */
+var kickRemTimer=null;
+function armKickReminder(){
+  if(kickRemTimer){clearTimeout(kickRemTimer);kickRemTimer=null;}
+  if(!notifyState.on||!("Notification" in window)||Notification.permission!=="granted")return;
+  const nx=nextFixture();
+  if(!nx)return;
+  const real=nx.ts-15*60000-Date.now();
+  if(real<=0)return;                        // already inside 15 min — goal alerts take over
+  if(real>86400000){                        // rest-day gap: silently RE-CHECK in 24h (never notify early)
+    kickRemTimer=setTimeout(function(){kickRemTimer=null;armKickReminder();},86400000);
+    return;
+  }
+  kickRemTimer=setTimeout(function(){
+    kickRemTimer=null;
+    // Freshness guard: only speak if we truly are ~15 min out (schedule may have shifted).
+    if(nx.ts-Date.now()>16*60000||nx.ts-Date.now()<=0){armKickReminder();return;}
+    try{
+      const g=matchTeamsStr(nx.m),f=fmtInstant(nx.ts);
+      new Notification("⚽ Kickoff in 15 minutes",{
+        body:g+" — "+f.time+" "+f.tz+" · "+roundLabel(nx.m.r)+" · "+String(nx.s.city).split(",")[0],
+        tag:"kick-"+nx.ts, icon:"apple-touch-icon.png"
+      });
+    }catch(e){}
+    armKickReminder();                       // chain to the following fixture
+  },real);
+}
+
 /* ══════════ GOAL FLASH + NOTIFICATIONS ══════════
    detectGoals() compares each fixture's score to the last one we saw. A change
    flags the match (m._flash) so the grid/banner pulse it, and returns the list
@@ -3385,16 +3634,17 @@ function updateNotifyBtn(){
   if(!notifySupported()){b.style.display="none";return;}
   b.style.display="";
   const granted=Notification.permission==="granted";
-  if(notifyState.on&&granted){b.textContent="🔔 Goal alerts on";}
+  b.title="Goal alerts, plus a reminder 15 minutes before the next kickoff";
+  if(notifyState.on&&granted){b.textContent="🔔 Alerts on";}
   else if(Notification.permission==="denied"){b.textContent="🔕 Alerts blocked";}
-  else{b.textContent="🔔 Notify goals";}
+  else{b.textContent="🔔 Goal + kickoff alerts";}
 }
 function toggleNotify(){
   if(!notifySupported())return;
-  if(notifyState.on){notifyState.on=false;setPref("notify",false);updateNotifyBtn();return;}
-  if(Notification.permission==="granted"){notifyState.on=true;setPref("notify",true);updateNotifyBtn();}
+  if(notifyState.on){notifyState.on=false;setPref("notify",false);updateNotifyBtn();armKickReminder();return;}
+  if(Notification.permission==="granted"){notifyState.on=true;setPref("notify",true);updateNotifyBtn();armKickReminder();}
   else if(Notification.permission!=="denied"){
-    Notification.requestPermission().then(function(p){notifyState.on=(p==="granted");setPref("notify",notifyState.on);updateNotifyBtn();});
+    Notification.requestPermission().then(function(p){notifyState.on=(p==="granted");setPref("notify",notifyState.on);updateNotifyBtn();armKickReminder();});
   }else updateNotifyBtn();
 }
 function fireGoalNotifications(goals){
@@ -4221,6 +4471,98 @@ function buildCards(){
 function toggleCards(){toggleSection("cd-body","cd-toggle","cards");}
 function toggleResults(){toggleSection("rs-body","rs-toggle","results");}
 function toggleSchedule(){toggleSection("sg-body","sg-toggle","schedule");}
+function toggleStory(){toggleSection("sy-body","sy-toggle","story");}
+
+/* ══════════ THE STORY OF 2026 ══════════
+   Auto-generated recap, rendered only once the Final has a decided result —
+   the capstone of the preserved archive. Everything is computed from data the
+   app already holds: results (with pens), the WC-start ranks, the Golden Boot
+   tally and the cards timeline. */
+function buildStory(){
+  const sec=document.getElementById("sy-section"),box=document.getElementById("sy-body");
+  if(!sec||!box)return;
+  const fin=bkGet("Final",1);
+  const champ=fin?bkChampName(fin):"";
+  if(!champ){sec.style.display="none";return;}
+  sec.style.display="";
+  const ms=results2026().filter(function(m){return m.sc&&!m.live;}).sort(function(a,b){return (a.ts||0)-(b.ts||0);});
+  // headline numbers
+  let goals=0;ms.forEach(function(m){const sp=m.sc.split("-");goals+=(+sp[0]||0)+(+sp[1]||0);});
+  const shootouts=ms.filter(function(m){return m.pens;});
+  // Cards counted from the deduped results list (cardsData would double-count
+  // knockouts, whose ev lives on both the fixture and its bracket slot).
+  let yc=0,rc=0;ms.forEach(function(m){(m.ev||[]).forEach(function(e){if(e.k==="y")yc++;else if(e.k==="r")rc++;});});
+  // the final — score and shootout oriented champion-first (the champion may
+  // have been the away side)
+  const champHome=canon(champ)===canon(fin.liveH);
+  const runner=champHome?fin.liveA:fin.liveH;
+  const finSc=(champHome?fin.hs+"–"+fin.as:fin.as+"–"+fin.hs)+
+    (fin.pens?" ("+(champHome?fin.pens.h+"–"+fin.pens.a:fin.pens.a+"–"+fin.pens.h)+" pens)":"");
+  const third=bkGet("3rd",1);
+  const thirdW=third?koWinner(third):null;
+  // champion's road: every match they played, in order
+  const ck=canon(champ);
+  const road=ms.filter(function(m){return canon(m.home)===ck||canon(m.away)===ck;});
+  const roadRows=road.map(function(m){
+    const isH=canon(m.home)===ck,opp=isH?m.away:m.home;
+    const sp=m.sc.split("-"),own=isH?sp[0]:sp[1],oth=isH?sp[1]:sp[0];
+    const pn=m.pens?' <span class="pens-tag">'+(isH?m.pens.h+'–'+m.pens.a:m.pens.a+'–'+m.pens.h)+' pens</span>':'';
+    return '<div class="sy-roadrow"><span class="sy-roadround">'+escHTML(roundLabel(m.round))+'</span>'+
+      '<span class="sy-roadsc">'+own+'–'+oth+'</span>'+teamLink(opp,false,true)+pn+'</div>';
+  }).join("");
+  // biggest upsets by WC-start rank gap
+  const upsets=[];
+  ms.forEach(function(m){
+    const sp=m.sc.split("-");let w=null,l=null;
+    if(+sp[0]>+sp[1]){w=m.home;l=m.away;}
+    else if(+sp[1]>+sp[0]){w=m.away;l=m.home;}
+    else if(m.win==="home"){w=m.home;l=m.away;}
+    else if(m.win==="away"){w=m.away;l=m.home;}
+    if(!w)return;
+    const tw=teamRecord(w),tl=teamRecord(l);
+    if(!tw||!tl)return;
+    const gap=tw.rank-tl.rank;
+    if(gap>0)upsets.push({w:w,l:l,gap:gap,sc:m.sc,round:m.round,wr:tw.rank,lr:tl.rank});
+  });
+  upsets.sort(function(a,b){return b.gap-a.gap;});
+  const upsetRows=upsets.slice(0,5).map(function(u){
+    return '<div class="sy-uprow">'+teamLink(u.w,false,true)+' <span class="sy-upr">#'+u.wr+'</span>'+
+      '<span class="sy-upsc">'+escHTML(u.sc.replace("-","–"))+'</span>'+teamLink(u.l,false,true)+' <span class="sy-upr">#'+u.lr+'</span>'+
+      '<span class="sy-upgap">+'+u.gap+' rank gap · '+escHTML(roundLabel(u.round))+'</span></div>';
+  }).join("");
+  // golden boot
+  const boot=(typeof scorerData!=="undefined"&&scorerData&&scorerData.length)?scorerData.slice(0,3):[];
+  const bootRows=boot.map(function(s,i){
+    return '<div class="sy-bootrow"><span class="sy-bootmedal">'+(["🥇","🥈","🥉"][i]||"")+'</span>'+
+      '<span class="sy-bootname">'+escHTML(s.scorer)+'</span>'+teamLink(s.team,false,true)+
+      '<span class="sy-bootg">'+s.goals+(s.pens?'<span class="sy-bootp"> ('+s.pens+'p)</span>':'')+' goals</span></div>';
+  }).join("");
+  const shootRows=shootouts.map(function(m){
+    return '<div class="sy-shrow">'+escHTML(m.home)+' '+escHTML(m.sc.replace("-","–"))+' '+escHTML(m.away)+
+      ' <span class="sy-shpens">'+m.pens.h+'–'+m.pens.a+' pens</span> <span class="sy-upgap">'+escHTML(roundLabel(m.round))+'</span></div>';
+  }).join("");
+  const trChamp=teamRecord(champ),trRun=teamRecord(runner);
+  box.innerHTML=
+    '<div class="sy-hero">'+
+      '<div class="sy-crown">🏆</div>'+
+      '<div class="sy-champ">'+(trChamp?trChamp.flag+' ':'')+escHTML(champ)+'</div>'+
+      '<div class="sy-champsub">Champions of the 2026 FIFA World Cup</div>'+
+      '<div class="sy-finline">beat '+(trRun?trRun.flag+' ':'')+escHTML(runner||"")+' '+escHTML(finSc)+' in the Final'+
+        (thirdW?' · 🥉 '+escHTML(thirdW):'')+'</div>'+
+    '</div>'+
+    '<div class="sy-stats">'+
+      '<span><b>'+ms.length+'</b> matches</span><span><b>'+goals+'</b> goals</span>'+
+      '<span><b>'+(ms.length?(goals/ms.length).toFixed(2):"0")+'</b> per match</span>'+
+      '<span><b>'+shootouts.length+'</b> shootout'+(shootouts.length!==1?'s':'')+'</span>'+
+      '<span><b>'+yc+'</b> 🟨</span><span><b>'+rc+'</b> 🟥</span>'+
+    '</div>'+
+    '<div class="sy-cols">'+
+      '<div class="sy-block"><div class="sy-bt">The champion\'s road</div>'+roadRows+'</div>'+
+      '<div class="sy-block"><div class="sy-bt">⚽ Golden Boot</div>'+(bootRows||'<div class="sy-none">—</div>')+
+        '<div class="sy-bt" style="margin-top:12px">Penalty shootouts</div>'+(shootRows||'<div class="sy-none">None — every knockout decided in play.</div>')+'</div>'+
+    '</div>'+
+    '<div class="sy-block"><div class="sy-bt">Biggest upsets <span class="sy-btsub">by World-Cup-start ranking gap</span></div>'+(upsetRows||'<div class="sy-none">The favourites held serve.</div>')+'</div>';
+}
 
 function buildBracket(){
   resolveBracketFromStandings();
@@ -4247,6 +4589,24 @@ function buildBracket(){
   if(extra){
     const t=bkGet("3rd",1);
     extra.innerHTML='<div class="bk-3rdcard"><div class="bk-coltitle">Third-Place Play-off</div>'+bkCard(t)+'</div>';
+  }
+  // Live title odds — Monte-Carlo of the remaining tree from today's FIFA points.
+  const oddsBox=document.getElementById("bk-odds");
+  if(oddsBox){
+    if(__odds&&Object.keys(__odds.title).length){
+      const rows=Object.keys(__odds.title).sort(function(a,b){return __odds.title[b]-__odds.title[a];}).slice(0,8);
+      const max=__odds.title[rows[0]]||1;
+      oddsBox.innerHTML='<div class="bk-oddstitle">🏆 Title odds — live</div>'+
+        '<div class="bk-oddsgrid">'+rows.map(function(t){
+          const tr=teamRecord(t);
+          return '<div class="bk-oddrow" tabindex="0" role="button" data-team="'+escHTML(tr?tr.name:t)+'">'+
+            '<span class="bk-oddteam">'+(tr?tr.flag+' ':'')+escHTML(t)+'</span>'+
+            '<span class="bk-oddbar"><span class="bk-oddfill" style="width:'+Math.max(3,Math.round(__odds.title[t]/max*100))+'%"></span></span>'+
+            '<span class="bk-oddpct">'+pctOdds(__odds.title[t])+'</span>'+
+            '<span class="bk-oddfin" title="chance of reaching the Final">final '+pctOdds(__odds.final[t])+'</span></div>';
+        }).join("")+'</div>'+
+        '<div class="bk-oddsfoot">Simulated '+__odds.n.toLocaleString()+'× from today\'s computed FIFA points (FIFA\'s own win-expectancy formula, points updating within each simulated run). Re-rolls after every result.</div>';
+    }else oddsBox.innerHTML="";
   }
   // Stage pill: deepest round that has a result yet.
   const anyTeam=bracket.some(function(m){return m.liveH&&!isSlotName(m.liveH);});
@@ -4993,6 +5353,7 @@ async function refreshScores(){
     scorersReached=!!espnEvents; // ESPN feed carries per-goal scorer detail; the Claude fallback doesn't
     aggregateScorers(espnEvents);
     computeLiveRanks();   // a finished match moves today's calculated FIFA ranking immediately
+    simulateOdds();       // …and re-simulates the title odds
     buildRankings();      // …and the Team Rankings tab must re-render to show it
     buildGrid();
     buildStandings();
@@ -5005,6 +5366,7 @@ async function refreshScores(){
     buildSchedule();
     buildToday();
     buildFollowBar();
+    buildStory();     // appears on its own once the Final is decided
     fireGoalNotifications(goals.concat(bgoals));
     if(goals.length||bgoals.length)setTimeout(function(){clearFlash();clearBracketFlash();buildGrid();buildToday();buildSchedule();buildBracket();},2200); // clear pulse after it plays
     if(fromSnap){
@@ -5022,6 +5384,7 @@ async function refreshScores(){
   btn.disabled=false;
   scheduleAuto(); // keep polling while any match is live
   armKickoff();   // …and when nothing is live, wake up at the next kickoff
+  armKickReminder(); // …and (if alerts are on) remind 15 min before it
 }
 
 (function init(){
@@ -5085,6 +5448,7 @@ async function refreshScores(){
   buildCards();
   buildResults();
   buildSchedule();
+  buildStory();
   buildGrid();
   refreshScores(); // auto-pull live + final scores on load (works when hosted or in Claude's view)
 
