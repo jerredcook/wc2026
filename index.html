@@ -634,6 +634,12 @@ html[data-theme="dark"] .trk-was{color:#71767f}
 .rk-note{font-size:11px;color:#999;margin:10px 0}
 .rk-table{width:100%;border-collapse:collapse;font-size:13px}
 .rk-table th{font-size:9px;font-weight:700;color:#aaa;letter-spacing:.03em;text-transform:uppercase;padding:6px 6px;text-align:left;border-bottom:1px solid #f0f0f0}
+.rk-table th.rk-sort{cursor:pointer;user-select:none;white-space:nowrap}
+.rk-table th.rk-sort:hover{color:#555}
+.rk-table th.rk-sort.on{color:#0d6b52}
+.rk-caret{font-size:8px}
+html[data-theme="dark"] .rk-table th.rk-sort:hover{color:#cfd3da}
+html[data-theme="dark"] .rk-table th.rk-sort.on{color:#34d39a}
 .rk-table th.rc,.rk-table td.rc{text-align:center}
 .rk-table td{padding:8px 6px;border-bottom:1px solid #f6f6f6;color:#444;font-variant-numeric:tabular-nums}
 .rk-table tr:last-child td{border-bottom:none}
@@ -1232,7 +1238,14 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
   <div id="rk-body" style="display:none">
     <div class="rk-controls" id="rk-controls"></div>
     <table class="rk-table">
-      <thead><tr><th class="rc">At WC<br>start</th><th>Team</th><th class="rc">Now</th><th class="rc" title="Today's FIFA points (change since June 11)">Points</th><th class="rc">Confed.</th><th class="rc">Group</th></tr></thead>
+      <thead><tr>
+        <th class="rc rk-sort" data-sk="start" tabindex="0" role="button" onclick="setRankSort('start')">At WC<br>start<span class="rk-caret"></span></th>
+        <th class="rk-sort" data-sk="team" tabindex="0" role="button" onclick="setRankSort('team')">Team<span class="rk-caret"></span></th>
+        <th class="rc rk-sort" data-sk="now" tabindex="0" role="button" onclick="setRankSort('now')">Now<span class="rk-caret"></span></th>
+        <th class="rc rk-sort" data-sk="pts" tabindex="0" role="button" onclick="setRankSort('pts')" title="Today's FIFA points (change since June 11)">Points<span class="rk-caret"></span></th>
+        <th class="rc rk-sort" data-sk="conf" tabindex="0" role="button" onclick="setRankSort('conf')">Confed.<span class="rk-caret"></span></th>
+        <th class="rc rk-sort" data-sk="grp" tabindex="0" role="button" onclick="setRankSort('grp')">Group<span class="rk-caret"></span></th>
+      </tr></thead>
       <tbody id="rk-tbody"></tbody>
     </table>
     <div class="rk-note">FIFA World Ranking is approximate. Click a row to open the team's profile — roster, head coach, World Cup history, and a fact about the country.</div>
@@ -1742,7 +1755,23 @@ function rankChip(t){
 }
 
 /* ══════════ FIFA RANKINGS TABLE ══════════ */
-const rkState={conf:"all"};
+const rkState={conf:"all",sort:"now",dir:1};
+/* Sortable columns: each with a value extractor and a sensible first-click
+   direction (ranks ascending, points descending, names/groups A→Z). */
+const RK_SORTS={
+  start:{dflt:1, val:function(r){return r.rank;}},
+  team: {dflt:1, val:function(r){return r.name.toLowerCase();}},
+  now:  {dflt:1, val:function(r){const n=rankNow(r.name);return n?n.r:r.rank;}},
+  pts:  {dflt:-1,val:function(r){const n=rankNow(r.name);return (n&&n.p!=null)?n.p:-Infinity;}},
+  conf: {dflt:1, val:function(r){const i=CONF_ORDER.indexOf(r.conf);return i<0?99:i;}},
+  grp:  {dflt:1, val:function(r){return r.group;}}
+};
+function setRankSort(k){
+  if(!RK_SORTS[k])return;
+  if(rkState.sort===k)rkState.dir=-rkState.dir;   // second click flips direction
+  else{rkState.sort=k;rkState.dir=RK_SORTS[k].dflt;}
+  buildRankings();
+}
 /* Current FIFA ranking. Two layers:
    - __ranks: the latest OFFICIAL release (data/rankings.json, refreshed daily) —
      points + rank for all 211 nations. FIFA only publishes on fixed dates
@@ -1827,11 +1856,23 @@ function buildRankings(){
   if(!tb)return;
   let rows=Object.keys(TEAMS).map(function(n){return Object.assign({name:n},TEAMS[n]);});
   if(rkState.conf!=="all")rows=rows.filter(function(r){return r.conf===rkState.conf;});
-  // Order by TODAY's rank (the tab is "Team Rankings" — it should read as the
-  // current table); the "At WC start" column carries the seeding rank.
+  // Sort by the selected column (default: today's rank, so the tab reads as the
+  // current table); ties fall back to today's rank, then the seeding rank.
+  const S=RK_SORTS[rkState.sort]||RK_SORTS.now;
   rows.sort(function(a,b){
+    const va=S.val(a),vb=S.val(b);
+    const c=(va<vb?-1:(va>vb?1:0))*rkState.dir;
+    if(c)return c;
     const na=rankNow(a.name),nb=rankNow(b.name);
     return ((na?na.r:a.rank)-(nb?nb.r:b.rank))||(a.rank-b.rank);
+  });
+  // Header indicators: caret on the active column, aria-sort for screen readers.
+  document.querySelectorAll(".rk-table th.rk-sort").forEach(function(th){
+    const on=th.getAttribute("data-sk")===rkState.sort;
+    th.classList.toggle("on",on);
+    th.setAttribute("aria-sort",on?(rkState.dir>0?"ascending":"descending"):"none");
+    const car=th.querySelector(".rk-caret");
+    if(car)car.textContent=on?(rkState.dir>0?" ▲":" ▼"):"";
   });
   tb.innerHTML=rows.map(function(r){
     // Points (this tab only): today's computed points + change since June 11 —
