@@ -318,6 +318,33 @@ html[data-theme="dark"] .rs-summary b{color:#34d39a}
 .cd-mc{font-size:12px;font-weight:800;white-space:nowrap;flex-shrink:0;margin-left:6px}
 .cd-foot{font-size:10px;color:#aaa;margin-top:8px;line-height:1.4}
 html[data-theme="dark"] .cd-fp{color:#f0a39e}
+/* card-by-card detail rows (team expand / players / match views) */
+.cd-trow{cursor:pointer}
+.cd-trow:hover td{background:#fafbfc}
+.cd-caret{font-size:9px;color:#bbb;margin-left:6px}
+.cd-det td{padding:2px 6px 10px;background:#fafbfc}
+.cd-card{display:flex;align-items:center;gap:7px;padding:3px 4px;font-size:12px;border-radius:6px;cursor:pointer;flex-wrap:wrap}
+.cd-card:hover{background:#f0f2f4}
+.cd-ck{flex:none}
+.cd-cmin{flex:0 0 34px;font-weight:700;color:#888;font-variant-numeric:tabular-nums;text-align:right}
+.cd-cn{font-weight:700;color:#222}
+.cd-cteam{font-weight:600;color:#999;margin-left:5px;font-size:11px}
+.cd-cm{color:#889;font-size:11px;margin-left:auto;white-space:nowrap}
+.cd-csc{font-weight:700;color:#666}
+.cd-player{border-bottom:1px solid #f3f4f6;padding:6px 0}
+.cd-player:last-child{border-bottom:none}
+.cd-phead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:2px}
+.cd-pname{font-weight:800;color:#1a1a1a;font-size:13px}
+.cd-pc{margin-left:auto;font-weight:800;font-size:12px;white-space:nowrap}
+.cd-watch{font-size:10px;font-weight:800;color:#8a6d1a;background:#f7efd8;border-radius:8px;padding:1px 8px;white-space:nowrap}
+.cd-mcards{display:flex;flex-wrap:wrap;gap:4px 10px;padding:2px 0 6px 2px}
+.cd-mchip{font-size:11px;color:#556;font-weight:600;white-space:nowrap}
+html[data-theme="dark"] .cd-trow:hover td,html[data-theme="dark"] .cd-det td{background:#20232b}
+html[data-theme="dark"] .cd-card:hover{background:#262a33}
+html[data-theme="dark"] .cd-cn,html[data-theme="dark"] .cd-pname{color:#e9ecf3}
+html[data-theme="dark"] .cd-cm,html[data-theme="dark"] .cd-mchip{color:#8a9099}
+html[data-theme="dark"] .cd-csc{color:#aab0b8}
+html[data-theme="dark"] .cd-watch{color:#e9c767;background:#3a3320}
 html[data-theme="dark"] .cd-table th{color:#80868f;border-color:#2a2d35}
 html[data-theme="dark"] .cd-table td{border-color:#26282f}
 html[data-theme="dark"] .cd-rk{color:#80868f}
@@ -1276,7 +1303,7 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
   <div class="rs-head" tabindex="0" role="button" onclick="toggleCards()">
     <div class="rs-titlewrap">
       <div class="rs-title">🟨🟥 Card Tracker</div>
-      <div class="rs-sub">Yellow &amp; red cards by team or by round &middot; from the live match feed</div>
+      <div class="rs-sub">Every booking — who, the minute, and the game &middot; by team, player, fair play, round, or match</div>
     </div>
     <span class="rs-toggle" id="cd-toggle">▼ Show</span>
   </div>
@@ -4387,22 +4414,42 @@ function buildSchedule(){
 
 /* ══════════ CARD TRACKER — yellows & reds by team or round ══════════
    Aggregated from the same goals/cards timeline (ev) already on each match. */
+/* Every card in the tournament, one entry each, with full context: WHO got it
+   (player), WHEN (match minute), and in WHICH game (home/away/score/match id,
+   so rows can open the match popover). Knockout fixtures are skipped in the
+   stadiums pass — enrichKnockouts copies the same ev onto them, and the bracket
+   pass already covers those matches (this also fixes the old double-count). */
 function cardsData(){
   const cards=[];
-  function add(ev,round){(ev||[]).forEach(function(e){if(e.k==="y"||e.k==="r")cards.push({team:e.tm||"",round:round,kind:e.k});});}
-  stadiums.forEach(function(s){s.m.forEach(function(m){if(m.sc&&m.ev)add(m.ev,m.r);});});
-  bracket.forEach(function(b){if(b.hs!=null&&b.ev)add(b.ev,b.r);});
+  function add(ev,round,home,away,sc,id,ts){
+    (ev||[]).forEach(function(e){
+      if(e.k!=="y"&&e.k!=="r")return;
+      cards.push({team:e.tm||"",round:round,kind:e.k,player:e.n||"",min:e.m||"",home:home,away:away,sc:sc,id:id,ts:ts||0});
+    });
+  }
+  stadiums.forEach(function(s){s.m.forEach(function(m){
+    if(!m.sc||!m.ev||KO_ROUNDS[m.r])return;   // knockouts come from the bracket pass
+    const p=m.g.split(" vs ").map(function(x){return x.trim();});
+    add(m.ev,m.r,p[0],p[1],m.sc,m._id,matchInstant(m)||0);
+  });});
+  bracket.forEach(function(b){if(b.hs!=null&&b.ev)add(b.ev,b.r,b.liveH,b.liveA,b.hs+"-"+b.as,b._id,bkSortTs(b));});
   return cards;
 }
 function setCardsMode(m){prefs.cdmode=m;savePrefs();buildCards();}
-/* Per-match card totals (for the "most-booked games" view). */
+/* Per-match card totals + the cards themselves (for the "most-booked" view). */
 function matchCardList(){
   const out=[];
   function row(home,away,sc,round,id,ts,ev){
-    let y=0,r=0;(ev||[]).forEach(function(e){if(e.k==="y")y++;else if(e.k==="r")r++;});
-    if(y+r>0)out.push({home:home,away:away,sc:sc,round:round,id:id,ts:ts,y:y,r:r});
+    const list=(ev||[]).filter(function(e){return e.k==="y"||e.k==="r";});
+    if(!list.length)return;
+    let y=0,r=0;list.forEach(function(e){if(e.k==="y")y++;else r++;});
+    out.push({home:home,away:away,sc:sc,round:round,id:id,ts:ts,y:y,r:r,cards:list});
   }
-  stadiums.forEach(function(s){s.m.forEach(function(m){if(m.sc&&m.ev){var p=m.g.split(" vs ").map(function(x){return x.trim();});row(p[0],p[1],m.sc,m.r,m._id,matchInstant(m)||0,m.ev);}});});
+  stadiums.forEach(function(s){s.m.forEach(function(m){
+    if(!m.sc||!m.ev||KO_ROUNDS[m.r])return;   // knockouts come from the bracket pass
+    var p=m.g.split(" vs ").map(function(x){return x.trim();});
+    row(p[0],p[1],m.sc,m.r,m._id,matchInstant(m)||0,m.ev);
+  });});
   bracket.forEach(function(b){if(b.hs!=null&&b.ev)row(b.liveH,b.liveA,b.hs+"-"+b.as,b.r,b._id,bkSortTs(b),b.ev);});
   return out;
 }
@@ -4422,33 +4469,75 @@ function fairPlayByTeam(){
     });
     Object.keys(byp).forEach(function(k){const p=byp[k];pts[p.tm]=(pts[p.tm]||0)+(p.r?(p.y?-3:-4):-1);});
   }
-  stadiums.forEach(function(s){s.m.forEach(function(m){if(m.sc&&m.ev)proc(m.ev);});});
+  stadiums.forEach(function(s){s.m.forEach(function(m){if(m.sc&&m.ev&&!KO_ROUNDS[m.r])proc(m.ev);});});  // knockouts via the bracket pass only
   bracket.forEach(function(b){if(b.hs!=null&&b.ev)proc(b.ev);});
   return pts;
 }
+/* One card rendered as a row: colour, minute, player, and the game it came in. */
+function cdCardRow(c,showTeam){
+  const opp=(canon(c.team)===canon(c.home))?c.away:c.home;
+  return '<div class="cd-card" tabindex="0" role="button" data-match="'+c.id+'">'+
+    '<span class="cd-ck">'+(c.kind==="y"?"🟨":"🟥")+'</span>'+
+    '<span class="cd-cmin">'+escHTML(c.min?String(c.min).replace(/['′’]/g,"")+"’":"")+'</span>'+
+    '<span class="cd-cn">'+escHTML(c.player||"—")+(showTeam?'<span class="cd-cteam">'+escHTML(c.team)+'</span>':'')+'</span>'+
+    '<span class="cd-cm">vs '+escHTML(opp||"?")+' · '+escHTML(roundLabel(c.round))+' <span class="cd-csc">'+escHTML(String(c.sc||"").replace("-","–"))+'</span></span></div>';
+}
+var cdOpen={}; // expanded team rows in the by-team views (session only)
+function cdToggleTeam(t){cdOpen[t]=!cdOpen[t];buildCards();}
 function buildCards(){
   const box=document.getElementById("cd-body");if(!box)return;
   const cards=cardsData();
   if(!cards.length){box.innerHTML='<div class="rs-empty">No cards recorded yet — they appear here as matches are played.</div>';return;}
-  const modes={team:1,fairplay:1,round:1,match:1};
+  const modes={team:1,players:1,fairplay:1,round:1,match:1};
   const mode=modes[prefs.cdmode]?prefs.cdmode:"team";
   const mbtn=function(id,label){return '<button class="rs-mode'+(mode===id?" on":"")+'" onclick="setCardsMode(\''+id+'\')">'+label+'</button>';};
-  const toggle='<div class="rs-modes"><span class="rs-mlbl">By</span>'+mbtn("team","team")+mbtn("fairplay","fair play")+mbtn("round","round")+mbtn("match","match")+'</div>';
+  const toggle='<div class="rs-modes"><span class="rs-mlbl">By</span>'+mbtn("team","team")+mbtn("players","players")+mbtn("fairplay","fair play")+mbtn("round","round")+mbtn("match","match")+'</div>';
   const totY=cards.filter(function(c){return c.kind==="y";}).length,totR=cards.length-totY;
   const summary='<div class="rs-summary">🟨 '+totY+' yellow &middot; 🟥 '+totR+' red &middot; '+cards.length+' total</div>';
   const zr=function(n){return n||'<span class="cd-z">–</span>';};
   let bodyHtml,foot;
   if(mode==="team"||mode==="fairplay"){
     const by={};
-    cards.forEach(function(c){if(!c.team)return;const t=by[c.team]||(by[c.team]={y:0,r:0});if(c.kind==="y")t.y++;else t.r++;});
+    cards.forEach(function(c){if(!c.team)return;const t=by[c.team]||(by[c.team]={y:0,r:0,list:[]});if(c.kind==="y")t.y++;else t.r++;t.list.push(c);});
     const fp=mode==="fairplay"?fairPlayByTeam():null;
-    const rows=Object.keys(by).map(function(t){return {team:t,y:by[t].y,r:by[t].r,fp:fp?(fp[t]||0):0};});
+    const rows=Object.keys(by).map(function(t){return {team:t,y:by[t].y,r:by[t].r,list:by[t].list,fp:fp?(fp[t]||0):0};});
     if(mode==="fairplay")rows.sort(function(a,b){return a.fp-b.fp||(b.r-a.r)||(b.y-a.y);});
     else rows.sort(function(a,b){return (b.r-a.r)||(b.y-a.y)||a.team.localeCompare(b.team);});
     const fpc=mode==="fairplay";
+    const cols=fpc?5:4;
     bodyHtml='<table class="cd-table"><thead><tr><th class="cd-rk">#</th><th>Team</th><th class="cd-c">🟨</th><th class="cd-c">🟥</th>'+(fpc?'<th class="cd-c">Pts</th>':'')+'</tr></thead><tbody>'+
-      rows.map(function(r,i){return '<tr><td class="cd-rk">'+(i+1)+'</td><td class="cd-tm">'+teamLink(r.team,false,true)+'</td><td class="cd-c cd-y">'+zr(r.y)+'</td><td class="cd-c cd-r">'+zr(r.r)+'</td>'+(fpc?'<td class="cd-c cd-fp">'+r.fp+'</td>':'')+'</tr>';}).join("")+'</tbody></table>';
-    foot=fpc?"FIFA fair-play points — yellow −1, second-yellow −3, direct red −4 (most-penalised first). Tap a team for its profile.":"Sorted by most red cards, then yellows. Tap a team for its profile.";
+      rows.map(function(r,i){
+        const open=!!cdOpen[r.team];
+        const main='<tr class="cd-trow'+(open?' cd-on':'')+'" tabindex="0" role="button" onclick="if(!event.target.closest(\'[data-team]\'))cdToggleTeam(\''+r.team.replace(/'/g,"\\'")+'\')" aria-expanded="'+open+'">'+
+          '<td class="cd-rk">'+(i+1)+'</td><td class="cd-tm">'+teamLink(r.team,false,true)+'<span class="cd-caret">'+(open?'▴':'▾')+'</span></td>'+
+          '<td class="cd-c cd-y">'+zr(r.y)+'</td><td class="cd-c cd-r">'+zr(r.r)+'</td>'+(fpc?'<td class="cd-c cd-fp">'+r.fp+'</td>':'')+'</tr>';
+        if(!open)return main;
+        const list=r.list.slice().sort(function(a,b){return (a.ts-b.ts)||(mevMin(a.min)-mevMin(b.min));});
+        return main+'<tr class="cd-det"><td colspan="'+cols+'">'+list.map(function(c){return cdCardRow(c,false);}).join("")+'</td></tr>';
+      }).join("")+'</tbody></table>';
+    foot=(fpc?"FIFA fair-play points — yellow −1, second-yellow −3, direct red −4 (most-penalised first). ":"Sorted by most red cards, then yellows. ")+
+      "Tap a row to see every card — who, the minute, and the game (tap a card to open that match); tap the team name for its profile.";
+  }else if(mode==="players"){
+    const by={};
+    cards.forEach(function(c){
+      if(!c.player)return;
+      const k=c.player+"|"+c.team;
+      const p=by[k]||(by[k]={player:c.player,team:c.team,y:0,r:0,list:[]});
+      if(c.kind==="y")p.y++;else p.r++;p.list.push(c);
+    });
+    // teams still alive (in an undecided knockout match) — for the booking-watch badge
+    const alive={};
+    bracket.forEach(function(b){if(b.r!=="3rd"&&!koWinner(b)){[b.liveH,b.liveA].forEach(function(n){if(n&&!isSlotName(n))alive[canon(n)]=1;});}});
+    const rows=Object.keys(by).map(function(k){return by[k];})
+      .sort(function(a,b){return (b.r-a.r)||(b.y-a.y)||a.player.localeCompare(b.player);}).slice(0,40);
+    bodyHtml=rows.map(function(p){
+      const watch=(p.r===0&&p.y===1&&alive[canon(p.team)])?'<span class="cd-watch" title="One more yellow before the post-QF wipe means a one-match ban">⚠ on a booking</span>':'';
+      const detail=p.list.slice().sort(function(a,b){return a.ts-b.ts;}).map(function(c){return cdCardRow(c,false);}).join("");
+      return '<div class="cd-player"><div class="cd-phead">'+
+        '<span class="cd-pname">'+escHTML(p.player)+'</span>'+teamLink(p.team,false,true)+watch+
+        '<span class="cd-pc">'+(p.y?'<span class="cd-y">🟨'+p.y+'</span>':'')+(p.r?' <span class="cd-r">🟥'+p.r+'</span>':'')+'</span></div>'+detail+'</div>';
+    }).join("");
+    foot="Most-carded players (top 40, reds first). Every card lists its minute and match — tap one to open the game. ⚠ marks a player on one yellow whose team is still alive: two yellows in separate games before the post-quarterfinal wipe means a one-match ban; a red is at least one match.";
   }else if(mode==="round"){
     const by={};
     cards.forEach(function(c){const t=by[c.round]||(by[c.round]={y:0,r:0});if(c.kind==="y")t.y++;else t.r++;});
@@ -4459,12 +4548,16 @@ function buildCards(){
   }else{
     const ms=matchCardList().sort(function(a,b){return (b.y+b.r*2)-(a.y+a.r*2)||(b.r-a.r)||(b.ts-a.ts);});
     bodyHtml=ms.map(function(m){
+      const detail=m.cards.slice().sort(function(a,b){return mevMin(a.m)-mevMin(b.m);}).map(function(e){
+        return '<span class="cd-mchip" title="'+escHTML(e.tm||"")+'">'+(e.k==="y"?"🟨":"🟥")+' '+escHTML(e.m?String(e.m).replace(/['′’]/g,"")+"’ ":"")+escHTML(e.n||"")+'</span>';
+      }).join("");
       return '<div class="rs-m" tabindex="0" role="button" data-match="'+m.id+'"><div class="rs-top">'+
         '<span class="rs-d">'+escHTML(roundLabel(m.round))+'</span>'+
         '<span class="rs-line"><span class="rs-tn h">'+escHTML(m.home)+'</span><span class="rs-sc">'+escHTML(m.sc.replace("-","–"))+'</span><span class="rs-tn a">'+escHTML(m.away)+'</span></span>'+
-        '<span class="cd-mc">'+(m.y?'<span class="cd-y">🟨'+m.y+'</span>':'')+(m.r?' <span class="cd-r">🟥'+m.r+'</span>':'')+'</span></div></div>';
+        '<span class="cd-mc">'+(m.y?'<span class="cd-y">🟨'+m.y+'</span>':'')+(m.r?' <span class="cd-r">🟥'+m.r+'</span>':'')+'</span></div>'+
+        '<div class="cd-mcards">'+detail+'</div></div>';
     }).join("");
-    foot="Most-booked games first (reds weighted double). Tap a match for its timeline.";
+    foot="Most-booked games first (reds weighted double), each card with its minute and player (hover for the team). Tap a match for the full timeline.";
   }
   box.innerHTML=toggle+summary+bodyHtml+'<div class="cd-foot">'+foot+'</div>';
 }
