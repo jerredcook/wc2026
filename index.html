@@ -5435,6 +5435,58 @@ function parseESPNEvents(data,ds){
   return out;
 }
 
+/* ── Live-summary enrichment ──
+   ESPN's scoreboard updates a live match's SCORE immediately but often lags
+   the scorer/card `details` behind it until near full time — which froze the
+   Golden Boot, inline timelines and card views mid-match. When a live match's
+   score says more goals than we have scorers for (or it has no timeline at
+   all), pull that match's summary — which does update live — and rebuild
+   goals/ev from its keyEvents. Fires only for live matches that are actually
+   behind, so it costs at most a request or two per tick during games. */
+async function enrichLiveFromSummaries(events){
+  const stale=(events||[]).filter(function(e){
+    if(e.status!=="LIVE"||!e.id)return false;
+    const want=(e.hs||0)+(e.as||0);
+    const gks=(e.ev||[]).filter(function(x){return x.k==="g"||x.k==="og";}).length;
+    return (e.goals||[]).length<want||gks<want||!(e.ev&&e.ev.length);
+  });
+  if(!stale.length)return;
+  await Promise.all(stale.map(function(e){
+    return fetch("https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/summary?event="+encodeURIComponent(e.id),{cache:"no-store"})
+      .then(function(r){return r.ok?r.json():null;})
+      .then(function(d){
+        const ks=(d&&d.keyEvents)||[];
+        if(!ks.length)return;
+        const goals=[],evx=[];
+        const total=(e.hs||0)+(e.as||0);let acc=0;
+        ks.forEach(function(k){
+          const t=((k.type&&k.type.text)||"")+"";
+          const isOwn=/own goal/i.test(t);
+          const isGoal=k.scoringPlay===true||/goal/i.test(t);
+          const isRed=/red card|second yellow|sent off/i.test(t);
+          const isYel=/yellow card/i.test(t)&&!isRed;
+          if(!isGoal&&!isRed&&!isYel)return;
+          const p=(k.participants&&k.participants[0]&&k.participants[0].athlete)||null;
+          const tm=(k.team&&k.team.displayName)||"";
+          const clk=(k.clock&&k.clock.displayValue)||"";
+          const pen=k.penaltyKick===true||/penalt/i.test(t);
+          if(isGoal){
+            if(total>0&&acc>=total)return;   // beyond the score = live shootout kicks
+            acc++;
+            const nmG=p&&(p.displayName||p.shortName);
+            if(!isOwn&&nmG)goals.push({scorer:nmG,team:tm,pen:pen});
+          }
+          const nmE=p&&(p.shortName||p.displayName);
+          if(nmE)evx.push({m:clk,k:isOwn?"og":(isGoal?"g":(isRed?"r":"y")),n:nmE,p:pen,tm:tm});
+        });
+        evx.sort(function(a,b){return mevMin(a.m)-mevMin(b.m);});
+        // Adopt the summary's view only where it knows MORE than the scoreboard.
+        if(goals.length>(e.goals||[]).length)e.goals=goals;
+        if(evx.length>((e.ev||[]).length))e.ev=evx;
+      }).catch(function(){});
+  }));
+}
+
 /* YYYYMMDD for each day from Jun 11 2026 → today (capped at the Jul 19 final). */
 /* The whole tournament window (Jun 11 → Jul 19), not just up to today — ESPN
    already knows the upcoming knockout matchups (e.g. the R16 a winner advances
@@ -5550,6 +5602,7 @@ async function refreshScores(){
   }
   const t=new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
   if(reached&&results){
+    if(!fromSnap)await enrichLiveFromSummaries(espnEvents);   // live matches: fill scorer/card lag from the summary feed
     const n=applyLive(results);
     applyBracket(espnEvents);
     resolveBracketFromStandings();   // project/confirm knockout slots from standings…
