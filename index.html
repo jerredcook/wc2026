@@ -366,6 +366,41 @@ html[data-theme="dark"] .tm-results:hover{background:#1b2839;border-color:#6fb1f
 .rs-rname{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:#888;margin:0 0 4px}
 .rs-rn{color:#bbb;font-weight:700}
 .sg-today{display:inline-block;background:#0d8a4f;color:#fff;font-size:9px;font-weight:800;letter-spacing:.03em;padding:1px 6px;border-radius:8px;vertical-align:middle;margin-left:3px}
+/* ── News & daily digest ── */
+.dg-h{font-size:10.5px;font-weight:800;color:#999;letter-spacing:.06em;text-transform:uppercase;margin:12px 0 6px}
+.dg-h:first-child{margin-top:0}
+.dg-line{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:5px 0;border-bottom:1px solid #f3f4f6;cursor:pointer}
+.dg-line:hover{background:#fafbfc}
+.dg-res{font-size:13px;color:#333}
+.dg-res b{color:#111}
+.dg-v{color:#aab;font-weight:600}
+.dg-when{font-size:11px;font-weight:700;color:#888;font-variant-numeric:tabular-nums}
+.dg-tags{display:flex;gap:5px;flex-wrap:wrap}
+.dg-tag{font-size:10px;font-weight:700;border-radius:8px;padding:1px 8px;white-space:nowrap}
+.dg-upset{color:#8a2be2;background:#f1e8fb}
+.dg-pens{color:#8a6d1a;background:#f7efd8}
+.dg-hat{color:#0d6b52;background:#e2f5ee}
+.dg-red{color:#c9432f;background:#fdecea}
+.dg-we{color:#0d6b52;background:#e2f5ee;font-variant-numeric:tabular-nums}
+.dg-pulse{font-size:11.5px;color:#777;margin-top:10px;padding-top:8px;border-top:1px dashed #e8eaee}
+.dg-pulse b{color:#333}
+.nw-a{display:block;padding:7px 2px;border-bottom:1px solid #f3f4f6;text-decoration:none;color:inherit;border-radius:6px}
+a.nw-a:hover{background:#fafbfc}
+.nw-h{display:block;font-size:13px;font-weight:700;color:#1a1a1a;line-height:1.35}
+.nw-d{display:block;font-size:11.5px;color:#778;margin-top:1px;line-height:1.45}
+.nw-t{display:block;font-size:10px;font-weight:600;color:#aab;margin-top:2px}
+html[data-theme="dark"] .dg-line{border-color:#2a2d35}
+html[data-theme="dark"] .dg-line:hover,html[data-theme="dark"] a.nw-a:hover{background:#20232b}
+html[data-theme="dark"] .dg-res{color:#cfd3da}
+html[data-theme="dark"] .dg-res b,html[data-theme="dark"] .nw-h{color:#e9ecf3}
+html[data-theme="dark"] .dg-upset{color:#c9a6f5;background:#31264a}
+html[data-theme="dark"] .dg-pens{color:#e9c767;background:#3a3320}
+html[data-theme="dark"] .dg-hat,html[data-theme="dark"] .dg-we{color:#34d39a;background:#1d3a2d}
+html[data-theme="dark"] .dg-red{color:#f26d63;background:#40201d}
+html[data-theme="dark"] .dg-pulse{color:#8a9099;border-color:#2a2d35}
+html[data-theme="dark"] .dg-pulse b{color:#cfd3da}
+html[data-theme="dark"] .nw-a{border-color:#2a2d35}
+html[data-theme="dark"] .nw-d{color:#8a9099}
 .rs-m{padding:6px 4px;border-top:1px solid #f1f2f4;cursor:pointer;border-radius:6px}
 .rs-m:hover{background:#fafbfc}
 .rs-top{display:flex;align-items:center;gap:8px}
@@ -780,6 +815,11 @@ html[data-theme="dark"] .rk-dn{color:#f26d63}
 .tm-dischint{font-weight:600;text-transform:none;letter-spacing:0;color:#bbb;font-size:10px;margin-left:auto}
 .tm-disc[open] .tm-dischint{display:none}
 .tm-watch{font-size:11px;font-weight:700;color:#8a6d1a;background:#f7efd8;border-radius:8px;padding:5px 10px;margin-top:6px;line-height:1.5}
+.tm-cap{font-size:12px;font-weight:600;color:#555;background:#f5f6f8;border:1px solid #e9ebef;border-radius:9px;padding:6px 11px;line-height:1.5}
+.tm-story{display:flex;flex-wrap:wrap;gap:6px}
+.tm-storyline{font-size:11px;font-weight:700;color:#0d6b52;background:#e2f5ee;border-radius:9px;padding:3px 10px}
+html[data-theme="dark"] .tm-cap{color:#aab0b8;background:#23262e;border-color:#31343d}
+html[data-theme="dark"] .tm-storyline{color:#34d39a;background:#1d3a2d}
 html[data-theme="dark"] .tm-tile{background:#23262e;border-color:#31343d;color:#7a808a}
 html[data-theme="dark"] .tm-tile b{color:#e9ecf3}
 html[data-theme="dark"] .tm-pts,html[data-theme="dark"] .tm-next{color:#aab0b8}
@@ -1406,6 +1446,18 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
   </div>
 </div>
 
+<!-- ══════════ NEWS & DAILY DIGEST ══════════ -->
+<div class="rs-section" id="nw-section">
+  <div class="rs-head" tabindex="0" role="button" onclick="toggleNews()">
+    <div class="rs-titlewrap">
+      <div class="rs-title">📰 The Daily</div>
+      <div class="rs-sub">Today in the Cup — results told as stories, today's stakes, and the latest World Cup headlines</div>
+    </div>
+    <span class="rs-toggle" id="nw-toggle">▲ Hide</span>
+  </div>
+  <div id="nw-body"></div>
+</div>
+
 <!-- ══════════ THE STORY OF 2026 — appears once the Final is decided ══════════ -->
 <div class="rs-section" id="sy-section" style="display:none">
   <div class="rs-head" tabindex="0" role="button" onclick="toggleStory()">
@@ -1660,6 +1712,7 @@ const SECTIONS=[
   {key:"rankings",body:"rk-body",tog:"rk-toggle"},
   {key:"bracket",body:"bk-body",tog:"bk-toggle"},
   {key:"story",body:"sy-body",tog:"sy-toggle"},
+  {key:"news",body:"nw-body",tog:"nw-toggle"},
   {key:"pickem",body:"pk-body",tog:"pk-toggle"},
   {key:"friendlies",body:"fr-body",tog:"fr-toggle"},
   {key:"history",body:"hx-body",tog:"hx-toggle"},
@@ -1697,6 +1750,7 @@ function reorderSections(){
   const groups=[
     [secOf("sg-body")],                                 // Full schedule (open, top)
     [$("#sy-section")],                                 // Story of 2026 (hidden until the Final is decided)
+    [$("#nw-section")],                                 // News & daily digest
     [$(".bk-section")],                                 // Bracket  (open)
     [$(".st-section")],                                 // Standings (open)
     [$(".sc-section")],                                 // Top scorers
@@ -1862,6 +1916,7 @@ const TEAMS={
   "Ghana":{flag:"🇬🇭",group:"L",conf:"CAF",rank:73,nick:"Black Stars",coach:"Carlos Queiroz",capital:"Accra",apps:5,best:"Quarterfinals (2010)",fact:"In 2010 came within a Suárez handball and a missed penalty of being the first African semifinalists.",players:[["Lawrence Ati-Zigi","GK","St Gallen","Starter"],["Joseph Anang","GK","St Patrick's Athletic","Starter"],["Benjamin Asare","GK","Accra Hearts of Oak","Starter"],["Alidu Seidu","DF","Rennes","Rotation"],["Caleb Yirenkyi","DF","Nordsjaelland","Rotation"],["Jonas Adjetey","DF","Wolfsburg","Rotation"],["Abdul Mumin","DF","Rayo Vallecano","Rotation"],["Gideon Mensah","DF","Auxerre","Rotation"],["Baba Rahman","DF","PAOK","Rotation"],["Jerome Opoku","DF","Istanbul Basaksehir","Rotation"],["Kojo Oppong Peprah","DF","Nice","Reserve"],["Marvin Senaya","DF","Auxerre","Rotation"],["Derrick Luckassen","DF","Pafos","Starter"],["Thomas Partey","MF","Villarreal","Rotation"],["Kwasi Sibo","MF","Real Oviedo","Rotation"],["Elisha Owusu","MF","Auxerre","Starter"],["Augustine Boakye","MF","Saint-Etienne","Rotation"],["Fatawu Issahaku","MF","Leicester City","Starter"],["Jordan Ayew","FW","Leicester City","Rotation"],["Brandon Thomas-Asante","FW","Coventry City","Starter"],["Antoine Semenyo","FW","Bournemouth","Starter"],["Christopher Bonsu Baah","FW","Al Qadsiah","Rotation"],["Inaki Williams","FW","Athletic Bilbao","Starter"],["Kamaldeen Sulemana","FW","Atalanta","Sub"],["Ernest Nuamah","FW","Lyon","Sub"],["Prince Kwabena Adu","FW","Viktoria Plzen","Reserve"]]},
   "Panama":{flag:"🇵🇦",group:"L",conf:"CONCACAF",rank:34,nick:"La Marea Roja (Red Tide)",coach:"Thomas Christiansen",capital:"Panama City",apps:2,best:"Group stage (2018)",fact:"The government declared a national holiday when Panama qualified for its first World Cup in 2018.",players:[["Orlando Mosquera","GK","Al-Fayha","Starter"],["Luis Mejia","GK","Nacional","Starter"],["Cesar Samudio","GK","CD Marathon","Starter"],["Cesar Blackman","DF","Slovan Bratislava","Rotation"],["Jorge Gutierrez","DF","Deportivo La Guaira","Rotation"],["Amir Murillo","DF","Besiktas","Starter"],["Fidel Escobar","DF","Deportivo Saprissa","Starter"],["Andres Andrade","DF","LASK","Starter"],["Edgardo Farina","DF","Pari Nizhny Novgorod","Rotation"],["Jose Cordoba","DF","Norwich City","Starter"],["Eric Davis","DF","CD Plaza Amador","Starter"],["Jiovani Ramos","DF","Academia Puerto Cabello","Rotation"],["Roderick Miller","DF","Turan Tovuz","Starter"],["Anibal Godoy","MF","San Diego FC","Starter"],["Adalberto Carrasquilla","MF","Pumas UNAM","Starter"],["Carlos Harvey","MF","Minnesota United","Rotation"],["Cristian Martinez","MF","Hapoel Ironi Kiryat Shmona","Rotation"],["Jose Luis Rodriguez","MF","FC Juarez","Rotation"],["Cesar Yanis","MF","Cobresal","Rotation"],["Yoel Barcenas","MF","Mazatlan","Rotation"],["Alberto Quintero","MF","CD Plaza Amador","Starter"],["Azarias Londono","MF","Universidad Catolica","Rotation"],["Ismael Diaz","FW","Leon","Rotation"],["Cecilio Waterman","FW","Universidad de Concepcion","Rotation"],["Jose Fajardo","FW","Universidad Catolica","Starter"],["Tomas Rodriguez","FW","Deportivo Saprissa","Rotation"]]}
 };
+/*CAPSULES-START*/const CAPSULES={"Mexico":"2022 group · 2018 R16 · 2014 R16 · 2010 R2 · 2006 R2","South Africa":"2010 group · 2002 group · 1998 group","South Korea":"2022 R16 · 2018 group · 2014 group · 2010 R2 · 2006 group","Czechia":"2006 group · 1990 QF · 1982 group · 1970 group · 1962 final","Canada":"2022 group · 1986 group","Qatar":"2022 group","Switzerland":"2022 R16 · 2018 R16 · 2014 R16 · 2010 group · 2006 R2","Brazil":"2022 QF · 2018 QF · 2014 4th · 2010 QF · 2006 QF","Morocco":"2022 4th · 2018 group · 1998 group · 1994 group · 1986 R2","Haiti":"1974 group","Scotland":"1998 group · 1990 group · 1986 group · 1982 group · 1978 group","USA":"2022 R16 · 2014 R16 · 2010 R2 · 2006 group · 2002 QF","Paraguay":"2010 R2 · 2006 group · 2002 R2 · 1998 R2 · 1986 R2","Türkiye":"2002 3rd · 1954 group","Australia":"2022 R16 · 2018 group · 2014 group · 2010 group · 2006 R2","Germany":"2022 group · 2018 group · 2014 🏆 · 2010 3rd · 2006 3rd","Ivory Coast":"2014 group · 2010 group · 2006 group","Ecuador":"2022 group · 2014 group · 2006 R2 · 2002 group","Netherlands":"2022 QF · 2014 3rd · 2010 final · 2006 R2 · 1998 4th","Japan":"2022 R16 · 2018 R16 · 2014 group · 2010 R2 · 2006 group","Sweden":"2018 QF · 2006 R2 · 2002 R2 · 1994 3rd · 1990 group","Tunisia":"2022 group · 2018 group · 2006 group · 2002 group · 1998 group","Belgium":"2022 group · 2018 3rd · 2014 QF · 2002 R2 · 1998 group","Egypt":"2018 group · 1990 group · 1934 group","New Zealand":"2010 group · 1982 group","Iran":"2022 group · 2018 group · 2014 group · 2006 group · 1998 group","Spain":"2022 R16 · 2018 R16 · 2014 group · 2010 🏆 · 2006 R2","Uruguay":"2022 group · 2018 QF · 2014 R16 · 2010 4th · 2002 group","Saudi Arabia":"2022 group · 2018 group · 2006 group · 2002 group · 1998 group","France":"2022 final · 2018 🏆 · 2014 QF · 2010 group · 2006 final","Senegal":"2022 R16 · 2018 group · 2002 QF","Iraq":"1986 group","Norway":"1998 R2 · 1994 group · 1938 group","Argentina":"2022 🏆 · 2018 R16 · 2014 final · 2010 QF · 2006 QF","Austria":"1998 group · 1990 group · 1982 R2 · 1978 R2 · 1958 group","Algeria":"2014 R16 · 2010 group · 1986 group · 1982 group","Colombia":"2018 R16 · 2014 QF · 1998 group · 1994 group · 1990 R2","DR Congo":"1974 group","Portugal":"2022 QF · 2018 R16 · 2014 group · 2010 R2 · 2006 4th","England":"2022 QF · 2018 4th · 2014 group · 2010 R2 · 2006 QF","Croatia":"2022 3rd · 2018 final · 2014 group · 2006 group · 2002 group","Ghana":"2022 group · 2014 group · 2010 QF · 2006 R2","Panama":"2018 group"};/*CAPSULES-END*/
 const CONF_ORDER=["UEFA","CONMEBOL","CONCACAF","CAF","AFC","OFC"];
 const CONF_COLOR={UEFA:"#2b6cb0",CONMEBOL:"#1a7d4f",CONCACAF:"#9c5400",CAF:"#1f8a70",AFC:"#9a2b2b",OFC:"#5a3e9a"};
 
@@ -2175,9 +2230,13 @@ function teamDossierHTML(t){
   const key=canon(t.name);
   const ms=teamMatches(t.name).filter(function(x){return x.played&&x.sc&&!x.live;});
   let html="";
+  // World Cup pedigree — recent appearances, computed from the 1930–2022 archive
+  const cap=(typeof CAPSULES!=="undefined"&&CAPSULES[t.name])||null;
+  if(cap)html+='<div class="tm-cap">📜 '+escHTML(cap)+'</div>';
+  else if(t.apps===1)html+='<div class="tm-cap">📜 World Cup debut — 2026 is their first finals</div>';
   // Record tiles
+  let w=0,d=0,l=0,gf=0,ga=0,soW=0;
   if(ms.length){
-    let w=0,d=0,l=0,gf=0,ga=0,soW=0;
     ms.forEach(function(x){
       const sp=x.sc.split("-"),own=x.isHome?+sp[0]:+sp[1],oth=x.isHome?+sp[1]:+sp[0];
       gf+=own;ga+=oth;
@@ -2214,6 +2273,24 @@ function teamDossierHTML(t){
     html+='<div class="tm-subsec">⚽ Scorers</div>'+sc.map(function(s){
       return '<div class="tm-scr"><span class="tm-scrn">'+escHTML(s.scorer)+'</span><span class="tm-scrg">'+s.goals+(s.pens?'<span class="tm-scrp"> ('+s.pens+'p)</span>':'')+'</span></div>';
     }).join("");
+  }
+  // Storylines — short data-driven narratives, only when actually true
+  if(ms.length){
+    const story=[];
+    if(l===0&&ms.length>=3)story.push("Unbeaten through "+ms.length+" matches");
+    const sc0=(typeof scorerData!=="undefined"&&scorerData?scorerData:[]).filter(function(s){return canon(s.team)===key;})[0];
+    if(sc0&&gf>0&&sc0.goals/gf>=0.4)story.push(sc0.scorer+" has "+sc0.goals+" of their "+gf+" goals");
+    let cs=0;ms.forEach(function(x){const sp=x.sc.split("-");if((x.isHome?+sp[1]:+sp[0])===0)cs++;});
+    if(cs>=2)story.push(cs+" clean sheets");
+    let cb=0;ms.forEach(function(x){
+      const sp=x.sc.split("-"),own=x.isHome?+sp[0]:+sp[1],oth=x.isHome?+sp[1]:+sp[0];
+      const wonIt=own>oth||((own===oth)&&((x.isHome&&x.win==="home")||(!x.isHome&&x.win==="away")));
+      if(!wonIt)return;
+      const g0=(x.ev||[]).find(function(e){return e.k==="g"||e.k==="og";});
+      if(g0&&g0.tm&&canon(g0.tm)!==key&&g0.k!=="og")cb++;
+    });
+    if(cb)story.push(cb+" comeback win"+(cb>1?"s":"")+" (conceded first)");
+    if(story.length)html+='<div class="tm-story">'+story.map(function(s){return '<span class="tm-storyline">'+escHTML(s)+'</span>';}).join("")+'</div>';
   }
   // Discipline: totals + every card (who, minute, game), collapsible
   const cds=cardsData().filter(function(c){return canon(c.team)===key;}).sort(function(a,b){return (a.ts-b.ts)||(mevMin(a.min)-mevMin(b.min));});
@@ -4678,6 +4755,114 @@ function toggleCards(){toggleSection("cd-body","cd-toggle","cards");}
 function toggleResults(){toggleSection("rs-body","rs-toggle","results");}
 function toggleSchedule(){toggleSection("sg-body","sg-toggle","schedule");}
 function toggleStory(){toggleSection("sy-body","sy-toggle","story");}
+function toggleNews(){toggleSection("nw-body","nw-toggle","news");}
+
+/* ══════════ NEWS & DAILY DIGEST ══════════
+   Two layers in one section: an auto-written "what happened / up next" digest
+   built entirely from the app's own data (so it works forever, archive
+   included), and the latest World Cup headlines from ESPN's news feed —
+   preserved into the daily snapshot so the storylines outlive the feed. */
+var __news=null,__newsAt=0;
+function loadNews(force){
+  if(!force&&__newsAt&&Date.now()-__newsAt<9*60000)return;   // at most ~every 9 min
+  __newsAt=Date.now();
+  fetch("https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/news?limit=14",{cache:"no-store"})
+    .then(function(r){return r.ok?r.json():null;})
+    .then(function(d){
+      const arts=(d&&d.articles)||[];
+      if(arts.length){
+        __news=arts.map(function(a){
+          const href=(((a.links||{}).web)||{}).href||"";
+          return {h:a.headline||"",d:a.description||"",t:a.published||"",link:href,video:/\/video\//.test(href)};
+        });
+        buildNews();
+      }else fallbackNewsFromSnapshot();
+    }).catch(fallbackNewsFromSnapshot);
+}
+function fallbackNewsFromSnapshot(){
+  getWCSnapshot().then(function(s){
+    if(!__news&&s&&s.news&&s.news.length){__news=s.news;buildNews();}
+  }).catch(function(){});
+}
+/* The auto-written digest: the last match day as one-line stories (upsets by
+   seeding gap, shootouts, hat-tricks, sendings-off), the next day's stakes
+   with win expectancy, and a tournament pulse line. */
+function digestHTML(){
+  const ms=results2026().filter(function(m){return m.sc&&!m.live;}).sort(function(a,b){return (a.ts||0)-(b.ts||0);});
+  const zone=activeZone();
+  const dayOf=function(ts){return new Date(ts).toLocaleDateString("en-US",{timeZone:zone,month:"short",day:"numeric"});};
+  let html="";
+  if(ms.length){
+    const lastDay=dayOf(ms[ms.length-1].ts);
+    const dayMs=ms.filter(function(m){return dayOf(m.ts)===lastDay;});
+    html+='<div class="dg-h">'+escHTML(lastDay)+' — what happened</div>'+dayMs.map(function(m){
+      const sp=m.sc.split("-");
+      let w=null,l=null;
+      if(+sp[0]>+sp[1]){w=m.home;l=m.away;}else if(+sp[1]>+sp[0]){w=m.away;l=m.home;}
+      else if(m.win==="home"){w=m.home;l=m.away;}else if(m.win==="away"){w=m.away;l=m.home;}
+      const tw=teamRecord(w),tl=teamRecord(l);
+      const tags=[];
+      if(tw&&tl&&(tw.rank-tl.rank)>=10)tags.push('<span class="dg-tag dg-upset">⚡ upset — seeded '+(tw.rank-tl.rank)+' places apart</span>');
+      if(m.pens)tags.push('<span class="dg-tag dg-pens">🧤 won '+(w===m.home?m.pens.h+'–'+m.pens.a:m.pens.a+'–'+m.pens.h)+' on penalties</span>');
+      const per={};(m.ev||[]).forEach(function(e){if(e.k==="g")per[e.n]=(per[e.n]||0)+1;});
+      Object.keys(per).forEach(function(n){if(per[n]>=3)tags.push('<span class="dg-tag dg-hat">🎩 hat-trick — '+escHTML(n)+'</span>');});
+      const reds=(m.ev||[]).filter(function(e){return e.k==="r";}).length;
+      if(reds)tags.push('<span class="dg-tag dg-red">🟥 '+reds+' sent off</span>');
+      const scDisp=w?(w===m.home?sp[0]+'–'+sp[1]:sp[1]+'–'+sp[0]):m.sc.replace("-","–");
+      return '<div class="dg-line" tabindex="0" role="button" data-match="'+m.id+'">'+
+        '<span class="dg-res"><b>'+escHTML(w||m.home)+'</b> '+scDisp+' '+escHTML(l||m.away)+'</span>'+
+        '<span class="rbadge '+roundClass(m.round)+'">'+roundLabel(m.round)+'</span>'+
+        (tags.length?'<span class="dg-tags">'+tags.join("")+'</span>':'')+'</div>';
+    }).join("");
+  }
+  const nxt=nextFixture();
+  if(nxt){
+    const nd=dayOf(nxt.ts);
+    const up=[];
+    stadiums.forEach(function(s){s.m.forEach(function(m){
+      const ts=matchInstant(m);
+      if(ts==null||(m.sc&&!m.live))return;
+      if(dayOf(ts)===nd)up.push({m:m,ts:ts});
+    });});
+    if(up.length){
+      html+='<div class="dg-h">'+escHTML(nd)+' — up next</div>'+up.sort(function(a,b){return a.ts-b.ts;}).map(function(x){
+        const g=matchTeamsStr(x.m),p=g.split(" vs ").map(function(t){return t.trim();});
+        const tH=teamRecord(p[0]),tA=teamRecord(p[1]||"");
+        const we=(tH&&tA)?winExpect(tH.name,tA.name):null;
+        const f=fmtInstant(x.ts);
+        return '<div class="dg-line" tabindex="0" role="button" data-match="'+x.m._id+'">'+
+          '<span class="dg-res">'+escHTML(p[0])+' <span class="dg-v">v</span> '+escHTML(p[1]||"")+'</span>'+
+          '<span class="dg-when">'+f.time+' '+f.tz+'</span>'+
+          '<span class="rbadge '+roundClass(x.m.r)+'">'+roundLabel(x.m.r)+'</span>'+
+          (we!=null?'<span class="dg-tag dg-we" title="win expectancy from today\'s FIFA points">'+Math.round(we*100)+'–'+(100-Math.round(we*100))+'</span>':'')+'</div>';
+      }).join("");
+    }
+  }
+  let goals=0;ms.forEach(function(m){const sp=m.sc.split("-");goals+=(+sp[0]||0)+(+sp[1]||0);});
+  const boot=(typeof scorerData!=="undefined"&&scorerData&&scorerData[0])?scorerData[0]:null;
+  let oddsLead="";
+  if(__odds){
+    const ks=Object.keys(__odds.title).sort(function(a,b){return __odds.title[b]-__odds.title[a];});
+    if(ks.length)oddsLead=' · 🏆 favourite: <b>'+escHTML(ks[0])+'</b> '+pctOdds(__odds.title[ks[0]]);
+  }
+  if(ms.length)html+='<div class="dg-pulse">'+ms.length+' matches · '+goals+' goals ('+(goals/ms.length).toFixed(2)+'/match)'+
+    (boot?' · ⚽ Boot: <b>'+escHTML(boot.scorer)+'</b> '+boot.goals:'')+oddsLead+'</div>';
+  return html;
+}
+function buildNews(){
+  const box=document.getElementById("nw-body");if(!box)return;
+  let html=digestHTML();
+  if(__news&&__news.length){
+    html+='<div class="dg-h">📰 Headlines</div>'+__news.slice(0,10).map(function(a){
+      let when="";try{if(a.t)when=new Date(a.t).toLocaleDateString("en-US",{month:"short",day:"numeric"});}catch(e){}
+      const inner='<span class="nw-h">'+(a.video?"▶ ":"")+escHTML(a.h)+'</span>'+
+        (a.d&&a.d!==a.h?'<span class="nw-d">'+escHTML(a.d)+'</span>':'')+
+        '<span class="nw-t">'+escHTML(when)+(when?' · ':'')+'ESPN'+(a.link?' ↗':'')+'</span>';
+      return a.link?'<a class="nw-a" href="'+escHTML(a.link)+'" target="_blank" rel="noopener">'+inner+'</a>':'<div class="nw-a">'+inner+'</div>';
+    }).join("");
+  }
+  box.innerHTML=html||'<div class="rs-empty">The digest fills in as matches are played; headlines load from the live feed.</div>';
+}
 
 /* ══════════ THE STORY OF 2026 ══════════
    Auto-generated recap, rendered only once the Final has a decided result —
@@ -5626,6 +5811,8 @@ async function refreshScores(){
     buildToday();
     buildFollowBar();
     buildStory();     // appears on its own once the Final is decided
+    loadNews();       // rate-limited internally (~9 min between pulls)
+    buildNews();      // the digest re-writes itself from the latest results
     fireGoalNotifications(goals.concat(bgoals));
     if(goals.length||bgoals.length)setTimeout(function(){clearFlash();clearBracketFlash();buildGrid();buildToday();buildSchedule();buildBracket();},2200); // clear pulse after it plays
     if(fromSnap){
@@ -5708,6 +5895,7 @@ async function refreshScores(){
   buildResults();
   buildSchedule();
   buildStory();
+  buildNews();loadNews(true);   // digest + headlines
   buildGrid();
   refreshScores(); // auto-pull live + final scores on load (works when hosted or in Claude's view)
 

@@ -239,6 +239,22 @@ async function main() {
   try { existing = JSON.parse(await readFile(path, "utf8")); } catch (e) { /* none yet */ }
   const existingPlayed = (existing && existing.counts && existing.counts.played) || 0;
 
+  // 2b) The day's headlines — preserved so the tournament's storylines outlive
+  //     the feed. Union by link with what's already archived (never shrinks).
+  let news = (existing && existing.news) || [];
+  try {
+    const nd = await getJSON("https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/news?limit=20");
+    const fresh = ((nd && nd.articles) || []).map(a => {
+      const href = (((a.links || {}).web) || {}).href || "";
+      return { h: a.headline || "", d: a.description || "", t: a.published || "", link: href, video: /\/video\//.test(href) };
+    }).filter(a => a.h);
+    const byLink = {};
+    for (const a of news) byLink[a.link || a.h] = a;
+    for (const a of fresh) byLink[a.link || a.h] = a;      // fresh copy wins
+    news = Object.values(byLink).sort((x, y) => String(y.t).localeCompare(String(x.t))).slice(0, 300);
+    console.log(`  news: ${fresh.length} fresh headline(s), ${news.length} archived`);
+  } catch (e) { console.log("  news fetch skipped:", e.message); }
+
   // 3) Non-destructive merge with the existing archive, so a flaky or partial ESPN
   //    pull can never erase preserved data:
   //    - events: union by match id, each kept at its best-known status
@@ -267,7 +283,8 @@ async function main() {
   // Skip rewriting when nothing changed, so a scheduled run doesn't churn a commit.
   const changed = !existing
     || JSON.stringify(existing.events) !== JSON.stringify(mergedEvents)
-    || JSON.stringify(existing.summaries) !== JSON.stringify(mergedSummaries);
+    || JSON.stringify(existing.summaries) !== JSON.stringify(mergedSummaries)
+    || JSON.stringify(existing.news || []) !== JSON.stringify(news);
   if (!changed) {
     console.log(`✓ No change since last snapshot (${mergedEvents.length} matches, ${summaryCount} summaries) — leaving the file untouched.`);
   } else {
@@ -276,7 +293,8 @@ async function main() {
       through: mThrough,
       counts: { days: dates.length, eventsSeen: all.length, played: mergedEvents.length, summaries: summaryCount },
       events: mergedEvents,
-      summaries: mergedSummaries
+      summaries: mergedSummaries,
+      news: news
     };
     await mkdir(join(ROOT, "data"), { recursive: true });
     await writeFile(path, JSON.stringify(snapshot));
