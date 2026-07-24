@@ -1,13 +1,18 @@
 #!/usr/bin/env node
-/* Fetch the current FIFA World Ranking from FIFA's own API and write a compact
-   data/rankings.json that the app reads to show each team's *current* rank next
-   to its *start-of-tournament* rank (the hardcoded TEAMS[].rank). Runs on the
-   daily GitHub Action alongside the snapshot. FIFA publishes on fixed dates
-   (~monthly), so this only changes when they do.
+/* Fetch the current FIFA World Ranking from FIFA's own API. Runs on the weekly
+   GitHub Action. FIFA publishes on fixed dates (men ~monthly, women ~quarterly),
+   so the output only changes when they do.
 
    Usage:
-     node scripts/fetch-rankings.mjs            # men's ranking (default)
-     node scripts/fetch-rankings.mjs --women    # women's ranking (for the WWC edition)
+     node scripts/fetch-rankings.mjs            # men  → data/rankings.json
+     node scripts/fetch-rankings.mjs --women    # women → data/rankings-women.json
+
+   The two tables use DIFFERENT dateId schemes on FIFA's API (verified 2026-07):
+   men's releases are numeric ("id15175"), women's are date-keyed
+   ("ranking_20260616") — a numeric probe finds nothing in the women's space and
+   vice versa. Men: keyed ranks for the app's 48 WC teams + all 211 nations.
+   Women: the full table as ordered rows (rank, name, points, previous rank,
+   confederation) since the app shows it as its own list.
 
    Pure Node, no deps. Fails loudly (exit 1) so a broken fetch emails instead of
    silently shipping a partial ranking. */
@@ -31,6 +36,9 @@ const FIFA_TO_APP = {
   "Cabo Verde": "Cape Verde",
   "Congo DR": "DR Congo",
   "China PR": "China",   // (for the women's edition; harmless for men's)
+  "Korea DPR": "North Korea",
+  "DPR Korea": "North Korea",
+  "Republic of Ireland": "Ireland",
 };
 /* Same normalization the app uses to key the lookup (NFD, lowercase, alnum). */
 const key = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "")
@@ -128,4 +136,67 @@ async function main() {
   await writeFile(path, JSON.stringify(out));
   console.log(`✓ wrote data/rankings.json — ${out.count} teams, FIFA ${GENDER} ranking updated ${updated} (${latest})`);
 }
-main().catch(e => { console.error("✗ rankings fetch failed:", e.message); process.exit(1); });
+/* ── Women's edition ─────────────────────────────────────────────────────────
+   Release ids are date-keyed (dateId=ranking_YYYYMMDD). The women's page embeds
+   the current release's lastUpdateDate (and usually the nextUpdateDate); that is
+   only a FLOOR — we then try every later date through today, so a stale page
+   (the men's page once ran ~10 months behind) can never pin us to an old
+   release. Cost between releases: ~7 probes on the weekly Action. */
+const WOVERVIEW = d8 => `https://inside.fifa.com/api/ranking-overview?locale=en&dateId=ranking_${d8}`;
+const ymd = ms => new Date(ms).toISOString().slice(0, 10).replace(/-/g, "");
+async function getWRelease(d8) {
+  try {
+    const data = JSON.parse(await getText(WOVERVIEW(d8)));
+    const rows = data.rankings || [];
+    if (rows.length < 120) return null;      // the women's table is ~200 nations
+    return { id: "ranking_" + d8, rows, updated: (rows[0].lastUpdateDate || "").slice(0, 10), next: (rows[0].nextUpdateDate || "").slice(0, 10) };
+  } catch { return null; }
+}
+async function mainWomen() {
+  const html = await getText(PAGE);
+  const pm = html.match(/"lastUpdateDate":"(\d{4})-(\d{2})-(\d{2})/);
+  const nm = html.match(/"nextUpdateDate":"(\d{4}-\d{2}-\d{2})/);
+  const path = join(ROOT, "data", "rankings-women.json");
+  let existing = null;
+  try { existing = JSON.parse(await readFile(path, "utf8")); } catch { /* none yet */ }
+  const floors = [];
+  if (pm) floors.push(pm[1] + pm[2] + pm[3]);
+  if (existing && existing.updated) floors.push(String(existing.updated).replace(/\D/g, "").slice(0, 8));
+  if (!floors.length) throw new Error("no lastUpdateDate on the FIFA women's page (layout changed?)");
+  const floor8 = floors.sort().pop();
+  const cands = [floor8];
+  const floorMs = Date.parse(`${floor8.slice(0, 4)}-${floor8.slice(4, 6)}-${floor8.slice(6, 8)}T00:00:00Z`);
+  for (let t = floorMs + 864e5; t <= Date.now(); t += 864e5) cands.push(ymd(t));
+  let pick = null, i = 0;
+  await Promise.all(Array.from({ length: CONC }, async () => {
+    while (i < cands.length) {
+      const d8 = cands[i++];
+      const rel = await getWRelease(d8);
+      if (rel && (!pick || rel.updated > pick.updated)) pick = rel;
+    }
+  }));
+  if (!pick) throw new Error(`no live women's ranking release found from ${floor8} through today`);
+  console.log(`  release discovery: floor ${floor8}, probed ${cands.length} dates — using ${pick.id}, updated ${pick.updated}`);
+
+  const rowsOut = pick.rows.map(x => {
+    const ri = x.rankingItem || {};
+    if (ri.rank == null) return null;
+    return { r: ri.rank, n: FIFA_TO_APP[ri.name] || ri.name,
+             p: Math.round(ri.totalPoints * 100) / 100, pr: ri.previousRank,
+             c: (x.tag && x.tag.id) || "" };
+  }).filter(Boolean).sort((a, b) => a.r - b.r);
+  const next = pick.next || (nm ? nm[1] : "");
+  const out = { source: "FIFA", gender: "women", dateId: pick.id, updated: pick.updated, next, count: rowsOut.length, rows: rowsOut };
+
+  if (existing && existing.dateId === out.dateId && (existing.next || "") === (next || "") &&
+      JSON.stringify(existing.rows) === JSON.stringify(rowsOut)) {
+    console.log(`✓ Women's ranking unchanged (${out.count} nations, FIFA release of ${pick.updated}) — leaving the file.`);
+    return;
+  }
+  await mkdir(join(ROOT, "data"), { recursive: true });
+  await writeFile(path, JSON.stringify(out));
+  console.log(`✓ wrote data/rankings-women.json — ${out.count} nations, FIFA women's ranking of ${pick.updated}${next ? ` (next ${next})` : ""}`);
+}
+
+(GENDER === "women" ? mainWomen() : main())
+  .catch(e => { console.error("✗ rankings fetch failed:", e.message); process.exit(1); });

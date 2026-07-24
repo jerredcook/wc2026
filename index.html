@@ -285,6 +285,21 @@ html[data-theme="dark"] .mev-e.red .mev-n{color:#f0a39e}
 html[data-theme="dark"] .mev-e.yel .mev-n{color:#d6c24a}
 .rs-section{background:#fff;border-radius:12px;padding:14px 16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
 html[data-theme="dark"] .rs-section{background:#1e2026;box-shadow:0 1px 3px rgba(0,0,0,.45)}
+/* ── The World Cup 2026 group — one gold-edged card holding every tournament section ── */
+.wc-section{background:#fbf9f2;border:1px solid #e8e0c8;border-left:4px solid #c9a227;border-radius:14px;padding:14px 16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(0,0,0,.07)}
+.wc-head{display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer}
+.wc-title{font-size:17px;font-weight:800;color:#1a1a1a}
+.wc-sub{font-size:12px;color:#8a8f98;margin-top:2px;line-height:1.4}
+.wc-toggle{font-size:12px;font-weight:600;color:#555;border:1px solid #ddd;border-radius:14px;padding:3px 11px;background:#fafafa;white-space:nowrap;flex-shrink:0}
+#wc26-body{margin-top:14px}
+#wc26-body>:last-child,#wc26-body .rs-section:last-child{margin-bottom:0}
+html[data-theme="dark"] .wc-section{background:#191b21;border-color:#38341f;border-left-color:#c9a227;box-shadow:0 1px 3px rgba(0,0,0,.45)}
+html[data-theme="dark"] .wc-title{color:#e9eaed}
+html[data-theme="dark"] .wc-toggle{background:#2a2d35;border-color:#3a3e47;color:#cfd3da}
+/* Rankings tabs (Men / Women) + women's table extras */
+.rk-tabs{display:flex;gap:6px;margin:10px 0 12px;flex-wrap:wrap}
+.rk-wrow{cursor:default}
+.rk-wmore{text-align:center;margin:10px 0 2px}
 .rs-head{display:flex;justify-content:space-between;align-items:center;gap:10px;cursor:pointer}
 .rs-title{font-size:16px;font-weight:800;color:#1a1a1a}
 .rs-sub{font-size:12px;color:#8a8f98;margin-top:2px;line-height:1.4}
@@ -1263,7 +1278,7 @@ html[data-theme="dark"] .hx-fact{background:#262318;border-color:#3d3a25;color:#
 /* ── Keyboard focus indicator for the clickable rows/cards/heads ── */
 .mrow:focus-visible,.td-row:focus-visible,.bk-m:focus-visible,.tsch-row:focus-visible,.rk-row:focus-visible,
 .tm-plk:focus-visible,.st-head:focus-visible,.th-head:focus-visible,.sc-head:focus-visible,.rk-head:focus-visible,
-.bk-head:focus-visible,.fr-head:focus-visible,.sd-head:focus-visible,.tlink:focus-visible,[role="button"]:focus-visible{
+.bk-head:focus-visible,.fr-head:focus-visible,.sd-head:focus-visible,.wc-head:focus-visible,.tlink:focus-visible,[role="button"]:focus-visible{
   outline:2px solid #0d8a4f;outline-offset:1px;border-radius:6px}
 html[data-theme="dark"] .mrow:focus-visible,html[data-theme="dark"] .td-row:focus-visible,html[data-theme="dark"] .bk-m:focus-visible,
 html[data-theme="dark"] .tsch-row:focus-visible,html[data-theme="dark"] .rk-row:focus-visible,html[data-theme="dark"] .tm-plk:focus-visible,
@@ -1301,6 +1316,22 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
   <div class="leg"><div class="leg-dot" style="background:#378ADD"></div>USA (11 venues)</div>
   <div class="leg"><div class="leg-dot" style="background:#E24B4A"></div>Canada (2 venues)</div>
   <div class="leg"><div class="leg-dot" style="background:#639922"></div>Mexico (3 venues)</div>
+</div>
+
+<!-- ══════════ WORLD CUP 2026 — the whole tournament in one section ══════════
+     The shell is empty here; reorderSections() moves every 2026 section (story,
+     schedule, bracket, standings, scorers, results, thirds, cards, stadiums,
+     pick'em, friendlies) into #wc26-body at init. The Daily and the evergreen
+     sections (FIFA Rankings, World Cup History) stay outside it. -->
+<div class="wc-section" id="wc26-section">
+  <div class="wc-head" tabindex="0" role="button" onclick="toggleWC26()">
+    <div class="wc-titlewrap">
+      <div class="wc-title">🏆 World Cup 2026</div>
+      <div class="wc-sub">The complete tournament, preserved — the story, schedule, bracket, standings, scorers, results, cards &amp; stadiums · Champions: Spain 🇪🇸</div>
+    </div>
+    <span class="wc-toggle" id="wc26-toggle">▲ Hide</span>
+  </div>
+  <div id="wc26-body"></div>
 </div>
 
 <!-- ══════════ FULL SCHEDULE ══════════ -->
@@ -1397,12 +1428,17 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
 <div class="rk-section">
   <div class="rk-head" tabindex="0" role="button" onclick="toggleRankings()">
     <div class="rk-titlewrap">
-      <div class="rk-title">🏅 Team Rankings</div>
-      <div class="rk-sub">All 48 qualified nations &middot; FIFA ranking at the World Cup's start (June 11) and now, with the movement between &middot; tap any team for its roster &amp; profile</div>
+      <div class="rk-title">🏅 FIFA World Rankings</div>
+      <div class="rk-sub">Men's — the 48 World Cup nations, at the WC's start (June 11) vs now &middot; Women's — the full FIFA table &middot; both refresh with every official FIFA release</div>
     </div>
     <span class="rk-toggle" id="rk-toggle">▼ Show</span>
   </div>
   <div id="rk-body" style="display:none">
+    <div class="rk-tabs" id="rk-tabs">
+      <button class="fbtn active" data-tab="men" onclick="setRankTab('men')">Men — WC 2026</button>
+      <button class="fbtn" data-tab="women" onclick="setRankTab('women')">Women</button>
+    </div>
+    <div id="rk-men">
     <div class="rk-controls" id="rk-controls"></div>
     <table class="rk-table">
       <thead><tr>
@@ -1416,6 +1452,8 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
       <tbody id="rk-tbody"></tbody>
     </table>
     <div class="rk-note">FIFA World Ranking is approximate. Click a row to open the team's profile — roster, head coach, World Cup history, and a fact about the country.</div>
+    </div>
+    <div id="rk-women" style="display:none"></div>
   </div>
 </div>
 
@@ -1703,6 +1741,7 @@ function toggleTheme(){const next=curTheme()==="dark"?"light":"dark";applyTheme(
 
 /* ── Collapsible sections (shared toggle + persistence) ── */
 const SECTIONS=[
+  {key:"wc26",body:"wc26-body",tog:"wc26-toggle"},
   {key:"schedule",body:"sg-body",tog:"sg-toggle"},
   {key:"standings",body:"st-body",tog:"st-toggle"},
   {key:"thirds",body:"th-body",tog:"th-toggle"},
@@ -1737,33 +1776,37 @@ function applySavedSections(){
     else{body.style.display="";tog.textContent="▲ Hide";}
   });
 }
-/* Casual-friendly section order — the fun/core sections first, niche/expert
-   ones last. Each section is the parent of its (unique-id) body div, so we move
-   by body id (the Card Tracker shares the rs-section class with Results). */
+/* Page layout: The Daily on top, then ONE World Cup 2026 group holding every
+   tournament section, then the evergreen sections (FIFA Rankings, History).
+   Each section is the parent of its (unique-id) body div, so we move by body id
+   (the Card Tracker shares the rs-section class with Results). */
 function reorderSections(){
   const foot=document.querySelector("footer.site-foot");if(!foot)return;
   const P=foot.parentNode,$=function(s){return document.querySelector(s);},
         secOf=function(bid){var b=document.getElementById(bid);return b?b.parentElement:null;};
-  // Each section's top-level element(s), in the desired display order. Most are
-  // the single `-section` div; Stadiums' header and body are separate siblings;
-  // Results and the Card Tracker share the rs-section class, so go by body id.
-  const groups=[
-    [secOf("sg-body")],                                 // Full schedule (open, top)
-    [$("#sy-section")],                                 // Story of 2026 (hidden until the Final is decided)
-    [$("#nw-section")],                                 // News & daily digest
-    [$(".bk-section")],                                 // Bracket  (open)
-    [$(".st-section")],                                 // Standings (open)
-    [$(".sc-section")],                                 // Top scorers
-    [secOf("rs-body")],                                 // Results
-    [$(".th-section")],                                 // Best third-placed
-    [secOf("cd-body")],                                 // Card tracker
-    [$(".sd-section"),document.getElementById("sd-body")], // Stadiums (header + separate body)
-    [$(".rk-section")],                                 // Rankings
-    [$(".pk-section")],                                 // Pick'em (parked)
-    [$(".fr-section")],                                 // Friendlies
-    [$(".hx-section")]                                  // History
-  ];
-  groups.forEach(function(g){g.forEach(function(el){if(el&&el.parentNode===P)P.insertBefore(el,foot);});});
+  const grp=document.getElementById("wc26-section"),gb=document.getElementById("wc26-body");
+  if(!grp||!gb)return;
+  // Top level, in order: The Daily, the 2026 group, Rankings, History.
+  [$("#nw-section"),grp,$(".rk-section"),$(".hx-section")].forEach(function(el){
+    if(el)P.insertBefore(el,foot);
+  });
+  // Everything that IS this World Cup moves inside the group — story first,
+  // then the core sections, niche ones last. Stadiums' header and body are
+  // separate siblings; the venue legend folds in above the stadium filters.
+  [[$("#sy-section")],                                  // Story of 2026
+   [secOf("sg-body")],                                  // Full schedule
+   [$(".bk-section")],                                  // Bracket
+   [$(".st-section")],                                  // Standings
+   [$(".sc-section")],                                  // Top scorers
+   [secOf("rs-body")],                                  // Results
+   [$(".th-section")],                                  // Best third-placed
+   [secOf("cd-body")],                                  // Card tracker
+   [$(".sd-section"),document.getElementById("sd-body")], // Stadiums (head + body)
+   [$(".pk-section")],                                  // Pick'em (parked)
+   [$(".fr-section")]                                   // Friendlies
+  ].forEach(function(g){g.forEach(function(el){if(el)gb.appendChild(el);});});
+  const legend=$(".legend"),sdb=document.getElementById("sd-body");
+  if(legend&&sdb)sdb.insertBefore(legend,sdb.firstChild);
 }
 function applySavedFilters(){
   const f=prefs.filters;if(!f)return;
@@ -1952,7 +1995,7 @@ function rankChip(t){
 }
 
 /* ══════════ FIFA RANKINGS TABLE ══════════ */
-const rkState={conf:"all",sort:"now",dir:1};
+const rkState={conf:"all",sort:"now",dir:1,tab:"men",wAll:false};
 /* Sortable columns: each with a value extractor and a sensible first-click
    direction (ranks ascending, points descending, names/groups A→Z). */
 const RK_SORTS={
@@ -1977,7 +2020,7 @@ function setRankSort(k){
      plus FIFA's own SUM formula applied to every completed World Cup match,
      re-ranked across all 211 nations. Updates the moment a match finishes, and
      FIFA's post-tournament release will confirm it. rankNow() prefers this. */
-var __ranks=null,__ranksLive=null;
+var __ranks=null,__ranksLive=null,__ranksW=null;
 function rkKey(s){return String(s||"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/[^a-z0-9]/g,"");}
 function rankNow(name){
   const k=rkKey((teamRecord(name)||{}).name||name);
@@ -1991,7 +2034,11 @@ function computeLiveRanks(){
   __ranksLive=null;
   if(!__ranks||!__ranks.ranks)return;
   const pts={};for(const k in __ranks.ranks){const p=__ranks.ranks[k].p;if(typeof p==="number")pts[k]=p;}
-  const ms=results2026().filter(function(m){return m.sc&&!m.live;}).sort(function(a,b){return (a.ts||0)-(b.ts||0);});
+  // Only matches played SINCE the official release. Once FIFA's post-tournament
+  // table (Jul 20) is the official one, all 104 matches are already baked into
+  // its points — re-applying them here would double-count the whole World Cup.
+  const relMs=Date.parse((__ranks.updated||"1970-01-01")+"T00:00:00Z")||0;
+  const ms=results2026().filter(function(m){return m.sc&&!m.live&&(m.ts||0)>=relMs;}).sort(function(a,b){return (a.ts||0)-(b.ts||0);});
   if(!ms.length)return;   // nothing played since the official release — official IS today's
   let applied=0;
   ms.forEach(function(m){
@@ -2087,6 +2134,11 @@ function loadRankings(){
     var ov=document.getElementById("tm-overlay");
     if(ov&&ov.classList.contains("open")&&tmCurrent)openTeam(tmCurrent); // fill live rank into an open card
   }).catch(function(){});
+  fetch("data/rankings-women.json",{cache:"default"}).then(function(r){return r.ok?r.json():null;}).then(function(d){
+    if(!d||!d.rows)return;
+    __ranksW=d;
+    if(rkState.tab==="women")buildRankingsWomen();
+  }).catch(function(){});
 }
 /* "Now" rank + movement vs the World-Cup-start rank (lower number = better, so a smaller
    current rank is an improvement). */
@@ -2155,10 +2207,69 @@ function buildRankings(){
   if(note)note.innerHTML=__ranks
     ? '<b>At WC start</b> = the FIFA ranking on the World Cup\'s opening day, June 11 (the seeding order); <b>Now</b> = today\'s ranking'+(__ranksLive
         ? ' — FIFA\'s official '+escHTML(__ranks.updated)+' points plus FIFA\'s own rating formula applied to each of the '+__ranksLive.applied+' matches played since, re-ranked across all 211 nations. It moves the moment a match ends'+(__ranks.next?', and FIFA\'s next official release ('+escHTML(__ranks.next)+') will confirm it':'')+'.'
-        : ' (official release of '+escHTML(__ranks.updated)+'; nothing has been played since, so today\'s ranking is that release).')+' Click a row for the team profile.'
+        : ' (official release of '+escHTML(__ranks.updated)+'; nothing has been played since, so today\'s ranking is that release'+(__ranks.next?'; FIFA\'s next lands '+escHTML(__ranks.next):'')+').')+' Click a row for the team profile.'
     : 'Ranked by FIFA World Ranking as of the World Cup\'s start (June 11). Live "Now" ranking loads from the daily feed. Click a row to open the team\'s profile — roster, head coach, World Cup history, and a fact about the country.';
 }
 function toggleRankings(){toggleSection("rk-body","rk-toggle","rankings");}
+
+/* ── Women's FIFA ranking tab ──────────────────────────────────────────────
+   The full official table from data/rankings-women.json (refreshed by the
+   weekly Action; FIFA publishes ~quarterly). No team profiles for these rows —
+   the women's nations aren't 2026 WC entrants. Flags come from the men's TEAMS
+   map where the nation overlaps, else from the extras below; nations beyond
+   both just show their name. */
+const WFLAGS_EXTRA={
+  "North Korea":"🇰🇵","Denmark":"🇩🇰","Italy":"🇮🇹","China":"🇨🇳","Iceland":"🇮🇸",
+  "Ireland":"🇮🇪","Finland":"🇫🇮","Russia":"🇷🇺","Poland":"🇵🇱","Wales":"🏴󠁧󠁢󠁷󠁬󠁳󠁿",
+  "Ukraine":"🇺🇦","Serbia":"🇷🇸","Nigeria":"🇳🇬","Vietnam":"🇻🇳","Slovenia":"🇸🇮",
+  "Philippines":"🇵🇭","Chinese Taipei":"🇹🇼","Jamaica":"🇯🇲","Venezuela":"🇻🇪",
+  "Costa Rica":"🇨🇷","Hungary":"🇭🇺","Chile":"🇨🇱","Thailand":"🇹🇭",
+  "Northern Ireland":"🇬🇧","Belarus":"🇧🇾","Romania":"🇷🇴","Slovakia":"🇸🇰",
+  "Myanmar":"🇲🇲","Papua New Guinea":"🇵🇬","Greece":"🇬🇷","Zambia":"🇿🇲",
+  "Cameroon":"🇨🇲","India":"🇮🇳","Israel":"🇮🇱","Kazakhstan":"🇰🇿","Albania":"🇦🇱",
+  "Bulgaria":"🇧🇬","Indonesia":"🇮🇩","Peru":"🇵🇪","Bolivia":"🇧🇴","Guatemala":"🇬🇹"
+};
+function wflag(n){return (TEAMS[n]&&TEAMS[n].flag)||WFLAGS_EXTRA[n]||"";}
+function setRankTab(t){
+  rkState.tab=t;
+  const men=document.getElementById("rk-men"),wom=document.getElementById("rk-women");
+  if(men)men.style.display=t==="men"?"":"none";
+  if(wom)wom.style.display=t==="women"?"":"none";
+  document.querySelectorAll("#rk-tabs .fbtn").forEach(function(b){b.classList.toggle("active",b.getAttribute("data-tab")===t);});
+  if(t==="women")buildRankingsWomen();
+}
+function toggleWAll(){rkState.wAll=!rkState.wAll;buildRankingsWomen();}
+function buildRankingsWomen(){
+  const el=document.getElementById("rk-women");if(!el)return;
+  const d=__ranksW;
+  if(!d||!d.rows||!d.rows.length){
+    el.innerHTML='<div class="rk-note">The FIFA Women\'s World Ranking loads from the weekly feed (data/rankings-women.json). If this doesn\'t fill in, the weekly Action may need a look.</div>';
+    return;
+  }
+  const rows=rkState.wAll?d.rows:d.rows.slice(0,50);
+  el.innerHTML=
+    '<table class="rk-table"><thead><tr>'+
+      '<th class="rc">Rank</th><th>Team</th><th class="rc">Points</th>'+
+      '<th class="rc" title="Movement vs the previous FIFA release">±</th><th class="rc">Confed.</th>'+
+    '</tr></thead><tbody>'+
+    rows.map(function(x){
+      const mv=(x.pr&&x.pr!==x.r)
+        ?(x.pr>x.r?'<span class="rk-up">▲'+(x.pr-x.r)+'</span>':'<span class="rk-dn">▼'+(x.r-x.pr)+'</span>')
+        :'<span class="rk-eq">—</span>';
+      const fl=wflag(x.n);
+      return '<tr class="rk-row rk-wrow"><td class="rc rk-rank">'+x.r+'</td>'+
+        '<td>'+(fl?'<span class="tflag">'+fl+'</span>':'')+'<span class="rk-tn">'+escHTML(x.n)+'</span></td>'+
+        '<td class="rc rk-ptscell"><span class="rk-pts">'+(x.p!=null?Number(x.p).toFixed(2):'—')+'</span></td>'+
+        '<td class="rc">'+mv+'</td>'+
+        '<td class="rc"><span class="rk-conf">'+escHTML(x.c||'—')+'</span></td></tr>';
+    }).join("")+'</tbody></table>'+
+    (d.rows.length>50
+      ?'<div class="rk-wmore"><button class="fbtn" onclick="toggleWAll()">'+(rkState.wAll?'Show the top 50':'Show all '+d.rows.length+' nations')+'</button></div>'
+      :'')+
+    '<div class="rk-note"><b>FIFA Women\'s World Ranking</b> — official release of '+escHTML(d.updated)+
+      (d.next?'; FIFA\'s next lands '+escHTML(d.next):'')+
+      '. ± is movement vs the previous release. Updates automatically with every FIFA release — the road to the 2027 Women\'s World Cup in Brazil starts here.</div>';
+}
 
 /* ══════════ TEAM INFO POPUP ══════════ */
 /* A team's fixtures: group matches (from the venues) plus any resolved knockout
@@ -4753,6 +4864,7 @@ function buildCards(){
 }
 function toggleCards(){toggleSection("cd-body","cd-toggle","cards");}
 function toggleResults(){toggleSection("rs-body","rs-toggle","results");}
+function toggleWC26(){toggleSection("wc26-body","wc26-toggle","wc26");}
 function toggleSchedule(){toggleSection("sg-body","sg-toggle","schedule");}
 function toggleStory(){toggleSection("sy-body","sy-toggle","story");}
 function toggleNews(){toggleSection("nw-body","nw-toggle","news");}
@@ -4764,7 +4876,10 @@ function toggleNews(){toggleSection("nw-body","nw-toggle","news");}
    preserved into the daily snapshot so the storylines outlive the feed. */
 var __news=null,__newsAt=0;
 function loadNews(force){
-  if(__archive){fallbackNewsFromSnapshot();return;}          // archive era: the preserved headlines ARE the news
+  // Archive era: the preserved headlines ARE the news. The date gate matters at
+  // init — loadNews(true) runs before refreshScores() has set __archive, and
+  // without it the very first load still pinged ESPN once.
+  if(__archive||Date.now()>=Date.UTC(2026,6,20)){fallbackNewsFromSnapshot();return;}
   if(!force&&__newsAt&&Date.now()-__newsAt<9*60000)return;   // at most ~every 9 min
   __newsAt=Date.now();
   fetch("https://site.api.espn.com/apis/site/v2/sports/soccer/fifa.world/news?limit=14",{cache:"no-store"})
