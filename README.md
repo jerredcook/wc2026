@@ -1,6 +1,6 @@
-# FIFA World Cup 2026 — Stadiums & Live Tracker
+# World Cup Soccer ⚽ — the FIFA World Cup app
 
-A near-zero-dependency web app for the 2026 FIFA World Cup (June 11 – July 19, 2026) hosted across the USA, Canada, and Mexico — **now a complete, permanent archive of the tournament Spain won**. Every match, scorer, card, shootout, lineup and headline is preserved in-repo; the app detects the completed archive and serves it directly (no live feed needed, ever), with the full Story of 2026, the final Golden Boot (Mbappé, 10), the champion's road, and all 23 World Cups of history (1930–2026, men's and women's).
+A near-zero-dependency World Cup web app — born as a stadium guide for the 2026 FIFA World Cup (June 11 – July 19, 2026, across the USA, Canada, and Mexico) and **now a complete, permanent archive of the tournament Spain won**, plus the men's and women's FIFA World Rankings (kept current) and every World Cup edition since 1930. Every match, scorer, card, shootout, lineup and headline is preserved in-repo; the app detects the completed archive and serves it directly (no live feed needed, ever), with the full Story of 2026, the final Golden Boot (Mbappé, 10), the champion's road, and all 23 World Cups of history (1930–2026, men's and women's).
 
 The whole app is [`index.html`](index.html) — HTML, CSS, and vanilla JavaScript, no build step or framework. Three small companion files make it installable and offline-capable: [`manifest.webmanifest`](manifest.webmanifest), [`apple-touch-icon.png`](apple-touch-icon.png), and a network-first service worker ([`sw.js`](sw.js)).
 

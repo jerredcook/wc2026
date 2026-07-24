@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>FIFA World Cup 2026 — Stadiums</title>
+<title>World Cup Soccer — the FIFA World Cup app</title>
 <!-- Installable (add to home screen): manifest for Android/desktop, meta + icon for iOS -->
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
@@ -11,21 +11,21 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="WC 2026">
+<meta name="apple-mobile-web-app-title" content="World Cup">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <!-- Search + social share preview -->
-<meta name="description" content="Live scores, group standings, the Golden Boot race, team &amp; player profiles, and the full knockout bracket for the 2026 FIFA World Cup across the USA, Canada and Mexico — all 16 stadiums, updating live.">
+<meta name="description" content="The FIFA World Cup, men's and women's — the complete 2026 tournament preserved in full (every match, scorer, card and shootout), FIFA world rankings kept current, and every World Cup since 1930.">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="World Cup 2026 Live Tracker">
-<meta property="og:title" content="FIFA World Cup 2026 — Live Tracker">
-<meta property="og:description" content="Live scores, standings, the Golden Boot race, team &amp; player cards, and the full knockout bracket — live across all 16 stadiums.">
+<meta property="og:site_name" content="World Cup Soccer">
+<meta property="og:title" content="World Cup Soccer — the FIFA World Cup app">
+<meta property="og:description" content="The complete 2026 World Cup, preserved forever — plus men's &amp; women's FIFA rankings and every World Cup since 1930.">
 <meta property="og:url" content="https://jerredcook.github.io/wc2026/">
 <meta property="og:image" content="https://jerredcook.github.io/wc2026/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="FIFA World Cup 2026 — Live Tracker">
-<meta name="twitter:description" content="Live scores, standings, Golden Boot, team &amp; player cards, and the full knockout bracket — live across all 16 stadiums.">
+<meta name="twitter:title" content="World Cup Soccer — the FIFA World Cup app">
+<meta name="twitter:description" content="The complete 2026 World Cup, preserved forever — plus men's &amp; women's FIFA rankings and every World Cup since 1930.">
 <meta name="twitter:image" content="https://jerredcook.github.io/wc2026/og-image.png">
 <script>
 /* Apply the saved (or system) theme before first paint to avoid a flash. */
@@ -1287,9 +1287,9 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
 </head>
 <body>
 
-<h1>FIFA World Cup 2026 — All 16 Stadiums</h1>
-<p class="subtitle">Matches by date &middot; Home teams &middot; June 11 – July 19, 2026</p>
-<p class="statusline"><span class="dot"></span><span class="et" id="tzNote">Kickoff times shown in U.S. Eastern (ET)</span> &middot; live &amp; final scores and group standings load on open and via the Refresh button</p>
+<h1>⚽ World Cup Soccer</h1>
+<p class="subtitle">The FIFA World Cup, men's &amp; women's &middot; the complete 2026 tournament &middot; world rankings &middot; history to 1930</p>
+<p class="statusline"><span class="dot"></span><span class="et" id="tzNote">Kickoff times shown in U.S. Eastern (ET)</span> &middot; the 2026 archive loads on open &middot; FIFA rankings refresh with every official release</p>
 
 <!-- ══════════ TODAY & LIVE ══════════ -->
 <div class="today-bar" id="todayBar">
@@ -1302,7 +1302,7 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
 
 <div class="live-bar" id="liveBar">
   <button class="live-refresh" id="liveRefreshBtn" onclick="refreshScores()">↻ Refresh latest scores</button>
-  <span class="live-status" id="liveStatus">Tap to pull the latest scores, including matches in progress. Works in Claude's view, or in a normal browser when the page is served over http(s).</span>
+  <span class="live-status" id="liveStatus">Loading the preserved 2026 archive — every match, scorer, card and shootout.</span>
   <span class="auto-wrap" id="autoWrap"></span>
   <span class="tz-toggle" id="tzToggle"></span>
   <button class="theme-btn" id="notifyBtn" onclick="toggleNotify()" style="display:none">🔔 Notify goals</button>
@@ -1339,7 +1339,7 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
   <div class="rs-head" tabindex="0" role="button" onclick="toggleSchedule()">
     <div class="rs-titlewrap">
       <div class="rs-title">🗓️ Full Schedule</div>
-      <div class="rs-sub">Every fixture by date — knockouts show who's playing &middot; kickoff in your timezone &middot; tap any match for detail</div>
+      <div class="rs-sub">All 104 matches by date &middot; kickoff times in your timezone &middot; tap any match for full detail</div>
     </div>
     <span class="rs-toggle" id="sg-toggle">▲ Hide</span>
   </div>
@@ -1350,13 +1350,13 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
 <div class="st-section">
   <div class="st-head" tabindex="0" role="button" onclick="toggleStandings()">
     <div class="st-titlewrap">
-      <div class="st-title">📊 Group Standings — Live</div>
-      <div class="st-sub">All 12 groups &middot; top 2 advance, plus the 8 best 3rd-place teams &middot; built from the live scores above</div>
+      <div class="st-title">📊 Group Standings</div>
+      <div class="st-sub">All 12 groups as they finished &middot; top 2 advanced, plus the 8 best 3rd-place teams</div>
     </div>
     <span class="st-toggle" id="st-toggle">▲ Hide</span>
   </div>
   <div id="st-body">
-    <div class="st-updated" id="st-updated">Tables build from completed group matches — pull the latest scores to bring them current.</div>
+    <div class="st-updated" id="st-updated">Tables build from the preserved match archive.</div>
     <div class="st-grid" id="st-grid"></div>
     <div class="st-legend">
       <span><span class="sw" style="background:#0d8a4f"></span>1st–2nd → Round of 32</span>
@@ -1373,12 +1373,12 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
   <div class="th-head" tabindex="0" role="button" onclick="toggleThirds()">
     <div class="th-titlewrap">
       <div class="th-title">🥉 Best Third-Placed Teams</div>
-      <div class="th-sub">The 8 best of the 12 group thirds also reach the Round of 32 &middot; live race</div>
+      <div class="th-sub">The 8 best of the 12 group thirds also reached the Round of 32</div>
     </div>
     <span class="th-toggle" id="th-toggle">▼ Show</span>
   </div>
   <div id="th-body" style="display:none">
-    <div class="th-updated" id="th-updated">Fills in as group matches are played — the 8 best third-placed teams reach the Round of 32.</div>
+    <div class="th-updated" id="th-updated">The final third-place table — the top 8 advanced to the Round of 32.</div>
     <div id="th-grid"></div>
     <div class="th-foot">Ranked by points, then goal difference, then goals scored across each team's three group games. FIFA then applies fair-play/disciplinary points and a drawing of lots to break any remaining ties — not modeled here — and uses a fixed table to assign which thirds land in which Round-of-32 slot. Provisional until all 12 groups finish.</div>
   </div>
@@ -1388,8 +1388,8 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
 <div class="sc-section">
   <div class="sc-head" tabindex="0" role="button" onclick="toggleScorers()">
     <div class="sc-titlewrap">
-      <div class="sc-title">⚽ Top Scorers — Golden Boot race</div>
-      <div class="sc-sub">Most goals in the tournament &middot; built live from the match feed (own goals excluded)</div>
+      <div class="sc-title">⚽ Golden Boot</div>
+      <div class="sc-sub">The tournament's top scorers, final standings &middot; penalties flagged &middot; own goals excluded</div>
     </div>
     <span class="sc-toggle" id="sc-toggle">▼ Show</span>
   </div>
@@ -1416,8 +1416,8 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
 <div class="rs-section">
   <div class="rs-head" tabindex="0" role="button" onclick="toggleResults()">
     <div class="rs-titlewrap">
-      <div class="rs-title">📋 Results — every match so far</div>
-      <div class="rs-sub">Each completed match by round, with its goals &amp; cards by minute &middot; tap any match for full detail</div>
+      <div class="rs-title">📋 Results</div>
+      <div class="rs-sub">All 104 matches by round, with goals &amp; cards by minute &middot; tap any match for full detail</div>
     </div>
     <span class="rs-toggle" id="rs-toggle">▼ Show</span>
   </div>
@@ -1461,18 +1461,18 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
 <div class="bk-section">
   <div class="bk-head" tabindex="0" role="button" onclick="toggleBracket()">
     <div class="bk-titlewrap">
-      <div class="bk-title">🏆 Bracket · Live</div>
-      <div class="bk-sub">Round of 32 → Final &middot; both halves close on the trophy &middot; fills in as teams qualify and updates after every match</div>
+      <div class="bk-title">🏆 Knockout Bracket</div>
+      <div class="bk-sub">Round of 32 → the Final &middot; every result and shootout &middot; both halves close on the trophy</div>
     </div>
     <span class="bk-toggle" id="bk-toggle">▲ Hide</span>
   </div>
   <div id="bk-body">
     <div class="bk-stage">
       <div class="bk-stagehead">
-        <span class="bk-brand">Bracket · Live</span>
+        <span class="bk-brand">Knockout Bracket</span>
         <span class="bk-stagepill" id="bk-stagepill"><span class="dot">●</span> Round of 32</span>
       </div>
-      <div class="bk-updated" id="bk-updated">Bracket positions are fixed; team names appear as groups finish and the knockout rounds are played. Pull the latest scores to fill them in.</div>
+      <div class="bk-updated" id="bk-updated">The complete knockout road — every tie, every shootout, and the Final.</div>
       <div class="bk-pathbar" id="bk-pathbar" style="display:none"><select class="bk-pathsel" id="bk-pathsel" onchange="onPathSelect(this.value)" aria-label="Trace a team's path to the final"></select></div>
       <div class="bk-scroll">
         <div class="bk-cols" id="bk-cols"></div>
@@ -1489,7 +1489,7 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
   <div class="rs-head" tabindex="0" role="button" onclick="toggleNews()">
     <div class="rs-titlewrap">
       <div class="rs-title">📰 The Daily</div>
-      <div class="rs-sub">Today in the Cup — results told as stories, today's stakes, and the latest World Cup headlines</div>
+      <div class="rs-sub">The Cup's final edition — the last matchday as stories, the tournament pulse, and the preserved headlines</div>
     </div>
     <span class="rs-toggle" id="nw-toggle">▲ Hide</span>
   </div>
@@ -1524,8 +1524,8 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
 <div class="fr-section">
   <div class="fr-head" tabindex="0" role="button" onclick="toggleFriendlies()">
     <div class="fr-titlewrap">
-      <div class="fr-title">⚽ Pre-Tournament Warm-up Friendlies</div>
-      <div class="fr-sub">Tune-up matches played across North America &middot; May 22 – Jun 10, 2026</div>
+      <div class="fr-title">🤝 Warm-up Friendlies</div>
+      <div class="fr-sub">Pre-tournament tune-ups played across North America &middot; May 22 – Jun 10, 2026</div>
     </div>
     <span class="fr-toggle" id="fr-toggle">▼ Show</span>
   </div>
@@ -1544,8 +1544,8 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
 <div class="hx-section">
   <div class="hx-head" tabindex="0" role="button" onclick="toggleHistorySection()">
     <div class="hx-titlewrap">
-      <div class="hx-title">🏆 World Cup History</div>
-      <div class="hx-sub">Every champion since 1930 &middot; tap a tournament for the final, top 4, Golden Boot &amp; stats</div>
+      <div class="hx-title">🌍 World Cup History</div>
+      <div class="hx-sub">Every men's &amp; women's World Cup &middot; tap a tournament for the final, top 4, Golden Boot &amp; stats</div>
     </div>
     <span class="hx-toggle" id="hx-toggle">▼ Show</span>
   </div>
@@ -1560,7 +1560,7 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
   <div class="sd-head" tabindex="0" role="button" onclick="toggleStadiums()">
     <div class="sd-titlewrap">
       <div class="sd-title">🏟️ Stadiums &amp; Matches</div>
-      <div class="sd-sub">All 16 venues, every fixture by date &middot; filter by country, group, or team</div>
+      <div class="sd-sub">All 16 venues and every match played at each &middot; filter by country, group, or team</div>
     </div>
     <span class="sd-toggle" id="sd-toggle">▼ Show</span>
   </div>
@@ -1602,11 +1602,11 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
   Australia–Türkiye (Jun 13 local → Jun 14 ET), Austria–Jordan (Jun 16 → Jun 17 ET), and Tunisia–Japan (Jun 20 → Jun 21 ET — the 1,000th match in World Cup history).
   Brazil–Haiti (Jun 19) is shown at 8:30 PM ET; a few outlets list it at 9:00 PM.
   <br><br>
-  The <strong>Refresh latest scores</strong> button pulls current scores — including matches in progress (red LIVE badge + live minute) — from a public scoreboard when the page is served over http(s), or via Claude when open in Claude's view. A file opened straight from disk (file://) is blocked by the browser from making web requests, so it keeps the saved scores; the status line always tells you which it is.
+  This page is the complete, preserved record of the 2026 tournament — every score, scorer, card, shootout, lineup and headline is stored alongside the app, so it keeps working offline, from a file on disk, or years from now with no live feed at all. The FIFA World Rankings (men's and women's) continue to refresh with each official release.
 </p>
 
 <footer class="site-foot">
-  <p><strong>Unofficial fan project</strong> — not affiliated with FIFA, FOX, or Telemundo. Live scores &amp; match data from <a href="https://www.espn.com/soccer/" target="_blank" rel="noopener noreferrer">ESPN</a>’s public scoreboard; team rosters and player profiles from <a href="https://www.wikipedia.org/" target="_blank" rel="noopener noreferrer">Wikipedia</a> &amp; Wikidata. Kickoff times follow the FOX / Telemundo broadcast schedule. Squads, rankings and trivia were compiled for the 2026 tournament and may contain errors.</p>
+  <p><strong>Unofficial fan project</strong> — not affiliated with FIFA, FOX, or Telemundo. Match data preserved from <a href="https://www.espn.com/soccer/" target="_blank" rel="noopener noreferrer">ESPN</a>’s public scoreboard; world rankings from <a href="https://inside.fifa.com/fifa-world-ranking" target="_blank" rel="noopener noreferrer">FIFA</a>; team rosters and player profiles from <a href="https://www.wikipedia.org/" target="_blank" rel="noopener noreferrer">Wikipedia</a> &amp; Wikidata. Kickoff times follow the FOX / Telemundo broadcast schedule. Squads, rankings and trivia were compiled for the 2026 tournament and may contain errors.</p>
   <p>Open project · <a href="https://github.com/jerredcook/wc2026" target="_blank" rel="noopener noreferrer">source on GitHub</a></p>
 </footer>
 
@@ -3645,12 +3645,12 @@ function buildStandings(){
       const t=new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
       stamp.innerHTML='<span class="ok">✓</span> Reflecting all completed group matches &middot; as of '+t;
     }else{
-      stamp.innerHTML='Waiting on scores — tap <strong>Refresh latest scores</strong> above to fill the tables.';
+      stamp.innerHTML='Standings fill in once the match archive loads.';
     }
   }
   // Once the group stage is over, retitle the frozen tables so "— Live" doesn't mislead.
   const title=document.querySelector('.st-title');
-  if(title)title.textContent=allGroupsDone?'📊 Group Stage — Final Tables':'📊 Group Standings — Live';
+  if(title)title.textContent=allGroupsDone?'📊 Group Stage — Final Tables':'📊 Group Standings';
   maybeKnockoutPhase(allGroupsDone);
 }
 /* One-time layout shift when the knockouts begin: the group tables are now frozen
@@ -3800,10 +3800,12 @@ function buildThirds(){
   wrap.innerHTML='<table class="th-table"><thead><tr><th class="tl">3rd-placed team</th><th>P</th><th>GD</th><th>GF</th><th>Pts</th></tr></thead><tbody>'+body+'</tbody></table>';
   const stamp=document.getElementById("th-updated");
   if(stamp){
-    if(totalPlayed>0){
+    if(totalPlayed>=36){   // all 36 group matches in — the table is final
+      stamp.innerHTML='<span class="ok">✓</span> The final third-place table — the top 8 advanced to the Round of 32.';
+    }else if(totalPlayed>0){
       const t=new Date().toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
-      stamp.innerHTML='<span class="ok">✓</span> Provisional race from completed group matches &middot; as of '+t;
-    }else stamp.innerHTML='Fills in as group matches are played — the 8 best third-placed teams reach the Round of 32.';
+      stamp.innerHTML='<span class="ok">✓</span> Provisional table from completed group matches &middot; as of '+t;
+    }else stamp.innerHTML='The final third-place table — the top 8 advanced to the Round of 32.';
   }
 }
 function toggleThirds(){toggleSection("th-body","th-toggle","thirds");}
@@ -5137,7 +5139,7 @@ function buildBracket(){
     }else if(anyTeam){
       stamp.innerHTML='<span class="ok">✓</span> Qualified teams placed &middot; knockout matches haven’t kicked off yet.';
     }else{
-      stamp.innerHTML='Bracket positions are fixed; team names appear as groups finish and the knockout rounds are played. Pull the latest scores to fill them in.';
+      stamp.innerHTML='The bracket fills in from the preserved match archive.';
     }
   }
   // "Road to the Final" selector — list the teams currently placed in the bracket.
@@ -5500,8 +5502,8 @@ function buildScorers(){
   const st=document.getElementById("sc-updated");
   if(!scorerData.length){
     grid.innerHTML='<div class="sc-empty">'+(scorersReached
-      ?'No goals yet — the race opens with the first goal of the tournament.'
-      :'Top scorers fill in from the live scoreboard — host the page over http(s) or tap Refresh.')+'</div>';
+      ?'No goals recorded yet.'
+      :'Top scorers fill in once the match archive loads — host the page over http(s).')+'</div>';
     if(st)st.innerHTML="";return;
   }
   const top=scorerData.slice(0,20),maxG=top[0].goals;
@@ -5531,7 +5533,10 @@ var __archive=false;   // true once the completed tournament archive is the data
    alerts), keep the useful buttons, and — once — surface the finished-story
    layout: the Story of 2026 and Results open, the Full Schedule showing all. */
 function enterArchiveMode(){
-  ["liveRefreshBtn","autoWrap","notifyBtn"].forEach(function(id){const el=document.getElementById(id);if(el)el.style.display="none";});
+  // Retire the live-era chrome: refresh/poll/notify, the calendar export (all
+  // fixtures are in the past) and the Today & Live bar (every day is a rest
+  // day now — The Daily right below is the front page).
+  ["liveRefreshBtn","autoWrap","notifyBtn","calBtn","todayBar"].forEach(function(id){const el=document.getElementById(id);if(el)el.style.display="none";});
   const note=document.getElementById("tzNote");
   if(note)note.textContent="The complete 2026 tournament — every match, scorer, card and shootout, preserved.";
   if(prefs.archMode)return;

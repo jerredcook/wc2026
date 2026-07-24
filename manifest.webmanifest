@@ -1,8 +1,8 @@
 {
  "id": "/wc2026/",
- "name": "FIFA World Cup 2026 — Stadiums & Live",
- "short_name": "WC 2026",
- "description": "All 16 stadiums, live scores, standings, the best-third-placed race and the knockout bracket for the 2026 FIFA World Cup.",
+ "name": "World Cup Soccer",
+ "short_name": "World Cup",
+ "description": "The complete 2026 FIFA World Cup, preserved in full — plus men's & women's FIFA world rankings and every World Cup since 1930.",
  "categories": ["sports"],
  "lang": "en",
  "start_url": "./",
