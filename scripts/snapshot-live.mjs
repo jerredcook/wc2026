@@ -207,6 +207,16 @@ function trimSummary(d) {
 
 async function main() {
   const path = join(ROOT, "data", "2026-snapshot.json");
+  // The tournament is a closed book once every match through the July 19 Final
+  // is preserved — don't hammer the (now-idle) feed on schedule. --force re-runs
+  // a full capture anyway, e.g. if a data correction ever lands upstream.
+  try {
+    const done = JSON.parse(await readFile(path, "utf8"));
+    if (done && done.counts && done.counts.played >= 104 && done.through === "20260719" && !process.argv.includes("--force")) {
+      console.log("✓ Archive complete — all 104 matches through the Final are preserved. Nothing to capture (use --force to re-pull).");
+      return;
+    }
+  } catch (e) { /* no snapshot yet — capture normally */ }
   const dates = tournamentDates();
   console.log(`Capturing ${dates.length} tournament day(s)${CAP_TODAY ? " (up to today)" : " (full window Jun 11–Jul 19)"}…`);
 

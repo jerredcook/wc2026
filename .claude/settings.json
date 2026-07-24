@@ -1,0 +1,28 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash",
+      "Bash(git *)",
+      "Bash(npm *)",
+      "Bash(yarn *)",
+      "Bash(echo *)",
+      "Edit(*)",
+      "Bash(python3 *)",
+      "Bash(grep -n -E '^    tz:tzAbbr|^  };$|function fmtInstant' index.html)",
+      "Bash(cp /Users/jerredcook/dev/wc2026/index.html /tmp/wc_light.html)",
+      "Bash('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --headless=new --disable-gpu --hide-scrollbars --no-sandbox --virtual-time-budget=9000 --window-size=1400,900 --screenshot=/tmp/light.png http://localhost:8734/wc_light.html)",
+      "Bash(python3 -c \"from PIL import Image; Image.open\\('/tmp/light.png'\\).crop\\(\\(0,150,1400,300\\)\\).save\\('/tmp/light_bar.png'\\)\")",
+      "Bash('/Applications/Google Chrome.app/Contents/MacOS/Google Chrome' --headless=new --disable-gpu --hide-scrollbars --no-sandbox --virtual-time-budget=9000 --window-size=1400,900 --screenshot=/tmp/forcelight.png http://localhost:8734/wc_forcelight.html)",
+      "Bash(python3 -c \"from PIL import Image; Image.open\\('/tmp/forcelight.png'\\).crop\\(\\(0,150,1400,330\\)\\).save\\('/tmp/fl_bar.png'\\)\")",
+      "Bash(grep -n -E 'const cls=\\\\\\(hl\\\\?| return.*mrow\\\\$\\\\{cls\\\\}|td-row.*td-rowlive|const when=live' index.html)",
+      "Bash(python3 -c 'import re;h=open\\(\"index.html\"\\).read\\(\\);s=re.findall\\(r\"<script>\\(.*?\\)</script>\",h,re.S\\);open\\(\"/tmp/c.js\",\"w\"\\).write\\(max\\(s,key=len\\)\\)')",
+      "Bash(node --check /tmp/c.js)",
+      "Bash(python3 /private/tmp/claude-501/-Users-jerredcook-dev-wc2026/4487159a-4844-4cf0-b131-eea4cd64d204/scratchpad/mksg.py)",
+      "Bash(\"/Applications/Google Chrome.app/Contents/MacOS/Google Chrome\" --headless=new --disable-gpu --no-sandbox --virtual-time-budget=9000 --dump-dom \"http://localhost:8786/wc_full.html\")"
+    ],
+    "deny": [
+      "Bash(rm -rf *)",
+      "Bash(sudo *)"
+    ]
+  }
+}

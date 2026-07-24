@@ -14,7 +14,7 @@ const WC = join(ROOT, "data", "wc");
 const ALIAS = {
   germanyfr: "germany", westgermany: "germany",
   unitedstates: "usa", korearepublic: "southkorea", cotedivoire: "ivorycoast",
-  iriran: "iran", bosniaandherzegovina: "bosnia", turkey: "turkiye",
+  iriran: "iran", bosniaandherzegovina: "bosnia", bosniaherzegovina: "bosnia", turkey: "turkiye",
   czechrepublic: "czechia", czechoslovakia: "czechia", zaire: "drcongo",
   caboverde: "capeverde", congodr: "drcongo",
 };

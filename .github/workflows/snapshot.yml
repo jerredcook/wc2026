@@ -1,4 +1,4 @@
-name: Daily snapshot + FIFA ranking
+name: Weekly FIFA ranking (2026 archive complete)
 
 # Preserve the live 2026 World Cup data. Runs on GitHub's runners (which can
 # reach ESPN — the Anthropic cloud sandbox cannot), captures every played match
@@ -10,7 +10,7 @@ name: Daily snapshot + FIFA ranking
 
 on:
   schedule:
-    - cron: "0 13 * * *"   # 13:00 UTC = 9:00 AM US Eastern, daily
+    - cron: "0 13 * * 1"   # weekly (Mondays 13:00 UTC) — the 2026 archive is complete; this now mainly picks up FIFA ranking releases (~monthly, next Oct 7)
   workflow_dispatch: {}     # allow manual runs from the Actions tab / gh CLI
 
 permissions:
