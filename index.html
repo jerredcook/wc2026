@@ -781,7 +781,7 @@ function renderFixtures() {
     <div class="cnote">Women and men together, in your local time. Tap a match to open it.</div>` + all.map(({ t, m }) =>
     `<div class="m tap" onclick="pickTeam('${t}')"><div class="md">${fmtShort(m.date)}<small>${fmtTime(m.date)}</small></div>
       <div><div class="mt"><span class="wm" title="${NAME[t]}">${NAME[t][0]}</span>${img(m.opp.logo, "")}${m.ha === "H" ? "vs" : "at"} ${h(m.opp.name)}</div>
-      <div class="ms">${ctag(m)} ${h(compLine(m))}${m.city ? " &middot; " + h(m.city) : ""}</div>
+      <div class="ms">${ctag(m)} ${h([compLine(m), m.city].filter(Boolean).join(" · "))}</div>
       ${m.tv.length ? `<div class="chips" style="margin-top:5px">${m.tv.map(x => `<span class="chip">${h(x)}</span>`).join("")}</div>` : ""}</div><span></span></div>`).join("") +
     `<div class="acts"><button class="btn" onclick="openSub()">📅 Add all matches to my calendar</button></div></div>`;
 }
