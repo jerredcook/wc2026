@@ -8,6 +8,8 @@ The whole app is [`index.html`](index.html) — HTML, CSS, and vanilla JavaScrip
 
 [`usa.html`](usa.html) is a separate, lightweight page for the **U.S. men's and women's national teams** — a test of whether a national-team companion is worth building into a standalone app. It shows the next match (countdown, local kickoff time, venue, where to watch, head-to-head, both teams' recent form), goes **live** during the match (score, goals and cards, lineups, polled every 30s), lists fixtures and results, and tracks the **player pool's club form**: what every recently called-up player did in their club's last three matches (started / came on / unused sub / not in squad, goals, assists, cards).
 
+For matchday it adds a **countdown**, a **win-expectancy bar** (FIFA's formula on current rating points), a hand-written **"what's at stake"** line per match ([`data/usa/editorial.json`](data/usa/editorial.json), keyed by ESPN event id), a **call-the-score** predictor (saved on the device, shareable, graded live and at full time), auto-written **storylines** (winning run, series record, who's in form, who's short of club minutes, teenagers, the opponent's danger men), the **opponent's squad** with the same club form, live **match stats** with a goal flash, a **QR code** for passing it around, and its own install manifest and icon ([`usa.webmanifest`](usa.webmanifest)).
+
 The pool, schedule and club form are built by [`scripts/build-usa.mjs`](scripts/build-usa.mjs) into `data/usa/men.json` and `data/usa/women.json`, refreshed four times a day by the [`usa-hub`](.github/workflows/usa-hub.yml) Action. Live match detail is fetched by the page itself. Unofficial — not affiliated with U.S. Soccer, Concacaf or FIFA.
 
 ## Features

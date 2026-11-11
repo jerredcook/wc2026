@@ -145,6 +145,41 @@ async function clubForm(clubId) {
   };
 }
 
+/* A squad (union of the squads listed for `slugs`) with each player's club form. */
+const formCache = new Map();
+async function squadPool(teamId, slugs, curSlug) {
+  const squads = await pool(slugs, s => get(`${API}/${s}/teams/${teamId}/roster`));
+  const byId = new Map();
+  squads.forEach((sq, i) => {
+    for (const a of (sq && sq.athletes) || []) {
+      const p = byId.get(a.id) || {
+        id: a.id, name: a.displayName, pos: POS[(a.position && a.position.abbreviation) || ""] || "M",
+        age: a.age || null, club: clubIdOf(a), inj: !!(a.injuries && a.injuries.length), cur: false,
+      };
+      if (slugs[i] === curSlug) p.cur = true;
+      if (a.jersey && !p.num) p.num = a.jersey;
+      byId.set(a.id, p);
+    }
+  });
+  const players = [...byId.values()];
+  const clubIds = [...new Set(players.map(p => p.club).filter(c => c && c !== teamId))];
+  console.log(`  team ${teamId}: ${players.length} players from ${slugs.join(", ")} — ${clubIds.length} clubs`);
+  await pool(clubIds.filter(c => !formCache.has(c)), async c => formCache.set(c, await clubForm(c)));
+  for (const p of players) {
+    const f = formCache.get(p.club);
+    if (!f) { p.club = null; p.rec = []; continue; }
+    p.club = f.club;
+    p.rec = f.matches.map(m => {
+      const line = m.players[p.id];
+      const base = { d: m.d, lg: m.lg, opp: m.opp, ha: m.ha, sf: m.sf, sa: m.sa };
+      if (!m.hasLineups) return { ...base, st: "?" };          // feed has no lineups for this match
+      return line ? { ...base, ...line } : { ...base, st: "X" }; // X = not in the matchday squad
+    });
+  }
+  const order = { G: 0, D: 1, M: 2, F: 3 };
+  return players.sort((a, b) => order[a.pos] - order[b.pos] || a.name.localeCompare(b.name));
+}
+
 async function build(key) {
   const T = TEAMS[key];
   console.log(`\n== ${T.label} (team ${T.id})`);
@@ -161,46 +196,23 @@ async function build(key) {
 
   /* Squads: the next fixture's competition first (the current call-up list),
      then the standing squads. Union by athlete id; `cur` marks the current one. */
-  const slugs = [...new Set([fixtures[0] && fixtures[0].lg, ...T.squads].filter(Boolean))];
-  const squads = await pool(slugs, s => get(`${API}/${s}/teams/${T.id}/roster`));
-  const byId = new Map();
-  squads.forEach((sq, i) => {
-    for (const a of (sq && sq.athletes) || []) {
-      const p = byId.get(a.id) || {
-        id: a.id, name: a.displayName, pos: POS[(a.position && a.position.abbreviation) || ""] || "M",
-        age: a.age || null, club: clubIdOf(a), inj: !!(a.injuries && a.injuries.length), cur: false,
-      };
-      if (i === 0 && fixtures[0] && slugs[0] === fixtures[0].lg) p.cur = true;
-      if (a.jersey && !p.num) p.num = a.jersey;
-      byId.set(a.id, p);
-    }
-  });
-  const players = [...byId.values()];
+  const next = fixtures[0];
+  const players = await squadPool(T.id, [...new Set([next && next.lg, ...T.squads].filter(Boolean))], next && next.lg);
   if (players.length < 11) throw new Error("squad feed returned only " + players.length + " players");
-  console.log(`  ${players.length} players from ${slugs.join(", ")}`);
 
-  const clubIds = [...new Set(players.map(p => p.club).filter(c => c && c !== T.id))];
-  console.log(`  ${clubIds.length} clubs — fetching last ${CLUB_MATCHES} matches each`);
-  const forms = await pool(clubIds, clubForm);
-  const formBy = new Map(forms.filter(Boolean).map(f => [f.club.id, f]));
-
-  for (const p of players) {
-    const f = formBy.get(p.club);
-    if (!f) { p.club = null; p.rec = []; continue; }
-    p.club = f.club;
-    p.rec = f.matches.map(m => {
-      const line = m.players[p.id];
-      const base = { d: m.d, lg: m.lg, opp: m.opp, ha: m.ha, sf: m.sf, sa: m.sa };
-      if (!m.hasLineups) return { ...base, st: "?" };          // feed has no lineups for this match
-      return line ? { ...base, ...line } : { ...base, st: "X" }; // X = not in the matchday squad
-    });
+  /* The next opponent gets the same treatment, so the page can show who to
+     watch on the other side. Optional: a failure here never blocks the build. */
+  let opp = null;
+  if (next) {
+    try {
+      const op = await squadPool(next.opp.id, [next.lg], next.lg);
+      if (op.length >= 11) opp = { id: next.opp.id, name: next.opp.name, match: next.id, pool: op };
+    } catch (e) { console.warn("  ! opponent squad: " + e.message); }
   }
-  const order = { G: 0, D: 1, M: 2, F: 3 };
-  players.sort((a, b) => order[a.pos] - order[b.pos] || a.name.localeCompare(b.name));
 
   const out = {
     updated: new Date().toISOString(), team: { key, id: T.id, label: T.label },
-    fixtures, results, pool: players,
+    fixtures, results, pool: players, opp,
   };
   await mkdir(join(ROOT, "data", "usa"), { recursive: true });
   await writeFile(join(ROOT, "data", "usa", key + ".json"), JSON.stringify(out) + "\n");
