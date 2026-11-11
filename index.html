@@ -38,6 +38,11 @@ if(t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f7;color:#1a1a1a;padding:24px 16px}
 h1{font-size:22px;font-weight:600;margin-bottom:4px}
 .subtitle{font-size:14px;color:#555;margin-bottom:6px}
+.usa-promo{display:flex;flex-direction:column;gap:3px;text-decoration:none;color:#fff;background:linear-gradient(165deg,#0e3272 0%,#081b3c 60%,#2d0f25 100%);border-radius:14px;padding:16px 18px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.18)}
+.usa-promo-k{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:#b3cbff}
+.usa-promo-t{font-size:19px;font-weight:800;line-height:1.25}
+.usa-promo-s{font-size:12.5px;color:#d3daea}
+.usa-promo-go{align-self:flex-start;margin-top:8px;background:#fff;color:#0b2a5b;font-size:13px;font-weight:800;border-radius:16px;padding:6px 14px}
 .statusline{font-size:12px;color:#0d6b52;font-weight:600;margin-bottom:18px}
 .statusline .dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#0d6b52;margin-right:5px;vertical-align:middle}
 .statusline .et{color:#555}
@@ -1289,8 +1294,24 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
 
 <h1>⚽ World Cup Soccer</h1>
 <p class="subtitle">The FIFA World Cup, men's &amp; women's &middot; the complete 2026 tournament &middot; world rankings &middot; history to 1930</p>
-<p class="subtitle"><a href="usa.html" style="font-weight:600;color:inherit">🇺🇸 New: USA Soccer Hub</a> &mdash; the men's &amp; women's national teams, next match, and player-pool club form &rarr;</p>
 <p class="statusline"><span class="dot"></span><span class="et" id="tzNote">Kickoff times shown in U.S. Eastern (ET)</span> &middot; the 2026 archive loads on open &middot; FIFA rankings refresh with every official release</p>
+
+<!-- ══════════ USA SOCCER HUB — the live part of the app now ══════════ -->
+<a class="usa-promo" href="usa.html" id="usaPromo">
+  <span class="usa-promo-k">🇺🇸 USA Soccer Hub &middot; new</span>
+  <span class="usa-promo-t" id="usaPromoT">Follow the U.S. men's &amp; women's national teams</span>
+  <span class="usa-promo-s">Countdown &middot; call the score &middot; storylines &middot; live match &middot; every player's club form</span>
+  <span class="usa-promo-go">Open the hub &rarr;</span>
+</a>
+<script>
+/* Fill the banner with the next U.S. men's match from the hub's own data file. */
+(function(){fetch("data/usa/men.json").then(function(r){return r.ok?r.json():null;}).then(function(d){
+  var m=d&&d.fixtures&&d.fixtures[0];if(!m)return;var t=new Date(m.date);
+  var when=t.toLocaleDateString([],{weekday:"short",month:"short",day:"numeric"})+" · "+t.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
+  var el=document.getElementById("usaPromoT");
+  el.textContent=(m.ha==="H"?"USA vs "+m.opp.name:m.opp.name+" vs USA")+" — "+when;
+}).catch(function(){});})();
+</script>
 
 <!-- ══════════ TODAY & LIVE ══════════ -->
 <div class="today-bar" id="todayBar">

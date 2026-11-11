@@ -85,6 +85,65 @@ async function probeLatest(floor) {
   }
 }
 
+/* ── Current path (FIFA's site, autumn 2026 onward) ──────────────────────────
+   FIFA moved its ranking pages to a new "live world ranking" backend. Releases
+   are now ids like "FRS_Male_Football_20260720"; the old ranking-overview API
+   returns nothing for them, which froze this script on the July release while
+   every run still passed. The page's embedded data lists the releases (newest
+   first) with their publication dates, and the table itself comes from
+   /api/live-world-ranking/get-rankings (count above 300 returns nothing). Returns false if any of that is
+   missing, so the caller can fall back to the legacy discovery below. */
+const LIVE = (g, id) => `https://inside.fifa.com/api/live-world-ranking/get-rankings?mode=schedule&gender=${g}&locale=en&scheduleId=${encodeURIComponent(id)}&rankingType=football&count=300`;
+async function viaLiveBackend() {
+  const women = GENDER === "women";
+  let page;
+  try {
+    const html = await getText(PAGE);
+    const m = html.match(/<script id="__NEXT_DATA__"[^>]*>([\s\S]*?)<\/script>/);
+    page = JSON.parse(m[1]).props.pageProps.pageData.ranking;
+  } catch { return false; }
+  const rel = (page.dates || []).flatMap(y => y.dates || []).filter(d => d && d.id && d.iso)
+    .sort((a, b) => String(b.iso).localeCompare(String(a.iso)))[0];
+  if (!rel) return false;
+  let rows;
+  try { rows = JSON.parse(await getText(LIVE(women ? 2 : 1, rel.id))).rankings || []; } catch { return false; }
+  if (rows.length < (women ? 120 : 150)) return false;
+  const updated = String(rel.iso).slice(0, 10), next = String(page.nextUpdateDate || "").slice(0, 10);
+  const r2 = n => Math.round(n * 100) / 100;
+  const path = join(ROOT, "data", women ? "rankings-women.json" : "rankings.json");
+  let existing = null;
+  try { existing = JSON.parse(await readFile(path, "utf8")); } catch { /* none yet */ }
+  if (existing && existing.updated && existing.updated > updated) {
+    console.log(`  live backend offers ${rel.id} (${updated}), older than the stored ${existing.updated} — keeping the file.`);
+    return true;
+  }
+  let out;
+  if (women) {
+    const list = rows.filter(x => x.rank != null).map(x => ({
+      r: x.rank, n: FIFA_TO_APP[x.teamName] || x.teamName, p: r2(x.totalPoints), pr: x.previousRank, c: x.confederationName || "",
+    })).sort((a, b) => a.r - b.r);
+    out = { source: "FIFA", gender: "women", dateId: rel.id, updated, next, count: list.length, rows: list };
+  } else {
+    const ranks = {};
+    for (const x of rows) {
+      if (x.rank == null) continue;
+      const k = key(FIFA_TO_APP[x.teamName] || x.teamName);
+      if (k) ranks[k] = { r: x.rank, p: r2(x.totalPoints), pr: x.previousRank };
+    }
+    const sorted = {};
+    for (const k of Object.keys(ranks).sort()) sorted[k] = ranks[k];
+    out = { source: "FIFA", gender: "men", dateId: rel.id, updated, next, count: Object.keys(sorted).length, ranks: sorted };
+  }
+  if (existing && JSON.stringify(existing) === JSON.stringify(out)) {
+    console.log(`✓ ${women ? "Women's ranking" : "Rankings"} unchanged (${out.count} teams, FIFA release of ${updated}) — leaving the file.`);
+    return true;
+  }
+  await mkdir(join(ROOT, "data"), { recursive: true });
+  await writeFile(path, JSON.stringify(out));
+  console.log(`✓ wrote ${path.split("/").slice(-2).join("/")} — ${out.count} teams, FIFA ${GENDER} ranking of ${updated} (${rel.id})${next ? `, next ${next}` : ""}`);
+  return true;
+}
+
 async function main() {
   // 1) Floor from the ranking page's embedded (possibly stale) release list,
   //    and from the last release we stored — whichever is higher.
@@ -94,7 +153,7 @@ async function main() {
   const path = join(ROOT, "data", "rankings.json");
   let existing = null;
   try { existing = JSON.parse(await readFile(path, "utf8")); } catch { /* none yet */ }
-  const storedId = existing && existing.gender === GENDER ? Number(String(existing.dateId || "").replace(/\D/g, "")) || 0 : 0;
+  const storedId = existing && existing.gender === GENDER && /^id\d+$/.test(String(existing.dateId || "")) ? Number(String(existing.dateId).slice(2)) : 0;   // legacy numeric ids only
   const floor = Math.max(...pageIds, storedId);
 
   // 2) The page floor itself must be live; then probe above it for anything newer.
@@ -198,5 +257,10 @@ async function mainWomen() {
   console.log(`✓ wrote data/rankings-women.json — ${out.count} nations, FIFA women's ranking of ${pick.updated}${next ? ` (next ${next})` : ""}`);
 }
 
-(GENDER === "women" ? mainWomen() : main())
+viaLiveBackend()
+  .then(ok => {
+    if (ok) return;
+    console.log("  live backend unavailable — falling back to legacy release discovery");
+    return GENDER === "women" ? mainWomen() : main();
+  })
   .catch(e => { console.error("✗ rankings fetch failed:", e.message); process.exit(1); });
