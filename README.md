@@ -1,4 +1,4 @@
-# Called Up 🇺🇸 — the U.S. men's & women's national teams
+# Cap Day 🇺🇸 — the U.S. women's & men's national teams
 
 **Live app: [jerredcook.github.io/wc2026](https://jerredcook.github.io/wc2026/)** · unofficial fan app, not affiliated with U.S. Soccer, Concacaf or FIFA.
 
@@ -6,6 +6,10 @@ A near-zero-dependency web app (installable, offline-capable) for following the 
 
 ## The hub
 
+Cap Day answers three questions for both teams: **when do they play next, what is the match for, and how do I watch it?** ("Cap" is the football word for an international appearance.) It deliberately does not try to be a daily tracker of Americans at their clubs; club form appears only as pre-match context.
+
+- **Both teams up top**, women listed first: each team's next match with its date, a purpose tag (Friendly / Competitive / Qualifier / Tournament) and a plain-English line on what the competition is. The page opens on whichever match comes first.
+- **Calendar:** every upcoming match for both teams in one list, plus subscribable feeds (`data/usa/all.ics`, `women.ics`, `men.ics`) so matches land in the phone's calendar automatically.
 - **Next match:** countdown, local kickoff time, venue, where to watch, FIFA ranks, a win-expectancy bar (FIFA's formula on current rating points), the series record, both teams' last five and past meetings, and a hand-written "what's at stake" line per match ([`data/usa/editorial.json`](data/usa/editorial.json), keyed by ESPN event id).
 - **Live:** score, goals and cards, lineups and match stats, polled every 30 seconds, with a flash on each goal.
 - **Call the score:** a predictor saved on the device, shareable, graded live and at full time.

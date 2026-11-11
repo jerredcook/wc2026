@@ -1,0 +1,139 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Cap Day//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Cap Day — USA Women
+REFRESH-INTERVAL;VALUE=DURATION:PT6H
+X-PUBLISHED-TTL:PT6H
+BEGIN:VEVENT
+UID:usa-761391@capday
+DTSTAMP:20260124T223000Z
+DTSTART:20260124T223000Z
+DTEND:20260125T003000Z
+SUMMARY:FT: USA Women vs Paraguay 6–0
+LOCATION:Dignity Health Sports Park\, Carson\, California
+DESCRIPTION:Women's International Friendly\nhttps://jerredcook.github.io/
+ wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-762548@capday
+DTSTAMP:20260128T030000Z
+DTSTART:20260128T030000Z
+DTEND:20260128T050000Z
+SUMMARY:FT: USA Women vs Chile 5–0
+LOCATION:Harder Stadium\, Santa Barbara
+DESCRIPTION:Women's International Friendly\nhttps://jerredcook.github.io/
+ wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401846987@capday
+DTSTAMP:20260301T220000Z
+DTSTART:20260301T220000Z
+DTEND:20260302T000000Z
+SUMMARY:FT: USA Women vs Argentina 2–0
+LOCATION:GEODIS Park\, Nashville\, Tennessee
+DESCRIPTION:SheBelieves Cup · 2026 SheBelieves Cup\nhttps://jerredcook.gi
+ thub.io/wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401846989@capday
+DTSTAMP:20260304T234500Z
+DTSTART:20260304T234500Z
+DTEND:20260305T014500Z
+SUMMARY:FT: USA Women vs Canada 1–0
+LOCATION:ScottsMiracle-Gro Field\, Columbus\, Ohio
+DESCRIPTION:SheBelieves Cup · 2026 SheBelieves Cup\nhttps://jerredcook.gi
+ thub.io/wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401846991@capday
+DTSTAMP:20260307T203000Z
+DTSTART:20260307T203000Z
+DTEND:20260307T223000Z
+SUMMARY:FT: USA Women vs Colombia 1–0
+LOCATION:Sports Illustrated Stadium\, Harrison\, New Jersey
+DESCRIPTION:SheBelieves Cup · 2026 SheBelieves Cup\nhttps://jerredcook.gi
+ thub.io/wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401857906@capday
+DTSTAMP:20260411T213000Z
+DTSTART:20260411T213000Z
+DTEND:20260411T233000Z
+SUMMARY:FT: USA Women vs Japan 2–1
+LOCATION:PayPal Park\, San Jose\, California
+DESCRIPTION:Women's International Friendly\nhttps://jerredcook.github.io/
+ wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401857907@capday
+DTSTAMP:20260415T020000Z
+DTSTART:20260415T020000Z
+DTEND:20260415T040000Z
+SUMMARY:FT: USA Women vs Japan 0–1
+LOCATION:Lumen Field\, Seattle\, Washington
+DESCRIPTION:Women's International Friendly\nhttps://jerredcook.github.io/
+ wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401857908@capday
+DTSTAMP:20260418T010000Z
+DTSTART:20260418T010000Z
+DTEND:20260418T030000Z
+SUMMARY:FT: USA Women vs Japan 3–0
+LOCATION:Dick's Sporting Goods Park\, Commerce City\, Colorado
+DESCRIPTION:Women's International Friendly\nhttps://jerredcook.github.io/
+ wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401870096@capday
+DTSTAMP:20260606T213000Z
+DTSTART:20260606T213000Z
+DTEND:20260606T233000Z
+SUMMARY:FT: Brazil vs USA Women 2–1
+LOCATION:Neo Química Arena\, Sao Paulo
+DESCRIPTION:Women's International Friendly\nhttps://jerredcook.github.io/
+ wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401870097@capday
+DTSTAMP:20260610T003000Z
+DTSTART:20260610T003000Z
+DTEND:20260610T023000Z
+SUMMARY:FT: Brazil vs USA Women 0–1
+LOCATION:Arena Castelão\, Fortaleza
+DESCRIPTION:Women's International Friendly\nhttps://jerredcook.github.io/
+ wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401890785@capday
+DTSTAMP:20261010T183000Z
+DTSTART:20261010T183000Z
+DTEND:20261010T203000Z
+SUMMARY:FT: USA Women vs Spain 0–2
+LOCATION:Audi Field\, Washington\, District of Columbia
+DESCRIPTION:Women's International Friendly\nhttps://jerredcook.github.io/
+ wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401890784@capday
+DTSTAMP:20261013T230000Z
+DTSTART:20261013T230000Z
+DTEND:20261014T010000Z
+SUMMARY:FT: USA Women vs Spain 2–2
+LOCATION:Subaru Park\, Chester\, Pennsylvania
+DESCRIPTION:Women's International Friendly\nhttps://jerredcook.github.io/
+ wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401870040@capday
+DTSTAMP:20261128T013000Z
+DTSTART:20261128T013000Z
+DTEND:20261128T033000Z
+SUMMARY:USA Women vs El Salvador
+LOCATION:Texas Health Mansfield Stadium\, Mansfield
+DESCRIPTION:Concacaf W Championship · Quarterfinals\nWatch: Paramount+\nh
+ ttps://jerredcook.github.io/wc2026/
+END:VEVENT
+END:VCALENDAR

@@ -27,9 +27,10 @@ const CLUB_MATCHES = 3;       // club matches of form kept per player
 const CONCURRENCY = 6;
 
 const TEAMS = {
-  men:   { id: "660",  label: "Men",   squads: ["fifa.friendly", "fifa.world"] },
   women: { id: "2765", label: "Women", squads: ["fifa.friendly.w"] },   // not fifa.wwc: that squad is the 2023 one
+  men:   { id: "660",  label: "Men",   squads: ["fifa.friendly", "fifa.world"] },
 };
+const SITE = "https://jerredcook.github.io/wc2026/";
 
 async function get(url, tries = 3) {
   for (let i = 1; ; i++) {
@@ -216,13 +217,53 @@ async function build(key) {
   };
   await mkdir(join(ROOT, "data", "usa"), { recursive: true });
   await writeFile(join(ROOT, "data", "usa", key + ".json"), JSON.stringify(out) + "\n");
+  CAL[key] = calEvents(T.label, fixtures, results);
+  await writeFile(join(ROOT, "data", "usa", key + ".ics"), ics(`Cap Day — USA ${T.label}`, CAL[key]));
   console.log(`  wrote data/usa/${key}.json (${players.filter(p => p.club).length}/${players.length} players with club form)`);
 }
 
-const want = ["men", "women"].filter(k => process.argv.includes("--" + k));
+/* ── Calendar feeds ──────────────────────────────────────────────────────────
+   data/usa/{women,men,all}.ics — subscribe once and every match (and its
+   result afterwards) shows up in the phone's calendar. DTSTAMP is the kickoff
+   time rather than "now", so an unchanged schedule produces an identical file
+   and no commit. */
+const CAL = {};
+const icsEsc = v => String(v || "").replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\r?\n/g, "\\n");
+const icsTime = t => new Date(t).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+const fold = line => {                      // RFC 5545: continuation lines start with a space
+  const parts = [line.slice(0, 73)];
+  for (let i = 73; i < line.length; i += 72) parts.push(line.slice(i, i + 72));
+  return parts.join("\r\n ");
+};
+function calEvents(label, fixtures, results) {
+  return [...results.slice(0, 12), ...fixtures].map(m => {
+    const teams = m.ha === "H" ? `USA ${label} vs ${m.opp.name}` : `${m.opp.name} vs USA ${label}`;
+    const done = m.state === "post" && m.us != null;
+    const score = done ? (m.ha === "H" ? ` ${m.us}–${m.them}` : ` ${m.them}–${m.us}`) : "";
+    const desc = [[m.comp, m.round, m.leg].filter(Boolean).join(" · "), !done && m.tv.length ? "Watch: " + m.tv.join(" / ") : "", SITE].filter(Boolean).join("\n");
+    return { uid: `usa-${m.id}@capday`, start: m.date, summary: (done ? "FT: " : "") + teams + score, location: [m.venue, m.city].filter(Boolean).join(", "), desc };
+  });
+}
+function ics(name, events) {
+  const L = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Cap Day//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
+    "X-WR-CALNAME:" + icsEsc(name), "REFRESH-INTERVAL;VALUE=DURATION:PT6H", "X-PUBLISHED-TTL:PT6H"];
+  for (const e of events.slice().sort((a, b) => a.start.localeCompare(b.start))) {
+    L.push("BEGIN:VEVENT", "UID:" + e.uid, "DTSTAMP:" + icsTime(e.start), "DTSTART:" + icsTime(e.start),
+      "DTEND:" + icsTime(new Date(e.start).getTime() + 2 * 36e5), "SUMMARY:" + icsEsc(e.summary),
+      "LOCATION:" + icsEsc(e.location), "DESCRIPTION:" + icsEsc(e.desc), "END:VEVENT");
+  }
+  L.push("END:VCALENDAR");
+  return L.map(fold).join("\r\n") + "\r\n";
+}
+
+const want = ["women", "men"].filter(k => process.argv.includes("--" + k));
 let failed = false;
-for (const key of want.length ? want : ["men", "women"]) {
+for (const key of want.length ? want : ["women", "men"]) {
   try { await build(key); }
   catch (e) { failed = true; console.error(`FAILED ${key}: ${e.message}`); }
+}
+if (CAL.women && CAL.men) {
+  await writeFile(join(ROOT, "data", "usa", "all.ics"), ics("Cap Day — USA Women & Men", [...CAL.women, ...CAL.men]));
+  console.log("\nwrote data/usa/all.ics");
 }
 process.exit(failed ? 1 : 0);

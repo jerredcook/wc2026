@@ -1,8 +1,8 @@
 {
  "id": "/wc2026/",
- "name": "Called Up",
- "short_name": "Called Up",
- "description": "The U.S. men's and women's national teams: next match, live score, storylines and what every player in the pool did for their club. Plus the complete 2026 World Cup archive. Unofficial fan app.",
+ "name": "Cap Day",
+ "short_name": "Cap Day",
+ "description": "The U.S. women's and men's national teams: when they play next, what the match is for, how to watch, and live on matchday. Plus the complete 2026 World Cup archive. Unofficial fan app.",
  "categories": ["sports"],
  "lang": "en",
  "start_url": "./",

@@ -1,0 +1,284 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Cap Day//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:Cap Day — USA Women & Men
+REFRESH-INTERVAL;VALUE=DURATION:PT6H
+X-PUBLISHED-TTL:PT6H
+BEGIN:VEVENT
+UID:usa-761391@capday
+DTSTAMP:20260124T223000Z
+DTSTART:20260124T223000Z
+DTEND:20260125T003000Z
+SUMMARY:FT: USA Women vs Paraguay 6–0
+LOCATION:Dignity Health Sports Park\, Carson\, California
+DESCRIPTION:Women's International Friendly\nhttps://jerredcook.github.io/
+ wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-762548@capday
+DTSTAMP:20260128T030000Z
+DTSTART:20260128T030000Z
+DTEND:20260128T050000Z
+SUMMARY:FT: USA Women vs Chile 5–0
+LOCATION:Harder Stadium\, Santa Barbara
+DESCRIPTION:Women's International Friendly\nhttps://jerredcook.github.io/
+ wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401846987@capday
+DTSTAMP:20260301T220000Z
+DTSTART:20260301T220000Z
+DTEND:20260302T000000Z
+SUMMARY:FT: USA Women vs Argentina 2–0
+LOCATION:GEODIS Park\, Nashville\, Tennessee
+DESCRIPTION:SheBelieves Cup · 2026 SheBelieves Cup\nhttps://jerredcook.gi
+ thub.io/wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401846989@capday
+DTSTAMP:20260304T234500Z
+DTSTART:20260304T234500Z
+DTEND:20260305T014500Z
+SUMMARY:FT: USA Women vs Canada 1–0
+LOCATION:ScottsMiracle-Gro Field\, Columbus\, Ohio
+DESCRIPTION:SheBelieves Cup · 2026 SheBelieves Cup\nhttps://jerredcook.gi
+ thub.io/wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401846991@capday
+DTSTAMP:20260307T203000Z
+DTSTART:20260307T203000Z
+DTEND:20260307T223000Z
+SUMMARY:FT: USA Women vs Colombia 1–0
+LOCATION:Sports Illustrated Stadium\, Harrison\, New Jersey
+DESCRIPTION:SheBelieves Cup · 2026 SheBelieves Cup\nhttps://jerredcook.gi
+ thub.io/wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-762259@capday
+DTSTAMP:20260331T230000Z
+DTSTART:20260331T230000Z
+DTEND:20260401T010000Z
+SUMMARY:FT: USA Men vs Portugal 0–2
+LOCATION:Mercedes-Benz Stadium\, Atlanta\, Georgia
+DESCRIPTION:International Friendly\nhttps://jerredcook.github.io/wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401857906@capday
+DTSTAMP:20260411T213000Z
+DTSTART:20260411T213000Z
+DTEND:20260411T233000Z
+SUMMARY:FT: USA Women vs Japan 2–1
+LOCATION:PayPal Park\, San Jose\, California
+DESCRIPTION:Women's International Friendly\nhttps://jerredcook.github.io/
+ wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401857907@capday
+DTSTAMP:20260415T020000Z
+DTSTART:20260415T020000Z
+DTEND:20260415T040000Z
+SUMMARY:FT: USA Women vs Japan 0–1
+LOCATION:Lumen Field\, Seattle\, Washington
+DESCRIPTION:Women's International Friendly\nhttps://jerredcook.github.io/
+ wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401857908@capday
+DTSTAMP:20260418T010000Z
+DTSTART:20260418T010000Z
+DTEND:20260418T030000Z
+SUMMARY:FT: USA Women vs Japan 3–0
+LOCATION:Dick's Sporting Goods Park\, Commerce City\, Colorado
+DESCRIPTION:Women's International Friendly\nhttps://jerredcook.github.io/
+ wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-762592@capday
+DTSTAMP:20260531T193000Z
+DTSTART:20260531T193000Z
+DTEND:20260531T213000Z
+SUMMARY:FT: USA Men vs Senegal 3–2
+LOCATION:Bank of America Stadium\, Charlotte\, North Carolina
+DESCRIPTION:International Friendly\nhttps://jerredcook.github.io/wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-762260@capday
+DTSTAMP:20260606T183000Z
+DTSTART:20260606T183000Z
+DTEND:20260606T203000Z
+SUMMARY:FT: USA Men vs Germany 1–2
+LOCATION:Soldier Field\, Chicago\, Illinois
+DESCRIPTION:International Friendly\nhttps://jerredcook.github.io/wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401870096@capday
+DTSTAMP:20260606T213000Z
+DTSTART:20260606T213000Z
+DTEND:20260606T233000Z
+SUMMARY:FT: Brazil vs USA Women 2–1
+LOCATION:Neo Química Arena\, Sao Paulo
+DESCRIPTION:Women's International Friendly\nhttps://jerredcook.github.io/
+ wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401870097@capday
+DTSTAMP:20260610T003000Z
+DTSTART:20260610T003000Z
+DTEND:20260610T023000Z
+SUMMARY:FT: Brazil vs USA Women 0–1
+LOCATION:Arena Castelão\, Fortaleza
+DESCRIPTION:Women's International Friendly\nhttps://jerredcook.github.io/
+ wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-760417@capday
+DTSTAMP:20260613T010000Z
+DTSTART:20260613T010000Z
+DTEND:20260613T030000Z
+SUMMARY:FT: USA Men vs Paraguay 4–1
+LOCATION:SoFi Stadium\, Inglewood\, California
+DESCRIPTION:FIFA World Cup · Group Stage\nhttps://jerredcook.github.io/wc
+ 2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-760442@capday
+DTSTAMP:20260619T190000Z
+DTSTART:20260619T190000Z
+DTEND:20260619T210000Z
+SUMMARY:FT: USA Men vs Australia 2–0
+LOCATION:Lumen Field\, Seattle\, Washington
+DESCRIPTION:FIFA World Cup · Group Stage\nhttps://jerredcook.github.io/wc
+ 2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-760470@capday
+DTSTAMP:20260626T020000Z
+DTSTART:20260626T020000Z
+DTEND:20260626T040000Z
+SUMMARY:FT: Türkiye vs USA Men 3–2
+LOCATION:SoFi Stadium\, Inglewood\, California
+DESCRIPTION:FIFA World Cup · Group Stage\nhttps://jerredcook.github.io/wc
+ 2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-760494@capday
+DTSTAMP:20260702T000000Z
+DTSTART:20260702T000000Z
+DTEND:20260702T020000Z
+SUMMARY:FT: USA Men vs Bosnia-Herzegovina 2–0
+LOCATION:Levi's Stadium\, Santa Clara\, California
+DESCRIPTION:FIFA World Cup · Round of 32\nhttps://jerredcook.github.io/wc
+ 2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-760507@capday
+DTSTAMP:20260707T000000Z
+DTSTART:20260707T000000Z
+DTEND:20260707T020000Z
+SUMMARY:FT: USA Men vs Belgium 1–4
+LOCATION:Lumen Field\, Seattle\, Washington
+DESCRIPTION:FIFA World Cup · Round of 16\nhttps://jerredcook.github.io/wc
+ 2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401905203@capday
+DTSTAMP:20260926T203000Z
+DTSTART:20260926T203000Z
+DTEND:20260926T223000Z
+SUMMARY:FT: USA Men vs Peru 4–1
+LOCATION:Inter&Co Stadium\, Orlando\, Florida
+DESCRIPTION:International Friendly\nhttps://jerredcook.github.io/wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401905189@capday
+DTSTAMP:20260930T000000Z
+DTSTART:20260930T000000Z
+DTEND:20260930T020000Z
+SUMMARY:FT: USA Men vs Chile 4–2
+LOCATION:Energizer Park\, St. Louis\, Missouri
+DESCRIPTION:International Friendly\nhttps://jerredcook.github.io/wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401905202@capday
+DTSTAMP:20261004T020000Z
+DTSTART:20261004T020000Z
+DTEND:20261004T040000Z
+SUMMARY:FT: USA Men vs Mexico 3–0
+LOCATION:State Farm Stadium\, Glendale\, Arizona
+DESCRIPTION:International Friendly\nhttps://jerredcook.github.io/wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401905188@capday
+DTSTAMP:20261007T000000Z
+DTSTART:20261007T000000Z
+DTEND:20261007T020000Z
+SUMMARY:FT: USA Men vs Canada 1–0
+LOCATION:Allianz Field\, Saint Paul\, Minnesota
+DESCRIPTION:International Friendly\nhttps://jerredcook.github.io/wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401890785@capday
+DTSTAMP:20261010T183000Z
+DTSTART:20261010T183000Z
+DTEND:20261010T203000Z
+SUMMARY:FT: USA Women vs Spain 0–2
+LOCATION:Audi Field\, Washington\, District of Columbia
+DESCRIPTION:Women's International Friendly\nhttps://jerredcook.github.io/
+ wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401890784@capday
+DTSTAMP:20261013T230000Z
+DTSTART:20261013T230000Z
+DTEND:20261014T010000Z
+SUMMARY:FT: USA Women vs Spain 2–2
+LOCATION:Subaru Park\, Chester\, Pennsylvania
+DESCRIPTION:Women's International Friendly\nhttps://jerredcook.github.io/
+ wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401929710@capday
+DTSTAMP:20261114T213000Z
+DTSTART:20261114T213000Z
+DTEND:20261114T233000Z
+SUMMARY:Haiti vs USA Men
+LOCATION:Nu Stadium\, Miami\, Florida
+DESCRIPTION:Concacaf Nations League · Quarterfinals · 1st Leg\nWatch: TBS
+  / truTV / Universo / HBO Max / Peacock\nhttps://jerredcook.github.io/wc
+ 2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401929766@capday
+DTSTAMP:20261118T000000Z
+DTSTART:20261118T000000Z
+DTEND:20261118T020000Z
+SUMMARY:USA Men vs Haiti
+LOCATION:TQL Stadium\, Cincinnati\, Ohio
+DESCRIPTION:Concacaf Nations League · Quarterfinals · 2nd Leg\nWatch: TBS
+  / truTV / Universo / HBO Max / Peacock\nhttps://jerredcook.github.io/wc
+ 2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401870040@capday
+DTSTAMP:20261128T013000Z
+DTSTART:20261128T013000Z
+DTEND:20261128T033000Z
+SUMMARY:USA Women vs El Salvador
+LOCATION:Texas Health Mansfield Stadium\, Mansfield
+DESCRIPTION:Concacaf W Championship · Quarterfinals\nWatch: Paramount+\nh
+ ttps://jerredcook.github.io/wc2026/
+END:VEVENT
+BEGIN:VEVENT
+UID:usa-401930977@capday
+DTSTAMP:20261213T203000Z
+DTSTART:20261213T203000Z
+DTEND:20261213T223000Z
+SUMMARY:USA Men vs Jamaica
+LOCATION:Chase Stadium\, Fort Lauderdale\, Florida
+DESCRIPTION:International Friendly\nWatch: TNT / HBO Max / Tele / Univers
+ o / Peacock\nhttps://jerredcook.github.io/wc2026/
+END:VEVENT
+END:VCALENDAR

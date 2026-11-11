@@ -3,15 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Called Up — the U.S. men's &amp; women's national teams</title>
-<meta name="description" content="Follow the U.S. men's and women's national teams: the next match and how to watch it, live score and lineups, results, and what every player in the pool did for their club this week. Unofficial fan app.">
+<title>Cap Day — the U.S. women's &amp; men's national teams</title>
+<meta name="description" content="When do the U.S. women's and men's national teams play next, what is the match for, and how do you watch it? Countdown, live score and lineups, call the score, storylines and a calendar you can subscribe to. Unofficial fan app.">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Called Up">
-<meta property="og:title" content="Called Up — the U.S. men's &amp; women's national teams">
+<meta property="og:site_name" content="Cap Day">
+<meta property="og:title" content="Cap Day — the U.S. women's &amp; men's national teams">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta property="og:description" content="Next match, how to watch, live score and lineups — plus what every player in the pool did for their club this week.">
+<meta property="og:description" content="When the U.S. women's and men's national teams play next, what the match is for, and how to watch it.">
 <meta property="og:url" content="https://jerredcook.github.io/wc2026/">
 <meta property="og:image" content="https://jerredcook.github.io/wc2026/og-image.png">
 <link rel="manifest" href="manifest.webmanifest">
@@ -19,7 +19,7 @@
 <meta name="theme-color" content="#15161a" media="(prefers-color-scheme: dark)">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-title" content="Called Up">
+<meta name="apple-mobile-web-app-title" content="Cap Day">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script>
@@ -78,7 +78,7 @@ h1{font-size:22px;font-weight:700;letter-spacing:-.01em}
 .where{text-align:center;font-size:12px;color:var(--ink2);margin-top:4px}
 .meta{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
 .mrow{display:flex;gap:10px;align-items:baseline;font-size:13px}
-.mrow .lab{flex:0 0 74px;font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
+.mrow .lab{flex:0 0 86px;font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
 .chips{display:flex;flex-wrap:wrap;gap:5px}
 .chip{font-size:12px;font-weight:600;background:var(--chip);border-radius:12px;padding:2px 9px;white-space:nowrap}
 .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
@@ -151,6 +151,21 @@ details[open]>summary::before{content:"▾ "}
 .empty{font-size:13px;color:var(--ink3);padding:6px 0}
 .foot{font-size:11px;color:var(--ink3);line-height:1.6;margin-top:18px}
 .morecard{display:block;text-decoration:none;color:inherit}
+.nextup{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.nu{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:2px solid transparent;background:var(--card);border-radius:14px;padding:11px 12px;cursor:pointer;box-shadow:var(--shadow);min-width:0}
+.nu.on{border-color:var(--navy)}
+.nu-k{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
+.nu-t{font-size:15px;font-weight:800;line-height:1.2}
+.nu-d{font-size:12px;color:var(--ink2)}
+.nu-c{font-size:12px;font-weight:700;color:var(--good)}
+.nu-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px}
+.ctag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;border-radius:9px;padding:1px 7px;white-space:nowrap;vertical-align:1px}
+.ctag.friendly{background:var(--chip);color:var(--ink2)}
+.ctag.competitive{background:var(--warnbg);color:var(--warn)}
+.ctag.tournament{background:var(--badbg);color:var(--bad)}
+.ctag.qualifier{background:var(--goodbg);color:var(--good)}
+.wm{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:6px;font-size:11px;font-weight:800;background:var(--chip);color:var(--ink2);margin-right:6px;vertical-align:1px}
+.subopt{display:block;margin:8px 0;padding:11px;border-radius:12px;background:#eef1f6;color:#0b2a5b;font-weight:800;text-decoration:none;font-size:14px}
 
 /* ── Matchday hero: always the dark navy card, whatever the page theme ── */
 .hero{background:linear-gradient(165deg,#0e3272 0%,#081b3c 55%,#2d0f25 100%);color:#fff;border-top:0;padding:18px 16px;
@@ -210,8 +225,8 @@ dialog button{border:0;border-radius:16px;padding:8px 22px;background:#0b2a5b;co
 <div class="wrap">
   <div class="top">
     <div>
-      <h1>🇺🇸 Called Up</h1>
-      <p class="sub" style="margin-bottom:0">The U.S. men's &amp; women's national teams &middot; unofficial fan app</p>
+      <h1>🇺🇸 Cap Day</h1>
+      <p class="sub" style="margin-bottom:0">The U.S. women's &amp; men's national teams &middot; unofficial fan app</p>
     </div>
     <div class="hbtns">
       <button class="btn" id="installBtn" hidden>⬇ Install</button>
@@ -219,19 +234,14 @@ dialog button{border:0;border-radius:16px;padding:8px 22px;background:#0b2a5b;co
       <a class="back" href="worldcup.html">World Cup &rarr;</a>
     </div>
   </div>
-  <div class="top">
-    <div class="seg" id="seg" role="tablist" aria-label="Team">
-      <button data-team="men" role="tab">Men</button>
-      <button data-team="women" role="tab">Women</button>
-    </div>
-    <span class="cnote" id="stamp" style="margin:0"></span>
-  </div>
+  <div class="nextup" id="nextup"></div>
 
   <div id="hero"></div>
   <div id="stories"></div>
   <div id="pool"></div>
   <div id="oppo"></div>
   <div id="fixtures"></div>
+  <p class="cnote" id="stamp" style="margin:-6px 2px 14px"></p>
   <div id="results"></div>
 
   <a class="card morecard" href="worldcup.html">
@@ -243,28 +253,37 @@ dialog button{border:0;border-radius:16px;padding:8px 22px;background:#0b2a5b;co
   <p class="foot">
     Unofficial and fan-made — not affiliated with or endorsed by U.S. Soccer, Concacaf or FIFA.
     Match and squad data from ESPN's public feed; rankings from FIFA. Club form covers each player's last three club matches and refreshes a few times a day.
-    Kickoff times are shown in your local time zone.
+    Kickoff times are shown in your local time zone. "Cap" is the football word for an international appearance: in 1886 England began giving each player a white silk cap for every international match.
   </p>
 </div>
 
+<dialog id="sub">
+  <h3 style="font-size:17px;margin-bottom:6px">Never miss a match</h3>
+  <p style="word-break:normal">Add every USA women's and men's match to your phone's calendar. New fixtures and kickoff changes arrive automatically.</p>
+  <a class="subopt" id="subGoogle" target="_blank" rel="noopener">Google Calendar</a>
+  <a class="subopt" id="subApple">Apple Calendar / Outlook</a>
+  <p style="font-size:11.5px;margin-top:10px;word-break:normal">Google refreshes subscribed calendars about once a day.</p>
+  <button onclick="this.closest('dialog').close()">Close</button>
+</dialog>
+
 <dialog id="qr">
   <img src="qr.svg" alt="QR code for this page" width="240" height="240">
-  <p>Scan to open Called Up<br>jerredcook.github.io/wc2026</p>
+  <p>Scan to open Cap Day<br>jerredcook.github.io/wc2026</p>
   <button onclick="this.closest('dialog').close()">Close</button>
 </dialog>
 
 <script>
 "use strict";
 const API = "https://site.api.espn.com/apis/site/v2/sports/soccer";
-const TEAM = { men: { id: "660" }, women: { id: "2765" } };
+const TEAM = { women: { id: "2765" }, men: { id: "660" } };
 const USA_LOGO = "https://a.espncdn.com/i/teamlogos/countries/500/usa.png";
 const KEY = "wc2026.usa.v1";
 
 const S = { team: "men", data: {}, ranks: {}, live: {}, sums: {}, open: {}, pos: "all", sort: "pos", ed: null, calls: {}, flash: false };
 try { S.calls = JSON.parse(localStorage.getItem(KEY + ".calls") || "{}") || {}; } catch (e) {}
-try { const p = JSON.parse(localStorage.getItem(KEY) || "{}"); if (p.team === "women") S.team = "women"; } catch (e) {}
 const hashTeam = location.hash.replace("#", "");
-if (TEAM[hashTeam]) S.team = hashTeam;
+const pinned = !!TEAM[hashTeam];
+S.team = pinned ? hashTeam : "women";
 
 const $ = id => document.getElementById(id);
 const h = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
@@ -301,7 +320,64 @@ function winExp(oppName) {
   return a == null || b == null ? null : 1 / (1 + Math.pow(10, -(a - b) / 600));
 }
 
+/* ── What a match is for ──
+   Every fixture gets a kind (the coloured tag) and a one-line plain-English
+   explainer, matched on the competition's name. */
+const COMPS = [
+  [/friendly/i, "friendly", "Friendly", "A friendly. Nothing is at stake except form, places in the squad and FIFA ranking points."],
+  [/nations league/i, "competitive", "Competitive", "The Concacaf Nations League: the region's competition for national teams, played between the big tournaments. It ends with a four-team finals in March and also decides places at the Gold Cup."],
+  [/gold cup/i, "tournament", "Tournament", "The Gold Cup: the championship of North America, Central America and the Caribbean."],
+  [/w championship|women.?s championship/i, "qualifier", "Qualifier", "The Concacaf W Championship: the women's regional championship, which also decides the region's places at the Women's World Cup."],
+  [/shebelieves/i, "tournament", "Tournament", "The SheBelieves Cup: an annual invitational tournament hosted by the United States."],
+  [/qualif/i, "qualifier", "Qualifier", "A qualifier: results decide who reaches the tournament."],
+  [/women.?s world cup/i, "tournament", "World Cup", "The Women's World Cup."],
+  [/world cup/i, "tournament", "World Cup", "The World Cup."],
+  [/olympic/i, "tournament", "Tournament", "The Olympic football tournament."],
+  [/copa am/i, "tournament", "Tournament", "The Copa América: South America's championship, with invited guests."],
+];
+function compInfo(m) {
+  const c = COMPS.find(x => x[0].test(m.comp || ""));
+  return c ? { kind: c[1], label: c[2], blurb: c[3] } : { kind: "competitive", label: "Competitive", blurb: "" };
+}
+const ctag = m => { const c = compInfo(m); return `<span class="ctag ${c.kind}">${c.label}</span>`; };
+const compLine = m => [compInfo(m).kind === "friendly" ? "" : m.comp, m.round, m.leg].filter(Boolean).join(" · ");
+function relDay(iso) {
+  const a = new Date(), b = D(iso);
+  const days = Math.round((new Date(b.getFullYear(), b.getMonth(), b.getDate()) - new Date(a.getFullYear(), a.getMonth(), a.getDate())) / 864e5);
+  return days < 0 ? "" : days === 0 ? "Today" : days === 1 ? "Tomorrow" : `In ${days} days`;
+}
+
 /* ── Loading ── */
+const ORDER = ["women", "men"], NAME = { women: "Women", men: "Men" };
+async function fetchData(team) {
+  try { const r = await fetch("data/usa/" + team + ".json", { cache: "no-cache" }); if (r.ok) S.data[team] = await r.json(); } catch (e) {}
+}
+/* The team whose match comes first (women on a tie): the page opens on it. */
+function soonest() {
+  let best = null;
+  for (const t of ORDER) {
+    const m = S.data[t] && S.data[t].fixtures[0];
+    if (m && (!best || m.date < best.date)) best = { t, date: m.date };
+  }
+  return best ? best.t : "women";
+}
+function pickTeam(t) {
+  if (!TEAM[t]) return;
+  if (t !== S.team) { S.team = t; S.pos = "all"; history.replaceState(null, "", "#" + t); render(); loadTeam(t); }
+  const el = $("hero"); if (el && el.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function renderNextUp() {
+  $("nextup").innerHTML = ORDER.map(t => {
+    const d = S.data[t], m = d && d.fixtures[0], L = m && S.live[m.id];
+    let body;
+    if (!d) body = `<span class="nu-d">Loading…</span>`;
+    else if (!m) body = `<span class="nu-t">No match scheduled</span><span class="nu-d">The next window will show here.</span>`;
+    else body = `<span class="nu-t">${m.ha === "H" ? "vs" : "at"} ${h(m.opp.name)}</span>
+      <span class="nu-d">${fmtDay(m.date)} &middot; ${fmtTime(m.date)}</span>
+      <span class="nu-row">${ctag(m)}<span class="nu-c">${L && L.state === "in" ? `<span class="livebadge">LIVE</span>` : L && L.state === "post" ? "Full time" : relDay(m.date)}</span></span>`;
+    return `<button class="nu ${t === S.team ? "on" : ""}" onclick="pickTeam('${t}')" aria-pressed="${t === S.team}"><span class="nu-k">🇺🇸 ${NAME[t]} &middot; next</span>${body}</button>`;
+  }).join("");
+}
 async function loadTeam(team, force) {
   if (!S.data[team] || force) {
     try {
@@ -411,7 +487,7 @@ async function refreshLive() {
     }
   } catch (e) {}
   if (S.team !== team) return;
-  renderHero(); renderStories();
+  renderHero(); renderStories(); renderNextUp();
   const L = S.live[m.id], st = L ? L.state : m.state, ms = D(m.date) - Date.now();
   let wait = null;
   if (st === "in") wait = 30e3;
@@ -446,7 +522,7 @@ function shareCall(id) {
   const d = S.data[S.team], m = d && d.fixtures.concat(d.results).find(x => x.id === id); if (!m) return;
   const url = location.origin + location.pathname + "#" + S.team;
   const text = `My call: ${callText(m, callOf(id))}. What's yours?`;
-  if (navigator.share) navigator.share({ title: "Called Up", text, url }).catch(() => {});
+  if (navigator.share) navigator.share({ title: "Cap Day", text, url }).catch(() => {});
   else if (navigator.clipboard) navigator.clipboard.writeText(text + " " + url).then(() => { const b = $("shareCall"); if (b) { b.textContent = "Copied"; setTimeout(renderHero, 1500); } });
 }
 function callHtml(m, st, us, them) {
@@ -495,7 +571,8 @@ function renderHero() {
   }
   const tv = (L.tv && L.tv.length ? L.tv : m.tv) || [];
   const first = /2nd/i.test(m.leg) && d.results.find(r => r.opp.id === m.opp.id && r.lg === m.lg && D(m.date) - D(r.date) < 12 * 864e5);
-  const rows = [];
+  const rows = [], ci = compInfo(m);
+  if (ci.blurb && st !== "post") rows.push(`<div class="mrow"><span class="lab">${ctag(m)}</span><span>${h(ci.blurb)}</span></div>`);
   if (st !== "post") rows.push(`<div class="mrow"><span class="lab">Watch</span><span class="chips">${tv.length ? tv.map(t => `<span class="chip">${h(t)}</span>`).join("") : `<span style="color:var(--ink3)">Broadcast to be announced</span>`}</span></div>`);
   if (first) rows.push(`<div class="mrow"><span class="lab">First leg</span><span>USA ${first.us}–${first.them} ${h(m.opp.name)} &middot; ${fmtShort(first.date)}</span></div>`);
   if (L.series) rows.push(`<div class="mrow"><span class="lab">Series</span><span>${h(L.series)}</span></div>`);
@@ -586,7 +663,7 @@ function storylines() {
   sq.map(p => ({ p, ...tally(p) })).filter(x => x.g + x.a > 0).sort((x, y) => (y.g * 3 + y.a * 2) - (x.g * 3 + x.a * 2)).slice(0, 3)
     .forEach(x => out.push(["🔥", `<b>${h(x.p.name)}</b>${x.p.age && x.p.age <= 20 ? ` (${x.p.age})` : ""} arrives in form: ${feat(x)} in recent matches for ${h(x.p.club.name)}.`]));
   const cold = sq.filter(p => { const k = p.rec.filter(r => r.st !== "?"); return k.length >= 2 && !k.some(r => r.st === "S" || r.st === "I"); });
-  if (cold.length) out.push(["🧊", `Short of club minutes: ${cold.slice(0, 4).map(p => `<b>${h(p.name)}</b>`).join(", ")}${cold.length > 4 ? ` and ${cold.length - 4} more` : ""} ${cold.length === 1 ? "hasn't" : "haven't"} played in their clubs' last three matches.`]);
+  if (cold.length) out.push(["🧊", `Short of club minutes: ${cold.slice(0, 4).map(p => `<b>${h(p.name)}</b>`).join(", ")}${cold.length > 4 ? ` and ${cold.length - 4} more` : ""} ${cold.length === 1 ? "hasn't played in their club's" : "haven't played in their clubs'"} last three matches.`]);
   const teens = sq.filter(p => p.age && p.age <= 18).sort((a, b) => a.age - b.age);
   if (teens.length) out.push(["🌱", `${teens.length === 1 ? "One teenager" : plural(teens.length, "teenager")} in the picture: ${teens.slice(0, 4).map(p => `<b>${h(p.name)}</b> (${p.age})`).join(", ")}.`]);
   if (d.opp && m && d.opp.match === m.id) {
@@ -616,8 +693,8 @@ function addCal(id) {
   const m = S.data[S.team].fixtures.find(x => x.id === id); if (!m) return;
   const z = t => new Date(t).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
   const title = (m.ha === "H" ? "USA vs " + m.opp.name : m.opp.name + " vs USA") + (S.team === "women" ? " (W)" : "");
-  const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Called Up//EN", "BEGIN:VEVENT",
-    "UID:usa-" + m.id + "@called-up", "DTSTAMP:" + z(Date.now()), "DTSTART:" + z(m.date), "DTEND:" + z(D(m.date).getTime() + 2 * 36e5),
+  const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Cap Day//EN", "BEGIN:VEVENT",
+    "UID:usa-" + m.id + "@capday", "DTSTAMP:" + z(Date.now()), "DTSTART:" + z(m.date), "DTEND:" + z(D(m.date).getTime() + 2 * 36e5),
     "SUMMARY:" + title, "LOCATION:" + [m.venue, m.city].filter(Boolean).join(", ").replace(/,/g, "\\,"),
     "DESCRIPTION:" + [[m.comp, m.round, m.leg].filter(Boolean).join(" · "), m.tv.length ? "Watch: " + m.tv.join(" / ") : ""].filter(Boolean).join("\\n").replace(/,/g, "\\,"),
     "END:VEVENT", "END:VCALENDAR"].join("\r\n");
@@ -680,7 +757,7 @@ function renderPool() {
   }
   const fb = (k, label) => `<button class="fb ${S.pos === k ? "on" : ""}" onclick="setPos('${k}')">${label}</button>`;
   el.innerHTML = `<div class="card">
-    <div class="ctitle">Player pool — club form</div>
+    <div class="ctitle">${NAME[S.team]} — player pool &amp; club form</div>
     <div class="cnote">What everyone in the picture did in their club's last three matches. Tap a player for the detail.</div>
     ${sum ? `<div class="sumline">${sum}</div>` : ""}
     <div class="filters">${fb("all", "All")}${hasExtra ? fb("cur", "Current squad") : ""}${fb("G", "GK")}${fb("D", "DEF")}${fb("M", "MID")}${fb("F", "FWD")}
@@ -695,21 +772,31 @@ function toggleSort() { S.sort = S.sort === "form" ? "pos" : "form"; renderPool(
 
 /* ── Fixtures & results ── */
 function renderFixtures() {
-  const d = S.data[S.team], el = $("fixtures"); if (!d) { el.innerHTML = ""; return; }
-  const f = focus(), list = d.fixtures.filter(m => !f || m.id !== f.id);
-  if (!list.length) { el.innerHTML = ""; return; }
-  el.innerHTML = `<div class="card"><div class="ctitle">Coming up</div>` + list.map(m =>
-    `<div class="m"><div class="md">${fmtShort(m.date)}<small>${fmtTime(m.date)}</small></div>
-      <div><div class="mt">${img(m.opp.logo, "")}${m.ha === "H" ? "vs" : "at"} ${h(m.opp.name)}</div>
-      <div class="ms">${h([m.comp, m.round, m.leg].filter(Boolean).join(" · "))}${m.city ? " &middot; " + h(m.city) : ""}</div>
-      ${m.tv.length ? `<div class="chips" style="margin-top:5px">${m.tv.map(t => `<span class="chip">${h(t)}</span>`).join("")}</div>` : ""}</div><span></span></div>`).join("") + `</div>`;
+  const el = $("fixtures");
+  const all = [];
+  for (const t of ORDER) for (const m of (S.data[t] ? S.data[t].fixtures : [])) all.push({ t, m });
+  all.sort((x, y) => x.m.date.localeCompare(y.m.date) || ORDER.indexOf(x.t) - ORDER.indexOf(y.t));
+  if (!all.length) { el.innerHTML = ""; return; }
+  el.innerHTML = `<div class="card"><div class="ctitle">Calendar — every upcoming match</div>
+    <div class="cnote">Women and men together, in your local time. Tap a match to open it.</div>` + all.map(({ t, m }) =>
+    `<div class="m tap" onclick="pickTeam('${t}')"><div class="md">${fmtShort(m.date)}<small>${fmtTime(m.date)}</small></div>
+      <div><div class="mt"><span class="wm" title="${NAME[t]}">${NAME[t][0]}</span>${img(m.opp.logo, "")}${m.ha === "H" ? "vs" : "at"} ${h(m.opp.name)}</div>
+      <div class="ms">${ctag(m)} ${h(compLine(m))}${m.city ? " &middot; " + h(m.city) : ""}</div>
+      ${m.tv.length ? `<div class="chips" style="margin-top:5px">${m.tv.map(x => `<span class="chip">${h(x)}</span>`).join("")}</div>` : ""}</div><span></span></div>`).join("") +
+    `<div class="acts"><button class="btn" onclick="openSub()">📅 Add all matches to my calendar</button></div></div>`;
+}
+function openSub() {
+  const feed = new URL("data/usa/all.ics", location.href).href;
+  $("subApple").href = feed.replace(/^https?:/, "webcal:");
+  $("subGoogle").href = "https://calendar.google.com/calendar/render?cid=" + encodeURIComponent(feed.replace(/^https:/, "http:"));
+  $("sub").showModal();
 }
 function renderResults() {
   const d = S.data[S.team], el = $("results"); if (!d) { el.innerHTML = ""; return; }
   const list = d.results.slice(0, 12);
   if (!list.length) { el.innerHTML = ""; return; }
   const pill = m => { const o = outcome(m.us, m.them, m.pen); return `<span class="pill ${o}">${o}</span>`; };
-  el.innerHTML = `<div class="card"><div class="ctitle">Results</div>
+  el.innerHTML = `<div class="card"><div class="ctitle">${NAME[S.team]} — results</div>
     <div class="cnote">Tap a match for its goals and cards.</div>
     <div class="form" aria-label="Last five results">${list.slice(0, 5).reverse().map(pill).join("")}</div>` + list.map(m => {
     const sm = S.sums[m.id];
@@ -722,7 +809,7 @@ function renderResults() {
     }
     return `<div class="m tap" onclick="toggleMatch('${h(m.id)}')"><div class="md">${fmtShort(m.date)}<small>${yearOf(m.date)}</small></div>
       <div><div class="mt">${img(m.opp.logo, "")}${m.ha === "H" ? "vs" : "at"} ${h(m.opp.name)}</div>
-      <div class="ms">${h([m.comp, m.round].filter(Boolean).join(" · "))}</div></div>
+      <div class="ms">${ctag(m)} ${h(compLine(m))}</div></div>
       <div class="res">${m.us}–${m.them}${m.pen ? ` <small style="font-weight:600;color:var(--ink3)">(${m.pen[0]}–${m.pen[1]} p)</small>` : ""} ${pill(m)}</div>${extra}</div>`;
   }).join("") + `</div>`;
 }
@@ -739,24 +826,17 @@ async function toggleMatch(id) {
 
 /* ── Shell ── */
 function render() {
-  document.querySelectorAll("#seg button").forEach(b => { const on = b.dataset.team === S.team; b.classList.toggle("on", on); b.setAttribute("aria-selected", on); });
+  renderNextUp();
   const d = S.data[S.team];
   $("stamp").textContent = d ? "Club form updated " + D(d.updated).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
   renderHero(); renderStories(); renderPool(); renderOppo(); renderFixtures(); renderResults();
 }
-$("seg").addEventListener("click", e => {
-  const t = e.target.dataset.team; if (!t || t === S.team) return;
-  S.team = t; S.pos = "all";
-  try { localStorage.setItem(KEY, JSON.stringify({ team: t })); } catch (err) {}
-  history.replaceState(null, "", "#" + t);
-  render(); loadTeam(t);
-});
 let installEvt = null;
 window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; $("installBtn").hidden = false; });
 $("installBtn").addEventListener("click", () => { if (installEvt) { installEvt.prompt(); installEvt = null; $("installBtn").hidden = true; } });
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 render();
-loadTeam(S.team);
+Promise.all(ORDER.map(fetchData)).then(() => { if (!pinned) S.team = soonest(); loadTeam(S.team); });
 </script>
 </body>
 </html>

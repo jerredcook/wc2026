@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>World Cup — Called Up</title>
+<title>World Cup — Cap Day</title>
 <!-- Installable (add to home screen): manifest for Android/desktop, meta + icon for iOS -->
 <link rel="manifest" href="manifest.webmanifest">
 <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
@@ -11,20 +11,20 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Called Up">
+<meta name="apple-mobile-web-app-title" content="Cap Day">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <!-- Search + social share preview -->
 <meta name="description" content="The FIFA World Cup, men's and women's — the complete 2026 tournament preserved in full (every match, scorer, card and shootout), FIFA world rankings kept current, and every World Cup since 1930.">
 <meta property="og:type" content="website">
-<meta property="og:site_name" content="Called Up">
-<meta property="og:title" content="World Cup — Called Up">
+<meta property="og:site_name" content="Cap Day">
+<meta property="og:title" content="World Cup — Cap Day">
 <meta property="og:description" content="The complete 2026 World Cup, preserved forever — plus men's &amp; women's FIFA rankings and every World Cup since 1930.">
 <meta property="og:url" content="https://jerredcook.github.io/wc2026/worldcup.html">
 <meta property="og:image" content="https://jerredcook.github.io/wc2026/og-image.png">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="World Cup — Called Up">
+<meta name="twitter:title" content="World Cup — Cap Day">
 <meta name="twitter:description" content="The complete 2026 World Cup, preserved forever — plus men's &amp; women's FIFA rankings and every World Cup since 1930.">
 <meta name="twitter:image" content="https://jerredcook.github.io/wc2026/og-image.png">
 <script>
@@ -1292,26 +1292,27 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
 </head>
 <body>
 
-<p style="margin-bottom:10px"><a href="./" style="font-size:13px;font-weight:700;text-decoration:none;color:inherit;border:1px solid rgba(128,128,128,.4);border-radius:16px;padding:5px 13px;display:inline-block">&larr; Called Up</a></p>
+<p style="margin-bottom:10px"><a href="./" style="font-size:13px;font-weight:700;text-decoration:none;color:inherit;border:1px solid rgba(128,128,128,.4);border-radius:16px;padding:5px 13px;display:inline-block">&larr; Cap Day</a></p>
 <h1>🏆 World Cup</h1>
 <p class="subtitle">The FIFA World Cup, men's &amp; women's &middot; the complete 2026 tournament &middot; world rankings &middot; history to 1930</p>
 <p class="statusline"><span class="dot"></span><span class="et" id="tzNote">Kickoff times shown in U.S. Eastern (ET)</span> &middot; the 2026 archive loads on open &middot; FIFA rankings refresh with every official release</p>
 
 <!-- ══════════ USA SOCCER HUB — the live part of the app now ══════════ -->
 <a class="usa-promo" href="./" id="usaPromo">
-  <span class="usa-promo-k">🇺🇸 Called Up &middot; next match</span>
-  <span class="usa-promo-t" id="usaPromoT">Follow the U.S. men's &amp; women's national teams</span>
-  <span class="usa-promo-s">Countdown &middot; call the score &middot; storylines &middot; live match &middot; every player's club form</span>
+  <span class="usa-promo-k">🇺🇸 Cap Day &middot; next match</span>
+  <span class="usa-promo-t" id="usaPromoT">Follow the U.S. women's &amp; men's national teams</span>
+  <span class="usa-promo-s">When they play &middot; what it's for &middot; how to watch &middot; live on matchday</span>
   <span class="usa-promo-go">Back to matchday &rarr;</span>
 </a>
 <script>
-/* Fill the banner with the next U.S. men's match from the hub's own data file. */
-(function(){fetch("data/usa/men.json").then(function(r){return r.ok?r.json():null;}).then(function(d){
-  var m=d&&d.fixtures&&d.fixtures[0];if(!m)return;var t=new Date(m.date);
+/* Fill the banner with the next U.S. match (women or men, whichever is sooner). */
+(function(){var get=function(t){return fetch("data/usa/"+t+".json").then(function(r){return r.ok?r.json():null;}).catch(function(){return null;});};
+Promise.all([get("women"),get("men")]).then(function(ds){
+  var best=null;["Women","Men"].forEach(function(label,i){var m=ds[i]&&ds[i].fixtures&&ds[i].fixtures[0];if(m&&(!best||m.date<best.m.date))best={m:m,label:label};});
+  if(!best)return;var m=best.m,t=new Date(m.date);
   var when=t.toLocaleDateString([],{weekday:"short",month:"short",day:"numeric"})+" · "+t.toLocaleTimeString([],{hour:"numeric",minute:"2-digit"});
-  var el=document.getElementById("usaPromoT");
-  el.textContent=(m.ha==="H"?"USA vs "+m.opp.name:m.opp.name+" vs USA")+" — "+when;
-}).catch(function(){});})();
+  document.getElementById("usaPromoT").textContent=(m.ha==="H"?"USA "+best.label+" vs "+m.opp.name:m.opp.name+" vs USA "+best.label)+" — "+when;
+});})();
 </script>
 
 <!-- ══════════ TODAY & LIVE ══════════ -->
