@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* Build a per-team World Cup "pedigree" capsule from the historical archive
    (data/wc/<year>.json) — each current finalist's last few appearances with
-   how far they went — and inject it into index.html between the CAPSULES
+   how far they went — and inject it into worldcup.html between the CAPSULES
    markers as a plain JS const. Re-runnable any time (idempotent). */
 
 import { readFile, writeFile, readdir } from "node:fs/promises";
@@ -54,7 +54,7 @@ async function main() {
   const years = [];
   for (const f of files) years.push(JSON.parse(await readFile(join(WC, f), "utf8")));
 
-  const html0 = await readFile(join(ROOT, "index.html"), "utf8");
+  const html0 = await readFile(join(ROOT, "worldcup.html"), "utf8");
   const teams = [...html0.matchAll(/"([^"]+)":\{flag:"[^"]*",group:"[A-L]"/g)].map(m => m[1]);
   if (teams.length !== 48) throw new Error("expected 48 teams, got " + teams.length);
 
@@ -70,8 +70,8 @@ async function main() {
   }
   const block = "/*CAPSULES-START*/const CAPSULES=" + JSON.stringify(caps) + ";/*CAPSULES-END*/";
   const html = html0.replace(/\/\*CAPSULES-START\*\/[\s\S]*?\/\*CAPSULES-END\*\//, block);
-  if (html === html0) throw new Error("CAPSULES markers not found in index.html");
-  await writeFile(join(ROOT, "index.html"), html);
+  if (html === html0) throw new Error("CAPSULES markers not found in worldcup.html");
+  await writeFile(join(ROOT, "worldcup.html"), html);
   console.log("✓ capsules injected for " + Object.keys(caps).length + " of 48 teams");
   for (const t of ["France", "Argentina", "USA", "Morocco"]) console.log("  " + t + ": " + (caps[t] || "(debut)"));
 }

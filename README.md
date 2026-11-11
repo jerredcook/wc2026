@@ -1,16 +1,23 @@
-# World Cup Soccer ⚽ — the FIFA World Cup app
+# Called Up 🇺🇸 — the U.S. men's & women's national teams
 
-A near-zero-dependency World Cup web app — born as a stadium guide for the 2026 FIFA World Cup (June 11 – July 19, 2026, across the USA, Canada, and Mexico) and **now a complete, permanent archive of the tournament Spain won**, plus the men's and women's FIFA World Rankings (kept current) and every World Cup edition since 1930. Every match, scorer, card, shootout, lineup and headline is preserved in-repo; the app detects the completed archive and serves it directly (no live feed needed, ever), with the full Story of 2026, the final Golden Boot (Mbappé, 10), the champion's road, and all 23 World Cups of history (1930–2026, men's and women's).
+**Live app: [jerredcook.github.io/wc2026](https://jerredcook.github.io/wc2026/)** · unofficial fan app, not affiliated with U.S. Soccer, Concacaf or FIFA.
 
-The whole app is [`index.html`](index.html) — HTML, CSS, and vanilla JavaScript, no build step or framework. Three small companion files make it installable and offline-capable: [`manifest.webmanifest`](manifest.webmanifest), [`apple-touch-icon.png`](apple-touch-icon.png), and a network-first service worker ([`sw.js`](sw.js)).
+A near-zero-dependency web app (installable, offline-capable) for following the U.S. national teams. The front page, [`index.html`](index.html), is the matchday hub; the complete 2026 World Cup archive, FIFA rankings and World Cup history live on [`worldcup.html`](worldcup.html) as an extra section. Both are single files of HTML, CSS and vanilla JavaScript with no build step. (The app began as a 2026 World Cup stadium guide, which is why the repository is still called `wc2026`.)
 
-## USA Soccer Hub (experiment)
+## The hub
 
-[`usa.html`](usa.html) is a separate, lightweight page for the **U.S. men's and women's national teams** — a test of whether a national-team companion is worth building into a standalone app. It shows the next match (countdown, local kickoff time, venue, where to watch, head-to-head, both teams' recent form), goes **live** during the match (score, goals and cards, lineups, polled every 30s), lists fixtures and results, and tracks the **player pool's club form**: what every recently called-up player did in their club's last three matches (started / came on / unused sub / not in squad, goals, assists, cards).
+- **Next match:** countdown, local kickoff time, venue, where to watch, FIFA ranks, a win-expectancy bar (FIFA's formula on current rating points), the series record, both teams' last five and past meetings, and a hand-written "what's at stake" line per match ([`data/usa/editorial.json`](data/usa/editorial.json), keyed by ESPN event id).
+- **Live:** score, goals and cards, lineups and match stats, polled every 30 seconds, with a flash on each goal.
+- **Call the score:** a predictor saved on the device, shareable, graded live and at full time.
+- **Storylines:** written from the data — the winning run, who is in form, who is short of club minutes, teenagers, the opponent's danger men.
+- **Player pool club form:** every recently called-up player with what they did in their club's last three matches (started / came on / unused sub / not in squad, goals, assists, cards). The next opponent's squad gets the same treatment.
+- **Fixtures and results**, a Men / Women toggle, calendar export, a QR code for sharing.
 
-For matchday it adds a **countdown**, a **win-expectancy bar** (FIFA's formula on current rating points), a hand-written **"what's at stake"** line per match ([`data/usa/editorial.json`](data/usa/editorial.json), keyed by ESPN event id), a **call-the-score** predictor (saved on the device, shareable, graded live and at full time), auto-written **storylines** (winning run, series record, who's in form, who's short of club minutes, teenagers, the opponent's danger men), the **opponent's squad** with the same club form, live **match stats** with a goal flash, a **QR code** for passing it around, and its own install manifest and icon ([`usa.webmanifest`](usa.webmanifest)).
+The schedule, squads and club form are built by [`scripts/build-usa.mjs`](scripts/build-usa.mjs) into `data/usa/men.json` and `data/usa/women.json`, refreshed four times a day by the [`usa-hub`](.github/workflows/usa-hub.yml) Action. Live match detail is fetched by the page itself. [`usa.html`](usa.html) is only a redirect, kept so old links and QR codes still work.
 
-The pool, schedule and club form are built by [`scripts/build-usa.mjs`](scripts/build-usa.mjs) into `data/usa/men.json` and `data/usa/women.json`, refreshed four times a day by the [`usa-hub`](.github/workflows/usa-hub.yml) Action. Live match detail is fetched by the page itself. Unofficial — not affiliated with U.S. Soccer, Concacaf or FIFA.
+# The World Cup section
+
+Everything below describes [`worldcup.html`](worldcup.html).
 
 ## Features
 
@@ -121,11 +128,11 @@ It's a static file, so any of these work:
 
 ```bash
 # Open directly (saved scores only — file:// blocks live fetch)
-open index.html
+open worldcup.html
 
 # Serve over http for live scores in a normal browser
 python3 -m http.server 8000
-# then visit http://localhost:8000/index.html
+# then visit http://localhost:8000/worldcup.html
 ```
 
 Inside Claude's artifact view, live fetching works without a server.
