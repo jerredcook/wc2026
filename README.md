@@ -4,6 +4,12 @@ A near-zero-dependency World Cup web app — born as a stadium guide for the 202
 
 The whole app is [`index.html`](index.html) — HTML, CSS, and vanilla JavaScript, no build step or framework. Three small companion files make it installable and offline-capable: [`manifest.webmanifest`](manifest.webmanifest), [`apple-touch-icon.png`](apple-touch-icon.png), and a network-first service worker ([`sw.js`](sw.js)).
 
+## USA Soccer Hub (experiment)
+
+[`usa.html`](usa.html) is a separate, lightweight page for the **U.S. men's and women's national teams** — a test of whether a national-team companion is worth building into a standalone app. It shows the next match (countdown, local kickoff time, venue, where to watch, head-to-head, both teams' recent form), goes **live** during the match (score, goals and cards, lineups, polled every 30s), lists fixtures and results, and tracks the **player pool's club form**: what every recently called-up player did in their club's last three matches (started / came on / unused sub / not in squad, goals, assists, cards).
+
+The pool, schedule and club form are built by [`scripts/build-usa.mjs`](scripts/build-usa.mjs) into `data/usa/men.json` and `data/usa/women.json`, refreshed four times a day by the [`usa-hub`](.github/workflows/usa-hub.yml) Action. Live match detail is fetched by the page itself. Unofficial — not affiliated with U.S. Soccer, Concacaf or FIFA.
+
 ## Features
 
 - **All 16 stadiums** with FIFA tournament names, real venue names, city, capacity, and resident home teams (NFL / MLS / Liga MX / CFL).

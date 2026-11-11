@@ -1,0 +1,47 @@
+name: USA hub data (fixtures, results, player-pool club form)
+
+# Rebuilds data/usa/men.json and data/usa/women.json from ESPN's public feed and
+# commits them when they change. The page reads live scores itself; this job
+# keeps the slower-moving parts fresh: the schedule, the squads, and what each
+# player did in their club's last three matches. The script exits non-zero and
+# leaves the previous file in place if a feed can't be read.
+
+on:
+  schedule:
+    - cron: "20 */6 * * *"   # four times a day
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: usa-hub
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Build USA hub data
+        run: node scripts/build-usa.mjs
+
+      - name: Commit changed data
+        if: always()
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -n "$(git status --porcelain data/usa)" ]; then
+            git add data/usa
+            git commit -m "Update USA hub data ($(date -u +%Y-%m-%dT%H:%MZ))"
+            git pull --rebase origin main
+            git push
+            echo "Pushed updated data."
+          else
+            echo "No data changes — nothing to commit."
+          fi
