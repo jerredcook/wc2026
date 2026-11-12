@@ -1,0 +1,11 @@
+{
+ "_note": "Hand-written dates further ahead than the fixture feed knows. team = women | men. 'to' is optional (for a range). 'if' is shown as a condition. Remove an entry once it becomes a real fixture or stops being possible; entries in the past are hidden automatically.",
+ "items": [
+  {"team": "women", "date": "2026-12-01", "what": "W Championship semifinals", "if": "If the USA wins its quarterfinal"},
+  {"team": "women", "date": "2026-12-05", "what": "W Championship final and third-place match", "where": "Houston"},
+  {"team": "men", "date": "2027-03-22", "to": "2027-03-30", "what": "Nations League finals", "if": "If the USA beats Haiti over the two matches"},
+  {"team": "men", "date": "2027-04-08", "what": "Gold Cup draw"},
+  {"team": "men", "date": "2027-06-17", "to": "2027-07-11", "what": "Gold Cup", "where": "United States"},
+  {"team": "women", "date": "2027-06-24", "to": "2027-07-25", "what": "Women's World Cup", "where": "Brazil", "if": "The USA qualifies by winning its quarterfinal on November 27"}
+ ]
+}

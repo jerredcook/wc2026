@@ -151,6 +151,16 @@ details[open]>summary::before{content:"▾ "}
 .empty{font-size:13px;color:var(--ink3);padding:6px 0}
 .foot{font-size:11px;color:var(--ink3);line-height:1.6;margin-top:18px}
 .morecard{display:block;text-decoration:none;color:inherit}
+.watch{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;margin-top:10px}
+.watch .exl{padding:0;margin-right:2px}
+.nw{display:block;padding:9px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink);font-size:14px;font-weight:600;line-height:1.35}
+.nw:last-of-type{border-bottom:0}
+.nw small{display:block;font-weight:500;color:var(--ink3);font-size:11.5px;margin-top:2px}
+.ah{display:grid;grid-template-columns:62px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.ah:last-child{border-bottom:0}
+.ah small{display:block;color:var(--ink3);font-size:12px;margin-top:1px}
+.pollq{font-size:15px;font-weight:700;margin-bottom:8px}
+.iostip[hidden]{display:none}
 .iostip{display:flex;gap:10px;align-items:center;justify-content:space-between;font-size:13px;line-height:1.4;padding:12px 14px}
 .testbar{background:#f0cf70;color:#3a2a00;font-size:12px;font-weight:700;border-radius:8px;padding:6px 10px;margin-bottom:10px}
 .testbar a{color:#3a2a00}
@@ -264,11 +274,14 @@ dialog button{border:0;border-radius:16px;padding:8px 22px;background:#0b2a5b;co
 
   <div id="hero"></div>
   <div id="stories"></div>
+  <div id="news"></div>
   <div id="pool"></div>
   <div id="oppo"></div>
   <div id="fixtures"></div>
   <p class="cnote" id="stamp" style="margin:-6px 2px 14px"></p>
   <div id="results"></div>
+
+  <div id="poll"></div>
 
   <a class="card morecard" href="worldcup.html">
     <div class="kicker">More in the app</div>
@@ -305,7 +318,7 @@ const TEAM = { women: { id: "2765" }, men: { id: "660" } };
 const USA_LOGO = "https://a.espncdn.com/i/teamlogos/countries/500/usa.png";
 const KEY = "wc2026.usa.v1";
 
-const S = { team: "men", data: {}, ranks: {}, live: {}, sums: {}, open: {}, pos: "all", sort: "pos", ed: null, calls: {}, flash: false };
+const S = { team: "men", data: {}, ranks: {}, live: {}, sums: {}, open: {}, pos: "all", sort: "pos", ed: null, calls: {}, flash: false, news: {}, ahead: null };
 try { S.calls = JSON.parse(localStorage.getItem(KEY + ".calls") || "{}") || {}; } catch (e) {}
 const hashTeam = location.hash.replace("#", "");
 const pinned = !!TEAM[hashTeam];
@@ -429,7 +442,11 @@ async function loadTeam(team, force) {
     fetch("data/usa/editorial.json", { cache: "no-cache" }).then(r => r.ok ? r.json() : null)
       .then(j => { if (j) { S.ed = j; renderHero(); } }).catch(() => {});
   }
-  if (S.team === team) { render(); refreshLive(); }
+  if (!S.ahead) {
+    S.ahead = {};
+    fetch("data/usa/ahead.json", { cache: "no-cache" }).then(r => r.ok ? r.json() : null).then(j => { if (j) { S.ahead = j; renderFixtures(); } }).catch(() => {});
+  }
+  if (S.team === team) { render(); refreshLive(); loadNews(team); }
 }
 
 /* The match the hero follows: the first one not yet finished. A match that has
@@ -613,7 +630,7 @@ function renderHero() {
   const tv = (L.tv && L.tv.length ? L.tv : m.tv) || [];
   const first = /2nd/i.test(m.leg) && d.results.find(r => r.opp.id === m.opp.id && r.lg === m.lg && D(m.date) - D(r.date) < 12 * 864e5);
   const rows = [], ci = compInfo(m);
-  if (st !== "post") rows.push(`<div class="mrow"><span class="lab">Watch</span><span class="chips">${tv.length ? tv.map(t => `<span class="chip">${h(t)}</span>`).join("") : `<span style="color:var(--ink3)">Broadcast to be announced</span>`}</span></div>`);
+  const watchHtml = st === "post" ? "" : `<div class="watch"><span class="exl">Watch on</span>${tv.length ? tv.map(t => `<span class="chip">${h(t)}</span>`).join("") : `<span style="color:var(--ink3);font-size:13px">to be announced</span>`}</div>`;
   if (first) rows.push(`<div class="mrow"><span class="lab">First leg</span><span>USA ${first.us}–${first.them} ${h(m.opp.name)} &middot; ${fmtShort(first.date)}</span></div>`);
   if (L.series) rows.push(`<div class="mrow"><span class="lab">Series</span><span>${h(L.series)}</span></div>`);
 
@@ -668,11 +685,12 @@ function renderHero() {
     ${st === "pre" ? `<div class="when">${fmtDay(m.date)} &middot; ${fmtTime(m.date)} <span style="font-weight:600;color:var(--ink3)">${h(fmtZone(m.date))}</span></div>
       <div class="cd" id="cd" data-iso="${h(m.date)}">${cdTiles(m.date)}</div>` : ""}
     <div class="where">${h([m.venue, m.city].filter(Boolean).join(" · "))}</div>
-    ${weHtml}
+    ${watchHtml}
     ${tl}
     ${statsHtml}
-    ${callHtml(m, st, us, them)}
     ${explainHtml(m, ed, first)}
+    ${weHtml}
+    ${callHtml(m, st, us, them)}
     ${standHtml(m)}
     ${rows.length ? `<div class="meta">${rows.join("")}</div>` : ""}
     ${xi}${l5}${venueHtml(m)}
@@ -901,8 +919,51 @@ function renderFixtures() {
       <div><div class="mt"><span class="wm" title="${NAME[t]}">${NAME[t][0]}</span>${img(m.opp.logo, "")}${m.ha === "H" ? "vs" : "at"} ${h(m.opp.name)}</div>
       <div class="ms">${ctag(m)} ${h([compLine(m), m.city].filter(Boolean).join(" · "))}</div>
       ${m.tv.length ? `<div class="chips" style="margin-top:5px">${m.tv.map(x => `<span class="chip">${h(x)}</span>`).join("")}</div>` : ""}</div><span></span></div>`).join("") +
-    `<div class="acts"><button class="btn" onclick="openSub()">📅 Add all matches to my calendar</button></div></div>`;
+    `<div class="acts"><button class="btn" onclick="openSub()">📅 Add all matches to my calendar</button></div>` + aheadHtml() + `</div>`;
 }
+/* Dates further out than the fixture feed knows (hand-written, data/usa/ahead.json). */
+function aheadHtml() {
+  const today = new Date().toISOString().slice(0, 10);
+  const items = ((S.ahead && S.ahead.items) || []).filter(x => (x.to || x.date) >= today)
+    .sort((a, b) => a.date.localeCompare(b.date) || ORDER.indexOf(a.team) - ORDER.indexOf(b.team));
+  if (!items.length) return "";
+  const day = d => new Date(d + "T12:00:00").toLocaleDateString([], { month: "short", day: "numeric" });
+  return `<div class="blk" style="margin-top:18px">Further ahead</div><div class="cnote" style="margin:2px 0 4px">Dates already fixed, before opponents and kickoff times are known.</div>` + items.map(x =>
+    `<div class="ah"><div class="md">${day(x.date)}<small>${x.to ? "to " + day(x.to) : new Date(x.date + "T12:00:00").getFullYear()}</small></div>
+      <div><span class="wm" title="${NAME[x.team]}">${NAME[x.team][0]}</span><b>${h(x.what)}</b>${x.where ? " &middot; " + h(x.where) : ""}${x.if ? `<small>${h(x.if)}</small>` : ""}</div></div>`).join("");
+}
+
+/* ── News: the feed's own headlines for the selected team ── */
+async function loadNews(team) {
+  if (S.news[team]) return;
+  S.news[team] = [];
+  try {
+    const r = await fetch(`${API}/${team === "men" ? "fifa.friendly" : "fifa.friendly.w"}/news?team=${TEAM[team].id}&limit=10`);
+    const j = r.ok ? await r.json() : {};
+    S.news[team] = (j.articles || []).map(a => ({ t: a.headline, d: a.published, v: a.type === "Media", u: a.links && a.links.web && a.links.web.href })).filter(a => a.t && a.u).slice(0, 6);
+  } catch (e) {}
+  if (S.team === team) renderNews();
+}
+function renderNews() {
+  const list = S.news[S.team] || [];
+  $("news").innerHTML = list.length ? `<div class="card"><div class="ctitle">${NAME[S.team]} — news</div><div class="cnote">Latest headlines from ESPN. Links open ESPN.</div>` +
+    list.map(a => `<a class="nw" href="${h(a.u)}" target="_blank" rel="noopener" onclick="track('news-click')">${a.v ? "▶ " : ""}${h(a.t)}<small>${fmtShort(a.d)}</small></a>`).join("") + `</div>` : "";
+}
+
+/* ── One-tap feedback, counted as anonymous events ── */
+const POLL = [["reminders", "A reminder before each match"], ["other-teams", "Other countries' teams"], ["tickets", "Tickets and travel info"], ["more-stats", "More player stats"], ["fine", "Nothing, it's good"]];
+function renderPoll() {
+  let st = {}; try { st = JSON.parse(localStorage.getItem(KEY + ".poll") || "{}"); } catch (e) {}
+  const el = $("poll");
+  if (st.want) { el.innerHTML = `<div class="card"><div class="pollq">Thanks — that helps.</div><div class="cnote" style="margin:0">Your answers are counted anonymously.</div></div>`; return; }
+  const btn = (k, label, fn) => `<button class="fb" onclick="${fn}('${k}')">${label}</button>`;
+  el.innerHTML = !st.useful
+    ? `<div class="card"><div class="pollq">Would you use Cap Day to follow the national teams?</div><div class="filters">${btn("yes", "Yes", "pollUseful")}${btn("maybe", "Maybe", "pollUseful")}${btn("no", "Not really", "pollUseful")}</div><div class="cnote" style="margin:4px 0 0">One tap, counted anonymously.</div></div>`
+    : `<div class="card"><div class="pollq">What would make it better?</div><div class="filters">${POLL.map(([k, l]) => btn(k, l, "pollWant")).join("")}</div></div>`;
+}
+function pollSave(k, v) { let st = {}; try { st = JSON.parse(localStorage.getItem(KEY + ".poll") || "{}"); st[k] = v; localStorage.setItem(KEY + ".poll", JSON.stringify(st)); } catch (e) {} }
+function pollUseful(v) { track("poll-useful-" + v); pollSave("useful", v); renderPoll(); }
+function pollWant(v) { track("poll-want-" + v); pollSave("want", v); renderPoll(); }
 function openSub() {
   const feed = new URL("data/usa/all.ics", location.href).href;
   $("subApple").href = feed.replace(/^https?:/, "webcal:");
@@ -947,7 +1008,7 @@ function render() {
   renderNextUp();
   const d = S.data[S.team];
   $("stamp").textContent = d ? "Club form updated " + D(d.updated).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
-  renderHero(); renderStories(); renderPool(); renderOppo(); renderFixtures(); renderResults();
+  renderHero(); renderStories(); renderNews(); renderPool(); renderOppo(); renderFixtures(); renderResults();
 }
 let installEvt = null;
 window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; $("installBtn").hidden = false; });
@@ -972,7 +1033,7 @@ async function loadTest(spec) {
   } catch (e) { S.test = null; }
 }
 const testSpec = new URLSearchParams(location.search).get("test");
-render();
+render(); renderPoll();
 Promise.all([...ORDER.map(fetchData), testSpec ? loadTest(testSpec) : null]).then(() => { if (!pinned) S.team = soonest(); loadTeam(S.team); });
 
 /* iPhone has no install prompt: show how to add the app to the home screen. */
