@@ -53,9 +53,7 @@ test("before kickoff: when, where to watch and what it is for come first", async
   assert.match(t, /This match Quarterfinal, the first of two matches against Haiti/);
   assert.match(t, /At stake STAKES: the winner goes to the finals\./);
   before(t, "4:30 PM", "Watch on"); before(t, "Watch on", "What is this match?");
-  before(t, "What is this match?", "Win expectancy");
-  assert.ok(!/Call the score|Lock in my call/.test(t), "the score call is not in the match card");
-  assert.match(p.text("call"), /^Call the score Just for fun/, "it has its own card");
+  before(t, "What is this match?", "Win expectancy"); before(t, "Win expectancy", "Call the score");
   assert.match(t, /16% 84%/, "Haiti (home, left) 16%, USA 84%");
   assert.match(t, /FIFA #84/); assert.match(t, /FIFA #16/);
   assert.match(t, /USA leads series/);
@@ -97,7 +95,6 @@ test("live: score the right way round, minute, timeline, stats, no countdown", a
   assert.match(t, /29' ⚽ Justin Ellis \(assist Alex Freeman\)/);
   assert.match(t, /Possession/); assert.match(t, /Shots/);
   assert.ok(!/02 days|Call the score|Add to calendar|Win expectancy/.test(t), "pre-match items are gone once it is live");
-  assert.equal(p.html("call"), "", "with no call locked in, the score-call card disappears at kickoff");
   assert.match(p.text("nextup"), /Men · next at Haiti .* LIVE/);
   assert.match(p.html("hero"), /class="card hero live/);
 });
@@ -129,7 +126,6 @@ test("full time: final score, no live badge", async () => {
   assert.match(t, /^Full time ·/);
   assert.match(t, /0 : 1 Full time/);
   assert.ok(!/LIVE|Watch on|Call the score/.test(t));
-  assert.equal(p.html("call"), "");
 });
 
 test("second leg: the first-leg result is carried into the explanation", async () => {
@@ -238,25 +234,22 @@ test("results: newest first, each with a result and a purpose tag; a row expands
 test("call the score: adjust, lock, share, and it is graded live and at full time", async () => {
   const p = await boot({ summary: fixture("summary-prematch-haiti-usa.json") });
   const id = "401929710";
-  assert.match(p.text("call"), /Call the score Just for fun.* Haiti − 0 \+ USA − 2 \+ Lock in my call/);
-  const heroBefore = p.html("hero");
+  assert.match(p.text("hero"), /Call the score Haiti − 0 \+ USA − 2 \+ Lock in my call/);
   p.run(`bump('${id}','us',-1)`);                    // 1–0 to the USA
   p.run(`lockCall('${id}',true)`);
-  assert.match(p.text("call"), /^Your call Haiti 0–1 USA/);
-  assert.match(p.text("call"), /Share my call Change/);
-  assert.equal(p.html("hero"), heroBefore, "making a call leaves the match card alone");
+  assert.match(p.text("hero"), /Your call Haiti 0–1 USA/);
+  assert.match(p.text("hero"), /Share my call Change/);
   assert.deepEqual(JSON.parse(p.store["wc2026.usa.v1.calls"])[id], { us: 1, them: 0, locked: true }, "the call is saved on the device");
   assert.ok(p.tracked.includes("capday: call-locked"));
   p.setSummary(summaryAs("in", "67'")); await p.refresh();
-  assert.match(p.text("call"), /Your call Haiti 0–1 USA 🎯 On the money right now\./);
-  assert.ok(!/Change/.test(p.text("call")), "a call cannot be changed once the match has started");
+  assert.match(p.text("hero"), /Your call Haiti 0–1 USA 🎯 On the money right now\./);
   p.setSummary(summaryAs("post")); await p.refresh();
-  assert.match(p.text("call"), /🎯 Spot on — exact score!/);
+  assert.match(p.text("hero"), /🎯 Spot on — exact score!/);
 });
 
 test("a saved call survives a reload", async () => {
   const p = await boot({ storage: { "wc2026.usa.v1.calls": JSON.stringify({ "401929710": { us: 3, them: 1, locked: true } }) } });
-  assert.match(p.text("call"), /Your call Haiti 1–3 USA/);
+  assert.match(p.text("hero"), /Your call Haiti 1–3 USA/);
 });
 
 test("feedback: two questions, then thanks, counted as events and remembered", async () => {

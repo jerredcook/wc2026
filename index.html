@@ -228,12 +228,12 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,summary:focus-v
 .wenote{display:flex;justify-content:space-between;font-size:11px;color:var(--ink3);margin-top:4px}
 .stakes{margin-top:14px;font-size:13.5px;line-height:1.45;color:var(--ink2);border-left:3px solid var(--warn);padding-left:10px}
 .stakes b{color:#fff}
-.call .cnote{margin:2px 0 8px}
+.call{margin-top:14px;background:rgba(255,255,255,.08);border-radius:12px;padding:12px}
 .call .row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 0;font-size:15px;font-weight:700}
 .step{display:flex;align-items:center;gap:10px}
-.step button{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:var(--chip);color:var(--ink);font-size:20px;font-weight:700;cursor:pointer;line-height:1}
+.step button{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.1);font-size:20px;font-weight:700;cursor:pointer;line-height:1}
 .step b{font-size:24px;min-width:22px;text-align:center;font-variant-numeric:tabular-nums}
-.call .lock{width:100%;margin-top:8px;border:0;border-radius:18px;padding:10px;background:var(--navy);color:var(--card);font-weight:800;font-size:14px;cursor:pointer}
+.call .lock{width:100%;margin-top:8px;border:0;border-radius:18px;padding:10px;background:#fff;color:#0b2a5b;font-weight:800;font-size:14px;cursor:pointer}
 .call .mine{font-size:15px;font-weight:700;margin-top:4px}
 .call .verdict{font-size:13px;color:var(--ink2);margin-top:3px}
 .stats{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:7px}
@@ -285,7 +285,6 @@ dialog button{border:0;border-radius:16px;padding:8px 22px;background:#0b2a5b;co
 
   <div id="hero"></div>
   <div id="stories"></div>
-  <div id="call"></div>
   <div id="news"></div>
   <div id="pool"></div>
   <div id="oppo"></div>
@@ -513,7 +512,7 @@ async function refreshLive() {
     }
   } catch (e) { /* offline or the feed is down: keep what we have and try again */ }
   if (S.team !== team) return;
-  renderHero(); renderStories(); renderCall(); renderNextUp();
+  renderHero(); renderStories(); renderNextUp();
   const L = S.live[m.id], st = L ? L.state : m.state, ms = D(m.date) - Date.now();
   let wait = null;
   if (st === "in") wait = 30e3;
@@ -563,8 +562,8 @@ function track(name) { name = "capday: " + name; try { if (window.goatcounter &&
 /* ── Call the score ── */
 function saveCalls() { try { localStorage.setItem(KEY + ".calls", JSON.stringify(S.calls)); } catch (e) {} }
 function callOf(id) { return S.calls[id] || (S.calls[id] = { us: 2, them: 0, locked: false }); }
-function bump(id, side, n) { const c = callOf(id); c[side] = Math.max(0, Math.min(15, c[side] + n)); renderCall(); }
-function lockCall(id, on) { callOf(id).locked = on; saveCalls(); renderCall(); if (on) track("call-locked"); }
+function bump(id, side, n) { const c = callOf(id); c[side] = Math.max(0, Math.min(15, c[side] + n)); renderHero(); }
+function lockCall(id, on) { callOf(id).locked = on; saveCalls(); renderHero(); if (on) track("call-locked"); }
 const usShort = () => S.test ? S.test.usName : "USA";
 function callText(m, c) { return m.ha === "H" ? `${usShort()} ${c.us}–${c.them} ${m.opp.name}` : `${m.opp.name} ${c.them}–${c.us} ${usShort()}`; }
 function shareCall(id) {
@@ -573,7 +572,7 @@ function shareCall(id) {
   const text = `My call: ${callText(m, callOf(id))}. What's yours?`;
   track("call-shared");
   if (navigator.share) navigator.share({ title: "Cap Day", text, url }).catch(() => {});
-  else if (navigator.clipboard) navigator.clipboard.writeText(text + " " + url).then(() => { const b = $("shareCall"); if (b) { b.textContent = "Copied"; setTimeout(renderCall, 1500); } });
+  else if (navigator.clipboard) navigator.clipboard.writeText(text + " " + url).then(() => { const b = $("shareCall"); if (b) { b.textContent = "Copied"; setTimeout(renderHero, 1500); } });
 }
 function callHtml(m, st, us, them) {
   const c = S.calls[m.id], home = m.ha === "H";
@@ -583,27 +582,17 @@ function callHtml(m, st, us, them) {
       <button aria-label="${h(label)} fewer" onclick="bump('${h(m.id)}','${side}',-1)">−</button><b>${cc[side]}</b>
       <button aria-label="${h(label)} more" onclick="bump('${h(m.id)}','${side}',1)">+</button></span></div>`;
     const rows = [row(usShort(), "us"), row(m.opp.name, "them")];
-    return `<div class="card call"><div class="kicker">Call the score</div>
-      <div class="cnote">Just for fun: pick a score before kickoff and see how you did. It stays on this phone.</div>
-      ${home ? rows.join("") : rows.reverse().join("")}
+    return `<div class="call"><div class="kicker">Call the score</div>${home ? rows.join("") : rows.reverse().join("")}
       <button class="lock" onclick="lockCall('${h(m.id)}',true)">Lock in my call</button></div>`;
   }
   if (!c || !c.locked) return "";
   const verdict = callVerdict(c, us, them, st);
-  return `<div class="card call"><div class="kicker">Your call</div><div class="mine">${h(callText(m, c))}</div>
+  return `<div class="call"><div class="kicker">Your call</div><div class="mine">${h(callText(m, c))}</div>
     ${verdict ? `<div class="verdict">${verdict}</div>` : ""}
     <div class="acts" style="margin-top:10px">
       <button class="btn" id="shareCall" onclick="shareCall('${h(m.id)}')">↗ Share my call</button>
       ${st === "pre" ? `<button class="btn" onclick="lockCall('${h(m.id)}',false)">Change</button>` : ""}
     </div></div>`;
-}
-/* Its own card, below the match card and the storylines: there for anyone who
-   wants it, out of the way of when / what for / how to watch. */
-function renderCall() {
-  const d = S.data[S.team], m = focus(), el = $("call");
-  if (!d || !m) { el.innerHTML = ""; return; }
-  const L = S.live[m.id] || {}, st = L.state || m.state;
-  el.innerHTML = callHtml(m, st, L.us != null ? L.us : m.us, L.them != null ? L.them : m.them);
 }
 
 function sideHtml(name, logo) {
@@ -691,6 +680,7 @@ function renderHero() {
     ${statsHtml}
     ${explainHtml(m, ed, first)}
     ${weHtml}
+    ${callHtml(m, st, us, them)}
     ${standHtml(m)}
     ${rows.length ? `<div class="meta">${rows.join("")}</div>` : ""}
     ${xi}${l5}${venueHtml(m)}
@@ -1008,7 +998,7 @@ function render() {
   const when = iso => D(iso).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
   $("stamp").textContent = d ? (d.checked ? "Schedule, squads and club form checked " + when(d.checked) : "Club form updated " + when(d.updated)) : "";
   renderStale();
-  renderHero(); renderStories(); renderCall(); renderNews(); renderPool(); renderOppo(); renderFixtures(); renderResults();
+  renderHero(); renderStories(); renderNews(); renderPool(); renderOppo(); renderFixtures(); renderResults();
 }
 /* ── Fail-safe sections ──
    Each section draws inside a guard: if one throws (a surprise in the feed, a
@@ -1031,7 +1021,6 @@ function guard(fn, id, where) {
 }
 renderHero = guard(renderHero, "hero", "match-card");
 renderStories = guard(renderStories, "stories", "storylines");
-renderCall = guard(renderCall, "call", "score-call");
 renderNews = guard(renderNews, "news", "news");
 renderPool = guard(renderPool, "pool", "players");
 renderOppo = guard(renderOppo, "oppo", "opponent");
