@@ -23,7 +23,22 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Nothing is published unless the tests pass: the core match logic against
+  # recorded feed data, the data pipeline's helpers, and checks on the shipped
+  # files (pages parse, every button calls something that exists, every file
+  # referenced is present, committed data is well-formed).
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Run tests
+        run: node --test
+
   deploy:
+    needs: test
     runs-on: ubuntu-latest
     environment:
       name: github-pages

@@ -29,10 +29,15 @@ jobs:
           node-version: "22"
 
       - name: Build USA hub data
+        id: build
+        continue-on-error: true      # one team failing must not block the other's update; the job still fails at the end
         run: node scripts/build-usa.mjs
 
+      # The data is only committed if the whole test suite passes with it.
+      - name: Check the data and the app against it
+        run: node --test
+
       - name: Commit changed data
-        if: always()
         run: |
           git config user.name  "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -45,3 +50,7 @@ jobs:
           else
             echo "No data changes — nothing to commit."
           fi
+
+      - name: Fail the run if the build reported a problem
+        if: steps.build.outcome == 'failure'
+        run: echo "build-usa.mjs reported a failure for at least one team (see the build step)."; exit 1

@@ -22,6 +22,29 @@ Cap Day answers three questions for both teams: **when do they play next, what i
 
 The schedule, squads and club form are built by [`scripts/build-usa.mjs`](scripts/build-usa.mjs) into `data/usa/men.json` and `data/usa/women.json`, refreshed four times a day by the [`usa-hub`](.github/workflows/usa-hub.yml) Action. Live match detail is fetched by the page itself. [`usa.html`](usa.html) is only a redirect, kept so old links and QR codes still work.
 
+## Engineering
+
+- **Core logic is separate and tested.** [`js/core.js`](js/core.js) holds the pure match logic (feed parsing, competition and match explanations, prediction grading, win expectancy). The page loads it as a plain script; the tests load it with `require()`.
+- **Tests:** `node --test` (no dependencies). [`test/core.test.cjs`](test/core.test.cjs) runs the logic against real recorded feed data in `test/fixtures/`; [`test/build.test.mjs`](test/build.test.mjs) covers the data pipeline's helpers and its validation gate; [`test/site.test.cjs`](test/site.test.cjs) checks the shipped files (pages parse, every button calls a function that exists, every referenced file is present, committed data is well-formed).
+- **Nothing publishes without passing them.** The deploy workflow runs the tests first, and the hourly data job only commits data the tests accept.
+- **The data pipeline refuses thin data.** `build-usa.mjs` validates each file before writing and will not replace a good file with one that is malformed or has shrunk sharply.
+- **Sections fail on their own.** Each part of the page draws inside a guard; if one throws, it shows a short notice, the rest keeps working, and the error is counted anonymously (GoatCounter event `capday: error …`).
+- **Live mode degrades gently:** a failed score request keeps the last known state, retries, and says "Connection lost" after about 100 seconds.
+
+## Road to Google Play
+
+Done: installable PWA with real PNG icons (192, 512, maskable); a [privacy policy](privacy.html); no accounts or personal data, which keeps the Play "Data safety" form short.
+
+Still to do:
+
+1. **Check the name** "Cap Day" on the US trademark register (tmsearch.uspto.gov).
+2. **Google Play developer account** ($25, one time). New personal accounts must run a closed test with 12 testers for 14 days before production.
+3. **Domain verification.** A Trusted Web Activity needs `/.well-known/assetlinks.json` at the *root* of the site's domain. Two ways: a custom domain, or a free repository named `jerredcook.github.io` holding that one file (it serves the root of the current address).
+4. **Build the Android wrapper** with Bubblewrap or PWABuilder from `manifest.webmanifest`; put the signing key's fingerprint into `assetlinks.json`.
+5. **A licensed data feed.** Live data currently comes from ESPN's undocumented public feed, and squads from Wikipedia.
+6. **Store listing:** screenshots, short and full description, the privacy policy link.
+7. **Match reminders** need a small always-on backend (e.g. a Cloudflare Worker) to send push notifications.
+
 # The World Cup section
 
 Everything below describes [`worldcup.html`](worldcup.html).

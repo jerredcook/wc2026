@@ -18,7 +18,7 @@
    an empty hub. */
 
 import { writeFile, readFile, mkdir } from "node:fs/promises";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import { dirname, join } from "node:path";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -69,7 +69,7 @@ const scoreOf = c => {
 const logoOf = t => (t && (t.logo || (t.logos && t.logos[0] && t.logos[0].href))) || null;
 
 /* One schedule event → the slim match shape the page renders. */
-function slimMatch(e, teamId) {
+export function slimMatch(e, teamId) {
   const c = e.competitions[0];
   const us = c.competitors.find(x => x.team.id === teamId);
   const them = c.competitors.find(x => x.team.id !== teamId);
@@ -187,12 +187,12 @@ async function squadPool(teamId, slugs, curSlug) {
    actually named for the latest camp) and "Recent call-ups", each with caps
    and goals and an "as of" date. ESPN's squad lists are broader and carry no
    caps, so Wikipedia decides who is in the pool and ESPN supplies club form. */
-const unwiki = t => String(t || "")
+export const unwiki = t => String(t || "")
   .replace(/<ref[^>]*\/>/g, "").replace(/<ref[\s\S]*?<\/ref>/g, "").replace(/<!--[\s\S]*?-->/g, "")
   .replace(/\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/g, "$1").replace(/\{\{(?:fb|fbw|#invoke:flag\|fbw?)\|([A-Z]{3})\}\}/g, "$1")
   .replace(/\{\{[^{}]*\}\}/g, "").replace(/<[^>]+>/g, "").replace(/'{2,}/g, "").replace(/\s+/g, " ").trim();
-const nameKey = n => String(n || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z ]/g, "").trim();
-function wikiPlayer(line, called) {
+export const nameKey = n => String(n || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z ]/g, "").trim();
+export function wikiPlayer(line, called) {
   const f = k => { const m = new RegExp("\\|\\s*" + k + "\\s*=\\s*([^|}]*)").exec(line); return m ? m[1].trim() : ""; };
   const sn = /name\s*=\s*\{\{sortname\|([^|}]*)\|([^|}]*)/i.exec(line), ln = /name\s*=\s*\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/.exec(line);
   const name = sn ? (sn[1].trim() + " " + sn[2].trim()).trim() : ln ? ln[1].trim() : "";
@@ -400,10 +400,11 @@ async function build(key) {
   await mkdir(join(ROOT, "data", "usa"), { recursive: true });
   /* Keep the old timestamp when nothing else changed, so an idle run commits nothing. */
   const file = join(ROOT, "data", "usa", key + ".json");
-  try {
-    const old = JSON.parse(await readFile(file, "utf8"));
-    if (JSON.stringify({ ...old, updated: 0 }) === JSON.stringify({ ...out, updated: 0 })) out.updated = old.updated;
-  } catch { /* first run */ }
+  let old = null;
+  try { old = JSON.parse(await readFile(file, "utf8")); } catch { /* first run */ }
+  const problems = validate(out, old);
+  if (problems.length) throw new Error("refusing to write " + key + ".json — " + problems.join("; "));
+  if (old && JSON.stringify({ ...old, updated: 0 }) === JSON.stringify({ ...out, updated: 0 })) out.updated = old.updated;
   await writeFile(file, JSON.stringify(out) + "\n");
   CAL[key] = calEvents(T.label, fixtures, results);
   await writeFile(join(ROOT, "data", "usa", key + ".ics"), ics(`Cap Day — USA ${T.label}`, CAL[key]));
@@ -423,7 +424,7 @@ const fold = line => {                      // RFC 5545: continuation lines star
   for (let i = 73; i < line.length; i += 72) parts.push(line.slice(i, i + 72));
   return parts.join("\r\n ");
 };
-function calEvents(label, fixtures, results) {
+export function calEvents(label, fixtures, results) {
   return [...results.slice(0, 12), ...fixtures].map(m => {
     const teams = m.ha === "H" ? `USA ${label} vs ${m.opp.name}` : `${m.opp.name} vs USA ${label}`;
     const done = m.state === "post" && m.us != null;
@@ -432,7 +433,7 @@ function calEvents(label, fixtures, results) {
     return { uid: `usa-${m.id}@capday`, start: m.date, summary: (done ? "FT: " : "") + teams + score, location: [m.venue, m.city].filter(Boolean).join(", "), desc };
   });
 }
-function ics(name, events) {
+export function ics(name, events) {
   const L = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Cap Day//EN", "CALSCALE:GREGORIAN", "METHOD:PUBLISH",
     "X-WR-CALNAME:" + icsEsc(name), "REFRESH-INTERVAL;VALUE=DURATION:PT6H", "X-PUBLISHED-TTL:PT6H"];
   for (const e of events.slice().sort((a, b) => a.start.localeCompare(b.start))) {
@@ -444,14 +445,44 @@ function ics(name, events) {
   return L.map(fold).join("\r\n") + "\r\n";
 }
 
-const want = ["women", "men"].filter(k => process.argv.includes("--" + k));
-let failed = false;
-for (const key of want.length ? want : ["women", "men"]) {
-  try { await build(key); }
-  catch (e) { failed = true; console.error(`FAILED ${key}: ${e.message}`); }
+/* ── Checks before anything is written ───────────────────────────────────────
+   A feed that half-works is worse than one that fails: it would replace good
+   data with thin data. So the new file must be well-formed and must not have
+   shrunk sharply against the file it replaces. */
+export function validate(out, prev) {
+  const errs = [];
+  const need = (ok, msg) => { if (!ok) errs.push(msg); };
+  need(Array.isArray(out.fixtures) && Array.isArray(out.results) && Array.isArray(out.pool), "fixtures, results and pool must be lists");
+  if (errs.length) return errs;
+  for (const m of [...out.fixtures, ...out.results]) {
+    need(m.id && m.date && !isNaN(Date.parse(m.date)), "match without an id or a valid date");
+    need(m.opp && m.opp.name, `match ${m.id} has no opponent`);
+    need(m.ha === "H" || m.ha === "A", `match ${m.id} has no home/away`);
+  }
+  for (const m of out.results) need(m.us != null && m.them != null, `result ${m.id} has no score`);
+  need(out.fixtures.every((m, i) => i === 0 || out.fixtures[i - 1].date <= m.date), "fixtures are not in date order");
+  need(out.pool.length >= 11, `pool has only ${out.pool.length} players`);
+  for (const p of out.pool) need(p.name && "GDMF".includes(p.pos) && Array.isArray(p.rec), `player ${p.name || "?"} is malformed`);
+  if (prev && Array.isArray(prev.pool) && prev.pool.length) {
+    need(out.pool.length >= prev.pool.length * 0.6, `pool shrank from ${prev.pool.length} to ${out.pool.length}`);
+    const had = prev.pool.filter(p => p.rec && p.rec.length).length, has = out.pool.filter(p => p.rec.length).length;
+    need(!had || has >= had * 0.5, `players with club form fell from ${had} to ${has}`);
+  }
+  if (prev && Array.isArray(prev.results) && prev.results.length) need(out.results.length >= prev.results.length * 0.5, `results shrank from ${prev.results.length} to ${out.results.length}`);
+  return errs;
 }
-if (CAL.women && CAL.men) {
-  await writeFile(join(ROOT, "data", "usa", "all.ics"), ics("Cap Day — USA Women & Men", [...CAL.women, ...CAL.men]));
-  console.log("\nwrote data/usa/all.ics");
+
+/* Run only when executed directly, so the tests can import the helpers above. */
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  const want = ["women", "men"].filter(k => process.argv.includes("--" + k));
+  let failed = false;
+  for (const key of want.length ? want : ["women", "men"]) {
+    try { await build(key); }
+    catch (e) { failed = true; console.error(`FAILED ${key}: ${e.message}`); }
+  }
+  if (CAL.women && CAL.men) {
+    await writeFile(join(ROOT, "data", "usa", "all.ics"), ics("Cap Day — USA Women & Men", [...CAL.women, ...CAL.men]));
+    console.log("\nwrote data/usa/all.ics");
+  }
+  process.exit(failed ? 1 : 0);
 }
-process.exit(failed ? 1 : 0);

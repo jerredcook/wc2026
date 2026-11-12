@@ -290,7 +290,7 @@ dialog button{border:0;border-radius:16px;padding:8px 22px;background:#0b2a5b;co
   </a>
 
   <p class="foot">
-    Unofficial and fan-made — not affiliated with or endorsed by U.S. Soccer, Concacaf or FIFA.
+    <a href="privacy.html">Privacy</a> &middot; Unofficial and fan-made — not affiliated with or endorsed by U.S. Soccer, Concacaf or FIFA.
     Match and squad data from ESPN's public feed; rankings from FIFA. Club form covers each player's last three club matches and refreshes a few times a day.
     Kickoff times are shown in your local time zone. Visits are counted anonymously, without cookies. "Cap" is the football word for an international appearance: in 1886 England began giving each player a white silk cap for every international match.
   </p>
@@ -311,6 +311,7 @@ dialog button{border:0;border-radius:16px;padding:8px 22px;background:#0b2a5b;co
   <button onclick="this.closest('dialog').close()">Close</button>
 </dialog>
 
+<script src="js/core.js"></script>
 <script>
 "use strict";
 const API = "https://site.api.espn.com/apis/site/v2/sports/soccer";
@@ -318,7 +319,7 @@ const TEAM = { women: { id: "2765" }, men: { id: "660" } };
 const USA_LOGO = "https://a.espncdn.com/i/teamlogos/countries/500/usa.png";
 const KEY = "wc2026.usa.v1";
 
-const S = { team: "men", data: {}, ranks: {}, live: {}, sums: {}, open: {}, pos: "all", sort: "pos", ed: null, calls: {}, flash: false, news: {}, ahead: null };
+const S = { team: "men", data: {}, ranks: {}, live: {}, sums: {}, open: {}, pos: "all", sort: "pos", ed: null, calls: {}, flash: false, news: {}, ahead: null, liveOk: 0 };
 try { S.calls = JSON.parse(localStorage.getItem(KEY + ".calls") || "{}") || {}; } catch (e) {}
 const hashTeam = location.hash.replace("#", "");
 const pinned = !!TEAM[hashTeam];
@@ -333,10 +334,8 @@ const fmtTime = iso => D(iso).toLocaleTimeString([], { hour: "numeric", minute: 
 const fmtZone = iso => { try { return D(iso).toLocaleTimeString([], { timeZoneName: "short" }).split(" ").pop(); } catch (e) { return ""; } };
 const fmtShort = iso => D(iso).toLocaleDateString([], { month: "short", day: "numeric" });
 const yearOf = iso => D(iso).getFullYear();
-const outcome = (us, them, pen) => us > them ? "W" : us < them ? "L" : pen ? (pen[0] > pen[1] ? "W" : "L") : "D";
 
 /* ── FIFA ranks (same files the World Cup app keeps current) ── */
-const norm = s => String(s).toLowerCase().normalize("NFD").replace(/[^a-z]/g, "");
 const ALIAS = { unitedstates: "usa", korearepublic: "southkorea", ivorycoast: "ivorycoast" };
 function rankOf(name) {
   const R = S.ranks[S.team]; if (!R) return null;
@@ -356,37 +355,12 @@ function ptsOf(name) {
 /* FIFA's own win-expectancy formula on current rating points (a draw counts half). */
 function winExp(oppName) {
   const a = ptsOf(S.test ? S.test.usName : "United States"), b = ptsOf(oppName);
-  return a == null || b == null ? null : 1 / (1 + Math.pow(10, -(a - b) / 600));
+  return winExpectancy(a, b);
 }
 
 /* ── What a match is for ──
    Every fixture gets a kind (the coloured tag) and a one-line plain-English
    explainer, matched on the competition's name. */
-const COMPS = [
-  [/friendly/i, "friendly", "Friendly", "", "An exhibition match. Nothing rides on the result."],
-  [/nations league/i, "competitive", "Competitive", "Concacaf Nations League", "A competition between the national teams of North America, Central America and the Caribbean."],
-  [/gold cup/i, "tournament", "Tournament", "Concacaf Gold Cup", "The men's championship of North America, Central America and the Caribbean."],
-  [/w championship|women.?s championship/i, "qualifier", "Qualifier", "Concacaf W Championship", "The women's championship of North America, Central America and the Caribbean. It doubles as World Cup qualifying."],
-  [/shebelieves/i, "tournament", "Tournament", "SheBelieves Cup", "An invitational tournament the United States hosts each year."],
-  [/qualif/i, "qualifier", "Qualifier", "", "A qualifying match: results decide who reaches the tournament."],
-  [/women.?s world cup/i, "tournament", "World Cup", "Women's World Cup", "The world championship, held every four years."],
-  [/world cup/i, "tournament", "World Cup", "World Cup", "The world championship, held every four years."],
-  [/olympic/i, "tournament", "Tournament", "Olympic Games", "The Olympic football tournament."],
-  [/copa am/i, "tournament", "Tournament", "Copa América", "South America's championship, with invited guests."],
-];
-function compInfo(m) {
-  const c = COMPS.find(x => x[0].test(m.comp || ""));
-  return c ? { kind: c[1], label: c[2], name: c[3] || m.comp, what: c[4] } : { kind: "competitive", label: "Competitive", name: m.comp || "", what: "" };
-}
-/* "This match" in one plain sentence, from the round and leg. */
-function matchLine(m, first) {
-  const ci = compInfo(m), round = (m.round || "").replace(/s$/, "");
-  if (ci.kind === "friendly") return "A friendly against " + m.opp.name + ".";
-  if (/1st/i.test(m.leg)) return `${round}, the first of two matches against ${m.opp.name}. The scores from both are added together to decide who goes through.`;
-  if (/2nd/i.test(m.leg)) return `${round}, the second of two matches against ${m.opp.name}. ` + (first ? `The USA ${first.us > first.them ? "leads" : first.us < first.them ? "trails" : "is level"} ${Math.max(first.us, first.them)}–${Math.min(first.us, first.them)} from the first; the combined score decides who goes through.` : "The combined score decides who goes through.");
-  if (/final|quarter|semi|round of|play/i.test(round)) return `${round}: a single knockout match against ${m.opp.name}.`;
-  return round ? `${round} match against ${m.opp.name}.` : "";
-}
 const ctag = m => { const c = compInfo(m); return `<span class="ctag ${c.kind}">${c.label}</span>`; };
 const compLine = m => [compInfo(m).kind === "friendly" ? "" : m.comp, m.round, m.leg].filter(Boolean).join(" · ");
 function relDay(iso) {
@@ -458,69 +432,6 @@ function focus() {
   return d.fixtures.find(m => (S.live[m.id] ? S.live[m.id].state : m.state) !== "post" || Date.now() - D(m.date) < 6 * 36e5) || d.fixtures[0] || null;
 }
 
-/* ── Live overlay from the match summary ── */
-function parseSummary(G, teamId) {
-  const c = G.header && G.header.competitions && G.header.competitions[0];
-  if (!c) return null;
-  const us = c.competitors.find(x => x.id === teamId), them = c.competitors.find(x => x.id !== teamId);
-  const st = c.status || {}, ty = st.type || {};
-  const num = v => v == null || v === "" ? null : Number(v);
-  const out = {
-    state: ty.state || "pre",
-    clock: ty.state === "in" ? (st.displayClock || ty.shortDetail || "") : (ty.shortDetail || ""),
-    us: us ? num(us.score) : null, them: them ? num(them.score) : null,
-    pen: us && them && us.shootoutScore != null && them.shootoutScore != null ? [num(us.shootoutScore), num(them.shootoutScore)] : null,
-    events: [], xi: [], series: "", meetings: [], last5: [], stats: null,
-    tv: [...new Set((G.broadcasts || []).map(b => b.media && b.media.shortName).filter(Boolean))],
-  };
-  for (const k of G.keyEvents || []) {
-    const t = (k.type && k.type.type) || "";
-    const isGoal = !!k.scoringPlay, isCard = /card/.test(t);
-    if ((!isGoal && !isCard) || k.shootout) continue;
-    const ps = (k.participants || []).map(p => p.athlete && p.athlete.displayName).filter(Boolean);
-    out.events.push({
-      min: (k.clock && k.clock.displayValue) || "", us: !!(k.team && k.team.id === teamId),
-      icon: isGoal ? "⚽" : /red/.test(t) ? "🟥" : "🟨", who: ps[0] || (k.shortText || "").replace(/ (Goal|Yellow Card|Red Card).*/, ""),
-      note: isGoal ? (/own/.test(t) ? "own goal" : /penalty/.test(t) ? "pen" : ps[1] ? "assist " + ps[1] : "") : "",
-    });
-  }
-  for (const r of G.rosters || []) {
-    const ros = r.roster || []; if (!ros.length) continue;
-    out.xi.push({
-      us: r.team.id === teamId, name: r.team.displayName, formation: r.formation || "",
-      start: ros.filter(x => x.starter).map(x => ({ n: x.jersey || "", name: x.athlete.displayName, pos: (x.position && x.position.abbreviation) || "" })),
-      bench: ros.filter(x => !x.starter).map(x => x.athlete.displayName),
-    });
-  }
-  const bt = (G.boxscore && G.boxscore.teams) || [];
-  const statsOf = t => { const o = {}; for (const q of (t && t.statistics) || []) o[q.name] = q.displayValue; return o; };
-  const bu = bt.find(t => t.team && t.team.id === teamId), bo = bt.find(t => t.team && t.team.id !== teamId);
-  if (bu && bo) out.stats = { us: statsOf(bu), them: statsOf(bo) };
-  const ss = (G.seasonseries || [])[0];
-  if (ss) {
-    out.series = ss.summary || "";
-    out.meetings = (ss.events || []).filter(e => e.status === "post").slice(0, 5).map(e => {
-      const a = e.competitors.find(x => x.team.id === teamId), b = e.competitors.find(x => x.team.id !== teamId);
-      return a && b ? { date: e.date, comp: e.competitionName || "", us: num(a.score), them: num(b.score) } : null;
-    }).filter(Boolean);
-  }
-  for (const t of G.lastFiveGames || []) {
-    out.last5.push({
-      us: t.team.id === teamId, name: t.team.displayName,
-      /* Newest first, and the score from this team's side (the feed's own
-         "score" string is winner-first, which reads wrong next to an L). */
-      games: (t.events || []).slice().sort((a, b) => String(b.gameDate).localeCompare(String(a.gameDate))).slice(0, 5).map(e => {
-        const home = e.homeTeamId === t.team.id;
-        return {
-          res: e.gameResult || "", score: (home ? e.homeTeamScore : e.awayTeamScore) + "–" + (home ? e.awayTeamScore : e.homeTeamScore),
-          opp: (e.opponent && (e.opponent.abbreviation || e.opponent.displayName)) || "", at: e.atVs === "@" ? "at" : "v", date: e.gameDate,
-        };
-      }),
-    });
-  }
-  return out;
-}
-
 let pollT = null;
 async function refreshLive() {
   clearTimeout(pollT);
@@ -535,10 +446,10 @@ async function refreshLive() {
           S.flash = true; setTimeout(() => { S.flash = false; }, 4000);
           if (navigator.vibrate) { try { navigator.vibrate([120, 60, 120]); } catch (e) {} }
         }
-        S.live[m.id] = L;
+        S.live[m.id] = L; S.liveOk = Date.now();
       }
     }
-  } catch (e) {}
+  } catch (e) { /* offline or the feed is down: keep what we have and try again */ }
   if (S.team !== team) return;
   renderHero(); renderStories(); renderNextUp();
   const L = S.live[m.id], st = L ? L.state : m.state, ms = D(m.date) - Date.now();
@@ -595,9 +506,7 @@ function callHtml(m, st, us, them) {
       <button class="lock" onclick="lockCall('${h(m.id)}',true)">Lock in my call</button></div>`;
   }
   if (!c || !c.locked) return "";
-  let verdict = "";
-  if (st === "post") verdict = c.us === us && c.them === them ? "🎯 Spot on — exact score!" : outcome(c.us, c.them) === outcome(us, them) ? "✅ Right result, wrong score." : "❌ Not this time.";
-  else if (st === "in") verdict = c.us === us && c.them === them ? "🎯 On the money right now." : c.us >= us && c.them >= them ? "🤞 Still alive." : "💥 Busted — that score can't happen now.";
+  const verdict = callVerdict(c, us, them, st);
   return `<div class="call"><div class="kicker">Your call</div><div class="mine">${h(callText(m, c))}</div>
     ${verdict ? `<div class="verdict">${verdict}</div>` : ""}
     <div class="acts" style="margin-top:10px">
@@ -625,7 +534,8 @@ function renderHero() {
     const pen = L.pen || m.pen;
     mid = `<div class="score">${a == null ? "–" : a}<span style="opacity:.35"> : </span>${b == null ? "–" : b}</div>` +
       (pen ? `<div class="clock">${home ? pen[0] : pen[1]}–${home ? pen[1] : pen[0]} on penalties</div>` : "") +
-      `<div class="clock">${st === "in" ? `<span class="livebadge">LIVE</span> ${h(L.clock || "")}` : "Full time"}</div>`;
+      `<div class="clock">${st === "in" ? `<span class="livebadge">LIVE</span> ${h(L.clock || "")}` : "Full time"}</div>` +
+      (st === "in" && S.liveOk && Date.now() - S.liveOk > 100e3 ? `<div class="clock" style="color:var(--warn)">Connection lost. Retrying…</div>` : "");
   }
   const tv = (L.tv && L.tv.length ? L.tv : m.tv) || [];
   const first = /2nd/i.test(m.leg) && d.results.find(r => r.opp.id === m.opp.id && r.lg === m.lg && D(m.date) - D(r.date) < 12 * 864e5);
@@ -850,7 +760,6 @@ function recLine(r, long, club) {
   s += ` &middot; ${res} ${r.sf}–${r.sa} ${r.ha === "H" ? "v" : "at"} ${h(r.opp.trim())}`;
   return `${fmtShort(r.d)} &middot; ` + s + (long ? ` <span style="color:var(--ink3)">(${h(r.lg)})</span>` : "");
 }
-const formScore = p => p.rec.reduce((n, r) => n + (r.g || 0) * 3 + (r.a || 0) * 2 + (r.st === "S" ? 1 : r.st === "I" ? .5 : 0), 0);
 function playerRow(p, hasExtra) {
     const r = p.rec[0], open = S.open[p.id], cn = p.club && p.club.name;
     const dots = p.rec.slice().reverse().map(x => `<span class="dot ${cls(x.st)}" title="${h(ST[x.st])}"></span>`).join("");
@@ -1010,6 +919,37 @@ function render() {
   $("stamp").textContent = d ? "Club form updated " + D(d.updated).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
   renderHero(); renderStories(); renderNews(); renderPool(); renderOppo(); renderFixtures(); renderResults();
 }
+/* ── Fail-safe sections ──
+   Each section draws inside a guard: if one throws (a surprise in the feed, a
+   bug), that section shows a short notice and every other section carries on.
+   The error is counted anonymously so it can be found and fixed. */
+let errorsSent = 0;
+function reportError(where, e) {
+  if (errorsSent++ >= 5) return;
+  track("error " + where + ": " + String((e && e.message) || e).slice(0, 90));
+}
+function guard(fn, id, where) {
+  return function () {
+    try { return fn.apply(this, arguments); }
+    catch (e) {
+      reportError(where, e);
+      const el = $(id);
+      if (el) el.innerHTML = `<div class="card"><div class="empty">This part couldn't be shown just now. The rest of the app still works.</div></div>`;
+    }
+  };
+}
+renderHero = guard(renderHero, "hero", "match-card");
+renderStories = guard(renderStories, "stories", "storylines");
+renderNews = guard(renderNews, "news", "news");
+renderPool = guard(renderPool, "pool", "players");
+renderOppo = guard(renderOppo, "oppo", "opponent");
+renderFixtures = guard(renderFixtures, "fixtures", "calendar");
+renderResults = guard(renderResults, "results", "results");
+renderNextUp = guard(renderNextUp, "nextup", "next-up");
+renderPoll = guard(renderPoll, "poll", "poll");
+window.addEventListener("error", e => reportError("script", e.error || e.message));
+window.addEventListener("unhandledrejection", e => reportError("promise", e.reason));
+
 let installEvt = null;
 window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; $("installBtn").hidden = false; });
 window.addEventListener("appinstalled", () => track("installed"));
