@@ -108,10 +108,10 @@ test("every scheduled workflow can also be started by hand", () => {
   }
 });
 
-test("data files: 'checked', when present, is a real time and not before 'updated'", () => {
+test("data files say when the feeds were last checked, and it is not before 'updated'", () => {
   for (const t of ["men", "women"]) {
     const d = JSON.parse(read(`data/usa/${t}.json`));
-    if (d.checked == null) continue;
+    assert.ok(d.checked, `${t}.json has no 'checked' time, so the app cannot tell when its information is old`);
     assert.ok(!isNaN(Date.parse(d.checked)), `${t}.json: checked is not a time`);
     assert.ok(Date.parse(d.checked) >= Date.parse(d.updated), `${t}.json: checked is earlier than updated`);
   }
