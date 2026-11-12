@@ -17,6 +17,7 @@ const clone = o => JSON.parse(JSON.stringify(o));
 const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
 const appScript = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).find(s => s.includes("const API ="));
 const coreScript = fs.readFileSync(path.join(ROOT, "js", "core.js"), "utf8");
+const qrScript = fs.readFileSync(path.join(ROOT, "js", "qr.js"), "utf8");
 if (!appScript) throw new Error("could not find the app script in index.html");
 
 /* Elements that start hidden in the real page. */
@@ -39,17 +40,18 @@ const RANKS_WOMEN = { rows: [{ r: 2, n: "USA", p: 2042.38 }, { r: 78, n: "El Sal
 
 function makeElement(id) {
   return {
-    id, innerHTML: "", textContent: "", hidden: startsHidden.includes(id), dataset: {}, style: {}, href: "", open: false, listeners: {},
+    id, innerHTML: "", textContent: "", value: "", hidden: startsHidden.includes(id), dataset: {}, style: {}, href: "", open: false, listeners: {}, scrolled: 0,
     addEventListener(type, fn) { this.listeners[type] = fn; },
     querySelector() { return makeElement(id + " > child"); },
     querySelectorAll() { return []; },
-    scrollIntoView() {}, setAttribute() {}, appendChild() {}, remove() {}, click() {},
+    scrollIntoView() { this.scrolled++; }, setAttribute() {}, appendChild() {}, remove() {}, click() {}, focus() {},
     showModal() { this.open = true; }, close() { this.open = false; },
     classList: { toggle() {}, add() {}, remove() {} },
   };
 }
 
-/* opts: { now, hash, search, userAgent, data: {men, women}, summary, news, editorial, ahead, storage }
+/* opts: { now, hash, search, userAgent, data: {men, women}, summary, news, editorial, ahead, storage, share }
+   - share: true gives the page a share sheet (navigator.share); what it shares is collected in `shared`
    - data.men / data.women: the hub data files (default: the recorded fixtures)
    - summary: the live match feed's answer — an object, a function (url) => object, or null for "offline"
    - build: what build.json says (default: missing, as when the page is opened from a folder)
@@ -57,7 +59,7 @@ function makeElement(id) {
 async function boot(opts = {}) {
   const data = { men: fixture("data-men.json"), women: fixture("data-women.json"), ...(opts.data || {}) };
   const store = { ...(opts.storage || {}) };
-  const els = {}, tracked = [], fetched = [], timers = [];
+  const els = {}, tracked = [], fetched = [], timers = [], shared = [];
   const page = { summary: opts.summary === undefined ? null : opts.summary, news: opts.news || { articles: [] }, build: opts.build || null, hang: opts.hang || null };
 
   const answer = url => {
@@ -86,8 +88,9 @@ async function boot(opts = {}) {
       removeItem: k => { delete store[k]; },
     },
     location: { hash: opts.hash || "", search: opts.search || "", origin: "http://test.local", pathname: "/wc2026/", protocol: "http:", href: "http://test.local/wc2026/" },
-    navigator: { userAgent: opts.userAgent || "Mozilla/5.0 (Linux; Android 14; Pixel 8)" },
-    history: { replaceState() {} },
+    navigator: { userAgent: opts.userAgent || "Mozilla/5.0 (Linux; Android 14; Pixel 8)", ...(opts.share ? { share: async data => { shared.push(data); } } : {}) },
+    /* Only the part after "#" matters to the app: keep location.hash in step, as a browser would. */
+    history: { replaceState(_a, _b, url) { const i = String(url).indexOf("#"); sandbox.location.hash = i < 0 ? "" : String(url).slice(i); } },
     goatcounter: { count: v => tracked.push(v.path) },
     addEventListener() {},
     setTimeout: (fn, ms) => { timers.push({ fn, ms }); return timers.length; },
@@ -109,13 +112,14 @@ async function boot(opts = {}) {
   vm.runInContext(`{ const Real = Date; const NOW = ${now};
     globalThis.Date = class extends Real { constructor(...a) { if (a.length) super(...a); else super(NOW); } static now() { return NOW; } }; }`, ctx);
   vm.runInContext(coreScript, ctx, { filename: "js/core.js" });
+  vm.runInContext(qrScript, ctx, { filename: "js/qr.js" });
   vm.runInContext(appScript, ctx, { filename: "index.html <script>" });
 
   const settle = async () => { for (let i = 0; i < 40; i++) await new Promise(r => setImmediate(r)); };
   await settle();
 
   return {
-    ctx, els, tracked, fetched, timers, store, data, settle,
+    ctx, els, tracked, fetched, timers, store, data, settle, shared, location: sandbox.location,
     run: code => vm.runInContext(code, ctx),
     el: id => sandbox.document.getElementById(id),
     html: id => (els[id] ? els[id].innerHTML : ""),

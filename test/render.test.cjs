@@ -238,11 +238,12 @@ test("call the score: adjust, lock, share, and it is graded live and at full tim
   p.run(`bump('${id}','us',-1)`);                    // 1–0 to the USA
   p.run(`lockCall('${id}',true)`);
   assert.match(p.text("hero"), /Your call Haiti 0–1 USA/);
-  assert.match(p.text("hero"), /Share my call Change/);
+  assert.match(p.text("hero"), /Challenge a friend Change/);
   assert.deepEqual(JSON.parse(p.store["wc2026.usa.v1.calls"])[id], { us: 1, them: 0, locked: true }, "the call is saved on the device");
   assert.ok(p.tracked.includes("capday: call-locked"));
   p.setSummary(summaryAs("in", "67'")); await p.refresh();
   assert.match(p.text("hero"), /Your call Haiti 0–1 USA 🎯 On the money right now\./);
+  assert.match(p.text("hero"), /Share my call/); assert.ok(!/Challenge a friend|Change/.test(p.text("hero")), "after kickoff a call can be shared but not changed or used to challenge");
   p.setSummary(summaryAs("post")); await p.refresh();
   assert.match(p.text("hero"), /🎯 Spot on — exact score!/);
 });
@@ -435,4 +436,133 @@ test("the footer says which version this is", async () => {
   const { VERSION } = require("../js/core.js");
   const p = await boot();
   assert.equal(p.el("ver").textContent, "Cap Day v" + VERSION);
+});
+
+/* ── Challenge a friend ── */
+const MATCH = "401929710";                                   // Haiti v USA in the recorded data
+const LOCKED = us => ({ "wc2026.usa.v1.calls": JSON.stringify({ [MATCH]: { us, them: 0, locked: true } }) });
+const qrText = svg => { assert.match(svg, /^<svg [^>]*viewBox="0 0 \d+ \d+"/); return svg; };
+
+test("challenge: lock a call, give a first name once, and get a QR code and a link that carry it", async () => {
+  const p = await boot({ storage: LOCKED(2), share: true });
+  p.run(`openDuel('${MATCH}')`);
+  assert.equal(p.el("duel").open, true);
+  assert.equal(p.el("duelName").hidden, false, "first it asks for a name");
+  assert.equal(p.el("duelBody").hidden, true);
+
+  p.el("duelInput").value = "   "; p.run("saveName()");
+  assert.equal(p.el("duelBody").hidden, true, "an empty name is not accepted");
+
+  p.el("duelInput").value = "  Jerred <b>  "; p.run("saveName()");
+  assert.equal(p.store["wc2026.usa.v1.name"], "Jerred b", "the name is cleaned and remembered on the device");
+  assert.equal(p.el("duelName").hidden, true); assert.equal(p.el("duelBody").hidden, false);
+  assert.equal(p.el("duelText").textContent, "Jerred b says Haiti 0–2 USA");
+  qrText(p.el("duelQr").innerHTML);
+
+  p.run("sendChallenge()"); await p.settle();
+  assert.equal(p.shared.length, 1);
+  assert.equal(p.shared[0].url, "http://test.local/wc2026/#men&c=401929710~Jerred%20b:2-0");
+  assert.equal(p.shared[0].text, "Jerred b says Haiti 0–2 USA. What's your call?");
+  assert.deepEqual(p.tracked.filter(x => /challenge/.test(x)), ["capday: challenge-started", "capday: challenge-sent"]);
+  assert.ok(!p.fetched.some(u => /Jerred/.test(u)), "the name never appears in a request");
+
+  /* The code drawn is the code for that link. */
+  const { qrSvg } = require("../js/qr.js");
+  assert.equal(p.el("duelQr").innerHTML, qrSvg(p.shared[0].url, { label: "QR code for your challenge" }));
+
+  /* Second time: no question, and the name can be changed. */
+  const q = await boot({ storage: { ...LOCKED(1), "wc2026.usa.v1.name": "Jerred" }, share: true });
+  q.run(`openDuel('${MATCH}')`);
+  assert.equal(q.el("duelBody").hidden, false); assert.equal(q.el("duelText").textContent, "Jerred says Haiti 0–1 USA");
+  q.run("editName()");
+  assert.equal(q.el("duelName").hidden, false); assert.equal(q.el("duelInput").value, "Jerred");
+  q.el("duelInput").value = "Jay"; q.run("saveName(); sendChallenge()"); await q.settle();
+  assert.match(q.shared[0].url, /~Jay:1-0$/);
+});
+
+test("challenge: opening a friend's link shows their call above the picker, and the address is tidied", async () => {
+  const p = await boot({ hash: "#men&c=401929710~Jerred:2-0" });
+  assert.equal(p.location.hash, "#men", "the call is taken out of the address, so a reload or a plain share does not carry it");
+  assert.match(p.text("hero"), /Jerred says Haiti 0–2 USA\. What's your call\? Call the score Haiti − 0 \+ USA − 2 \+ Lock in my call/);
+  assert.deepEqual(JSON.parse(p.store["wc2026.usa.v1.rivals"]), { [MATCH]: [{ n: "Jerred", us: 2, them: 0 }] });
+  assert.deepEqual(p.tracked.filter(x => /challenge/.test(x)), ["capday: challenge-opened"]);
+  assert.ok(p.el("callBox").scrolled >= 1, "the page moves to the challenge");
+  assert.ok(!p.fetched.some(u => /Jerred/.test(u)), "the friend's name never appears in a request");
+
+  p.run(`bump('${MATCH}','us',-1); lockCall('${MATCH}',true)`);
+  assert.match(p.text("hero"), /Your call Haiti 0–1 USA The challenge You Haiti 0–1 USA Jerred Haiti 0–2 USA 🆚 Challenge a friend Change/);
+
+  /* Passing it on carries both calls. */
+  const q = await boot({ hash: "#men&c=401929710~Jerred:2-0", storage: { ...LOCKED(1), "wc2026.usa.v1.name": "Sam" }, share: true });
+  q.run(`openDuel('${MATCH}'); sendChallenge()`); await q.settle();
+  assert.equal(q.shared[0].url, "http://test.local/wc2026/#men&c=401929710~Sam:1-0~Jerred:2-0");
+});
+
+test("challenge: calls are ranked while the match is on and at full time", async () => {
+  /* The recorded match ends 1–0 to the USA. You said 1–0, Jerred 2–0, Pat a 1–1 draw. */
+  const p = await boot({ hash: "#men&c=401929710~Jerred:2-0~Pat:1-1", storage: LOCKED(1), summary: summaryAs("in", "67'") });
+  assert.match(p.text("hero"), /The challenge 1 You Haiti 0–1 USA 🎯 2 Jerred Haiti 0–2 USA ✓ 3 Pat Haiti 1–1 USA Closest right now: You\./);
+  p.setSummary(summaryAs("post")); await p.refresh();
+  assert.match(p.text("hero"), /🏆 You called it best — that's you\./);
+
+  const lost = await boot({ hash: "#men&c=401929710~Jerred:1-0", storage: LOCKED(3), summary: summaryAs("post") });
+  assert.match(lost.text("hero"), /1 Jerred Haiti 0–1 USA 🎯 2 You Haiti 0–3 USA ✓ 🏆 Jerred called it best\./);
+
+  const level = await boot({ hash: "#men&c=401929710~Jerred:2-0", storage: LOCKED(2), summary: summaryAs("post") });
+  assert.match(level.text("hero"), /1 You Haiti 0–2 USA ✓ 1 Jerred Haiti 0–2 USA ✓ All level: nobody called it better\./);
+
+  const watching = await boot({ hash: "#men&c=401929710~Jerred:2-0~Pat:1-0", summary: summaryAs("post") });
+  assert.match(watching.text("hero"), /The challenge 1 Pat Haiti 0–1 USA 🎯 2 Jerred Haiti 0–2 USA ✓ 🏆 Pat called it best\./, "friends' calls are still ranked if you never made one");
+  assert.ok(!/Your call/.test(watching.text("hero")));
+});
+
+test("challenge: a hostile or broken link is harmless", async () => {
+  const evil = "#men&c=401929710~" + encodeURIComponent('<img src=x onerror="alert(1)">') + ":2-0";
+  const p = await boot({ hash: evil });
+  assert.ok(!p.html("hero").includes("<img src=x"), "markup in a name is never drawn");
+  assert.ok(!/alert\(|onerror="alert/.test(p.html("hero")), "nor any handler from it");
+  assert.match(p.text("hero"), /img srcx onerror says Haiti 0–2 USA/, "what is left of the name is shown as plain text");
+  assert.equal(p.location.hash, "#men");
+  for (const id of SECTIONS) assert.ok(!p.text(id).includes(NOTICE), `#${id}`);
+
+  for (const hash of ["#men&c=", "#men&c=garbage", "#men&c=401929710", "#men&c=401929710~:1-0", "#men&c=401929710~Sam:99-0", "#men&c=401929710~Sam:1-0:2", "#men&c=%E0%A4%A", "#men&c=" + "9".repeat(2000)]) {
+    const q = await boot({ hash });
+    assert.equal(q.location.hash, "#men", `${hash.slice(0, 30)}: the address is tidied`);
+    assert.ok(!/says/.test(q.text("hero")), `${hash.slice(0, 30)}: nothing is shown`);
+    assert.equal(q.store["wc2026.usa.v1.rivals"], undefined, `${hash.slice(0, 30)}: nothing is stored`);
+    assert.deepEqual(q.tracked.filter(x => /error|challenge/.test(x)), []);
+  }
+});
+
+test("challenge: your own link, another match's link, and a link arriving while the app is open", async () => {
+  const own = await boot({ hash: "#men&c=401929710~Jerred:2-0", storage: { "wc2026.usa.v1.name": "jerred" } });
+  assert.ok(!/says/.test(own.text("hero")), "you are not shown your own call as a rival");
+
+  const other = await boot({ hash: "#men&c=123456~Jerred:2-0" });
+  assert.ok(!/says/.test(other.text("hero")), "a call for a different match is not shown on this one");
+
+  const women = await boot({ hash: "#women&c=401870040~Sam:3-0" });
+  assert.match(women.text("hero"), /Sam says USA 3–0 El Salvador\. What's your call\?/, "the link opens the right team");
+
+  /* Already open on the women's team; a men's challenge link is tapped. */
+  const p = await boot({ hash: "#women" });
+  assert.match(p.text("hero"), /El Salvador/);
+  p.location.hash = "#men&c=401929710~Jerred:2-0~Sam:1-1";
+  p.run("takeChallenge(); S.team = 'men'; render()");
+  assert.match(p.text("hero"), /Jerred says Haiti 0–2 USA · Sam says Haiti 1–1 USA\. What's your call\?/);
+  assert.equal(p.location.hash, "#men");
+});
+
+test("challenge: a long chain still fits a QR code, and at most eight friends are kept", async () => {
+  const names = ["Bartholomew-Jean", "Zoë Müller-Lüden", "Çağla Öztürkoğlu", "Władysław Żółć", "Ñandú Peñalosa", "Þórður Æsgeirs", "Élodie Lefèvre", "Søren Kjærgård", "Ninth Person"];
+  const hash = "#men&c=401929710" + names.map((n, i) => "~" + encodeURIComponent(n) + ":" + (i % 4) + "-" + (i % 3)).join("");
+  const p = await boot({ hash, storage: { ...LOCKED(1), "wc2026.usa.v1.name": "Maximilian-Josef" }, share: true });
+  assert.equal(JSON.parse(p.store["wc2026.usa.v1.rivals"])[MATCH].length, 8);
+  p.run(`openDuel('${MATCH}'); sendChallenge()`); await p.settle();
+  qrText(p.el("duelQr").innerHTML);
+  const { parseChallenge } = require("../js/core.js"), { qrMatrix } = require("../js/qr.js");
+  const url = p.shared[0].url, sent = parseChallenge(url.split("&c=")[1]);
+  assert.ok(qrMatrix(url), "the link fits in a QR code");
+  assert.equal(sent.calls[0].n, "Maximilian-Josef", "your own call always goes");
+  assert.ok(sent.calls.length >= 2 && sent.calls.length <= 9, `it carries as many friends as fit (${sent.calls.length - 1})`);
 });

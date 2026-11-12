@@ -58,6 +58,64 @@ function callVerdict(c, us, them, st) {
   return verdict;
 }
 
+/* ── Score challenge ──
+   A challenge is a link that carries the sender's call (and any calls the sender
+   was sent) for one match: "<event id>~<name>:<USA goals>-<opponent goals>~…".
+   Everything that arrives in a link is untrusted, so it is parsed strictly and
+   names are reduced to plain characters before they are stored or shown. */
+const MAX_RIVALS = 8, MAX_NAME = 16, MAX_GOALS = 15;
+
+/* A first name as typed, made safe to carry in a link: letters, digits, spaces and . ' - only. */
+function cleanName(s) {
+  const t = String(s == null ? "" : s).normalize("NFC").replace(/[^\p{L}\p{N} .'’-]/gu, "").replace(/\s+/g, " ").trim();
+  return Array.from(t).slice(0, MAX_NAME).join("").trim();
+}
+
+function packChallenge(id, calls) {
+  return String(id) + (calls || []).slice(0, MAX_RIVALS + 1).map(c => "~" + encodeURIComponent(cleanName(c.n)) + ":" + c.us + "-" + c.them).join("");
+}
+
+/* → { id, calls: [{ n, us, them }] }, or null if nothing in it can be trusted. */
+function parseChallenge(str) {
+  if (typeof str !== "string" || str.length > 900) return null;
+  const parts = str.split("~");
+  if (!/^\d{1,12}$/.test(parts[0])) return null;
+  const calls = [], seen = new Set();
+  for (const raw of parts.slice(1)) {
+    let text; try { text = decodeURIComponent(raw); } catch (e) { continue; }
+    const m = /^(.+):(\d{1,2})-(\d{1,2})$/.exec(text); if (!m) continue;
+    const n = cleanName(m[1]), us = Number(m[2]), them = Number(m[3]);
+    if (!n || us > MAX_GOALS || them > MAX_GOALS || seen.has(n.toLowerCase())) continue;
+    seen.add(n.toLowerCase()); calls.push({ n, us, them });
+    if (calls.length > MAX_RIVALS) break;
+  }
+  return calls.length ? { id: parts[0], calls } : null;
+}
+
+/* The calls held for a match after a link arrives: the new ones first, then the
+   ones already there, one per name, never the viewer's own, at most MAX_RIVALS. */
+function mergeRivals(have, got, me) {
+  const mine = cleanName(me).toLowerCase(), out = [], seen = new Set();
+  for (const c of [...(got || []), ...(have || [])]) {
+    const k = String(c.n).toLowerCase();
+    if (k === mine || seen.has(k)) continue;
+    seen.add(k); out.push({ n: c.n, us: c.us, them: c.them });
+  }
+  return out.slice(0, MAX_RIVALS);
+}
+
+/* How far a call is from a score, most important first: wrong result, goal
+   difference off by, goals off by. Lower is better. */
+const callDistance = (c, us, them) => [outcome(c.us, c.them) === outcome(us, them) ? 0 : 1, Math.abs((c.us - c.them) - (us - them)), Math.abs(c.us - us) + Math.abs(c.them - them)];
+
+/* Calls ranked against a score. Equal calls share a place. */
+function rankCalls(calls, us, them) {
+  const cmp = (a, b) => a.d[0] - b.d[0] || a.d[1] - b.d[1] || a.d[2] - b.d[2];
+  const list = (calls || []).map((c, i) => ({ ...c, i, d: callDistance(c, us, them) })).sort((a, b) => cmp(a, b) || a.i - b.i);
+  list.forEach((c, i) => { c.place = i && !cmp(c, list[i - 1]) ? list[i - 1].place : i + 1; c.exact = c.d[2] === 0; c.right = c.d[0] === 0; delete c.i; });
+  return list;
+}
+
 /* Club form in one number: goals and assists count most, then starts, then substitute appearances. */
 const formScore = p => p.rec.reduce((n, r) => n + (r.g || 0) * 3 + (r.a || 0) * 2 + (r.st === "S" ? 1 : r.st === "I" ? .5 : 0), 0);
 
@@ -126,5 +184,5 @@ function parseSummary(G, teamId) {
 
 
 if (typeof module === "object" && module.exports) {
-  module.exports = { VERSION, outcome, norm, winExpectancy, COMPS, compInfo, matchLine, callVerdict, formScore, parseSummary };
+  module.exports = { VERSION, outcome, norm, winExpectancy, COMPS, compInfo, matchLine, callVerdict, formScore, parseSummary, cleanName, packChallenge, parseChallenge, mergeRivals, callDistance, rankCalls, MAX_RIVALS, MAX_NAME };
 }

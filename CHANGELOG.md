@@ -19,7 +19,7 @@ The first numbered version of Cap Day: when the U.S. women's and men's national 
 - **A match card** with a countdown, where to watch, the venue, and three plain lines: what the competition is, what this match is, and what is at stake. A longer section explains how the competition works and how each side got here.
 - **Standings** for the competition the match belongs to: the two-leg tie or the group table.
 - **Live mode** during a match: score, clock, goals and cards, team stats and lineups, updating about every 30 seconds.
-- **Call the score** before kickoff and see how you did at full time.
+- **Call the score** before kickoff and see how you did at full time. **Challenge a friend:** share your call as a link or a QR code; they see it, make their own, and the calls are ranked during the match and at full time. Nothing goes through a server.
 - **Players:** who is called up, their caps and goals for the USA, and what each did in their club's last three matches. The next opponent's squad gets the same treatment.
 - **Calendar:** every fixture tagged by what it is for (friendly, Nations League, qualifier and so on), dates further ahead, and a subscription that adds all matches to your phone's calendar.
 - **News** for each team, recent results, stadium details, and FIFA rankings with a win chance worked out from them.

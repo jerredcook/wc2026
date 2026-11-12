@@ -235,6 +235,14 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,summary:focus-v
 .step b{font-size:24px;min-width:22px;text-align:center;font-variant-numeric:tabular-nums}
 .call .lock{width:100%;margin-top:8px;border:0;border-radius:18px;padding:10px;background:#fff;color:#0b2a5b;font-weight:800;font-size:14px;cursor:pointer}
 .call .mine{font-size:15px;font-weight:700;margin-top:4px}
+.says{font-size:14px;line-height:1.45;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.board{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
+.rv{display:flex;align-items:baseline;gap:8px;font-size:13.5px;padding:3px 0}
+.rv .rp{flex:0 0 14px;color:var(--ink3);font-weight:700}
+.rv .rn{flex:0 1 auto;font-weight:800;max-width:42%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rv .rc{flex:1;min-width:0;color:var(--ink2)}
+.rv.me .rn{color:var(--good)}
+.lead{font-size:13.5px;font-weight:700;margin-top:8px}
 .call .verdict{font-size:13px;color:var(--ink2);margin-top:3px}
 .stats{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:7px}
 .stat{display:grid;grid-template-columns:44px 1fr 44px;gap:8px;align-items:center;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums}
@@ -256,6 +264,9 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 dialog img{width:240px;height:240px;display:block;margin:0 auto 10px}
 dialog p{font-size:13px;color:#555;margin-bottom:12px;word-break:break-all}
 dialog button{border:0;border-radius:16px;padding:8px 22px;background:#0b2a5b;color:#fff;font-weight:700;cursor:pointer}
+dialog button.plain{background:none;color:#555;font-weight:600;text-decoration:underline;padding:8px 10px}
+dialog input{display:block;width:100%;margin:8px 0 12px;padding:10px;border:1px solid #c9ccd3;border-radius:10px;font-size:16px;text-align:center;background:#fff;color:#1a1a1a}
+#duelQr svg{display:block;width:220px;max-width:100%;height:auto;margin:0 auto 10px}
 @media (max-width:420px){.xi,.l5{grid-template-columns:1fr}.mid{min-width:78px}.score{font-size:32px}}
 </style>
 </head>
@@ -316,6 +327,24 @@ dialog button{border:0;border-radius:16px;padding:8px 22px;background:#0b2a5b;co
   <button onclick="this.closest('dialog').close()">Close</button>
 </dialog>
 
+<dialog id="duel" aria-label="Challenge a friend">
+  <h3 style="font-size:17px;margin-bottom:8px">Challenge a friend</h3>
+  <div id="duelName">
+    <label for="duelInput" style="font-size:13px;color:#555">Your first name, so friends know whose call it is</label>
+    <input id="duelInput" maxlength="16" autocomplete="given-name" autocapitalize="words" enterkeyhint="done" onkeydown="if(event.key==='Enter')saveName()">
+    <button onclick="saveName()">Continue</button>
+    <p style="font-size:11.5px;margin-top:10px;word-break:normal">Your name and your call travel inside the link you share. They are not sent to Cap Day or stored anywhere else.</p>
+  </div>
+  <div id="duelBody" hidden>
+    <p id="duelText" style="font-size:15px;font-weight:800;color:#1a1a1a;word-break:normal;margin-bottom:10px"></p>
+    <div id="duelQr"></div>
+    <p style="word-break:normal">A friend scans this, or you send them the link. They see your call and make their own.</p>
+    <button id="duelSend" onclick="sendChallenge()">↗ Send the link</button>
+    <button class="plain" id="duelWho" onclick="editName()">Change name</button>
+  </div>
+  <button class="plain" onclick="this.closest('dialog').close()">Close</button>
+</dialog>
+
 <dialog id="qr" aria-label="QR code for Cap Day">
   <img src="qr.svg" alt="QR code for this page" width="240" height="240">
   <p>Scan to open Cap Day<br>jerredcook.github.io/wc2026</p>
@@ -323,6 +352,7 @@ dialog button{border:0;border-radius:16px;padding:8px 22px;background:#0b2a5b;co
 </dialog>
 
 <script src="js/core.js"></script>
+<script src="js/qr.js"></script>
 <script>
 "use strict";
 const API = "https://site.api.espn.com/apis/site/v2/sports/soccer";
@@ -330,9 +360,11 @@ const TEAM = { women: { id: "2765" }, men: { id: "660" } };
 const USA_LOGO = "https://a.espncdn.com/i/teamlogos/countries/500/usa.png";
 const KEY = "wc2026.usa.v1";
 
-const S = { team: "men", data: {}, ranks: {}, live: {}, sums: {}, open: {}, pos: "all", sort: "pos", ed: null, calls: {}, flash: false, news: {}, ahead: null, liveOk: 0, failed: {} };
+const S = { team: "men", data: {}, ranks: {}, live: {}, sums: {}, open: {}, pos: "all", sort: "pos", ed: null, calls: {}, flash: false, news: {}, ahead: null, liveOk: 0, failed: {}, rivals: {}, name: "", jump: null };
 try { S.calls = JSON.parse(localStorage.getItem(KEY + ".calls") || "{}") || {}; } catch (e) {}
-const hashTeam = location.hash.replace("#", "");
+try { S.rivals = JSON.parse(localStorage.getItem(KEY + ".rivals") || "{}") || {}; } catch (e) {}
+try { S.name = cleanName(localStorage.getItem(KEY + ".name") || ""); } catch (e) {}
+const hashTeam = location.hash.replace("#", "").split("&")[0];
 const pinned = !!TEAM[hashTeam];
 S.team = pinned ? hashTeam : "women";
 
@@ -574,25 +606,97 @@ function shareCall(id) {
   if (navigator.share) navigator.share({ title: "Cap Day", text, url }).catch(() => {});
   else if (navigator.clipboard) navigator.clipboard.writeText(text + " " + url).then(() => { const b = $("shareCall"); if (b) { b.textContent = "Copied"; setTimeout(renderHero, 1500); } });
 }
+
+/* ── Challenge a friend ──
+   A challenge is a link that carries your name and your call (plus any calls
+   you were sent) for one match. It rides in the link's fragment, the part after
+   "#", which browsers never send to a server: not to this site's host, not to
+   the visit counter. There is no shared scoreboard: a link only knows the calls
+   made before it was sent. */
+const rivalsOf = m => S.rivals[m.id] || [];
+function saveRivals() { try { localStorage.setItem(KEY + ".rivals", JSON.stringify(S.rivals)); } catch (e) {} }
+/* Read a challenge out of the address (#men&c=…), keep it, and tidy the address. */
+function takeChallenge() {
+  const parts = location.hash.replace("#", "").split("&"), raw = parts.find(x => x.indexOf("c=") === 0);
+  if (raw == null) return false;
+  try { history.replaceState(null, "", location.pathname + location.search + (TEAM[parts[0]] ? "#" + parts[0] : "")); } catch (e) {}
+  const ch = parseChallenge(raw.slice(2));
+  if (!ch) return false;
+  const merged = mergeRivals(S.rivals[ch.id], ch.calls, S.name);
+  if (!merged.length) return false;                       // your own link, opened by you
+  S.rivals[ch.id] = merged; saveRivals(); S.jump = ch.id; track("challenge-opened");
+  return true;
+}
+/* The link for your challenge. Other people's calls ride along while the link
+   still fits in a QR code; the oldest are dropped first if it would not. */
+function challengeUrl(m) {
+  const c = callOf(m.id), me = { n: S.name, us: c.us, them: c.them }, others = rivalsOf(m);
+  const make = n => location.origin + location.pathname + (S.test ? "?test=" + encodeURIComponent(testSpec) : "") + "#" + S.team + "&c=" + packChallenge(m.id, [me, ...others.slice(0, n)]);
+  for (let n = others.length; n > 0; n--) if (qrMatrix(make(n))) return make(n);
+  return make(0);
+}
+let duelId = null;
+const duelMatch = () => { const m = focus(); return m && m.id === duelId ? m : null; };
+function openDuel(id) { duelId = id; track("challenge-started"); $("duelInput").value = S.name || ""; showDuel(); $("duel").showModal(); }
+function showDuel() {
+  const m = duelMatch(), named = !!S.name && !!m;
+  $("duelName").hidden = named; $("duelBody").hidden = !named;
+  if (!named) return;
+  $("duelText").textContent = `${S.name} says ${callText(m, callOf(m.id))}`;
+  $("duelQr").innerHTML = qrSvg(challengeUrl(m), { label: "QR code for your challenge" });
+  $("duelSend").textContent = "↗ Send the link";
+}
+function saveName() {
+  const n = cleanName($("duelInput").value);
+  if (!n) return;
+  S.name = n; try { localStorage.setItem(KEY + ".name", n); } catch (e) {}
+  showDuel();
+}
+function editName() { $("duelInput").value = S.name; S.name = ""; showDuel(); }
+function sendChallenge() {
+  const m = duelMatch(); if (!m || !S.name) return;
+  const url = challengeUrl(m), text = `${S.name} says ${callText(m, callOf(m.id))}. What's your call?`;
+  track("challenge-sent");
+  if (navigator.share) navigator.share({ title: "Cap Day", text, url }).catch(() => {});
+  else if (navigator.clipboard) navigator.clipboard.writeText(text + " " + url).then(() => { $("duelSend").textContent = "Link copied"; });
+}
+/* Everyone's call for this match, ranked once there is a score to rank against. */
+function boardHtml(m, mine, rivals, st, us, them) {
+  if (!rivals.length) return "";
+  const all = [...(mine ? [{ n: "You", you: true, us: mine.us, them: mine.them }] : []), ...rivals];
+  const live = st !== "pre" && us != null && them != null;
+  const list = live ? rankCalls(all, us, them) : all;
+  const row = c => `<div class="rv${c.you ? " me" : ""}"><span class="rp">${live ? c.place : ""}</span><span class="rn">${h(c.n)}</span><span class="rc">${h(callText(m, c))}${live ? (c.exact ? " 🎯" : c.right ? " ✓" : "") : ""}</span></div>`;
+  let lead = "";
+  if (live) {
+    const top = list.filter(c => c.place === 1).map(c => c.n), names = top.length > 1 ? top.slice(0, -1).join(", ") + " and " + top[top.length - 1] : top[0];
+    if (top.length === list.length && list.length > 1) lead = st === "post" ? "All level: nobody called it better." : "All level right now.";
+    else if (st === "post") lead = top.length > 1 ? `🏆 ${h(names)} called it best.` : `🏆 ${h(names)} called it best${top[0] === "You" ? " — that's you" : ""}.`;
+    else lead = `Closest right now: ${h(names)}.`;
+  }
+  return `<div class="board"><div class="kicker">The challenge</div>${list.map(row).join("")}${lead ? `<div class="lead">${lead}</div>` : ""}</div>`;
+}
 function callHtml(m, st, us, them) {
-  const c = S.calls[m.id], home = m.ha === "H";
-  if (st === "pre" && !(c && c.locked)) {
+  const c = S.calls[m.id], mine = c && c.locked ? c : null, rivals = rivalsOf(m), home = m.ha === "H";
+  if (st === "pre" && !mine) {
     const cc = callOf(m.id);
     const row = (label, side) => `<div class="row"><span>${h(label)}</span><span class="step">
       <button aria-label="${h(label)} fewer" onclick="bump('${h(m.id)}','${side}',-1)">−</button><b>${cc[side]}</b>
       <button aria-label="${h(label)} more" onclick="bump('${h(m.id)}','${side}',1)">+</button></span></div>`;
     const rows = [row(usShort(), "us"), row(m.opp.name, "them")];
-    return `<div class="call"><div class="kicker">Call the score</div>${home ? rows.join("") : rows.reverse().join("")}
+    const says = rivals.length ? `<div class="says">${rivals.map(r => `<b>${h(r.n)}</b> says ${h(callText(m, r))}`).join(" · ")}. What's your call?</div>` : "";
+    return `<div class="call" id="callBox">${says}<div class="kicker">Call the score</div>${home ? rows.join("") : rows.reverse().join("")}
       <button class="lock" onclick="lockCall('${h(m.id)}',true)">Lock in my call</button></div>`;
   }
-  if (!c || !c.locked) return "";
-  const verdict = callVerdict(c, us, them, st);
-  return `<div class="call"><div class="kicker">Your call</div><div class="mine">${h(callText(m, c))}</div>
-    ${verdict ? `<div class="verdict">${verdict}</div>` : ""}
-    <div class="acts" style="margin-top:10px">
-      <button class="btn" id="shareCall" onclick="shareCall('${h(m.id)}')">↗ Share my call</button>
-      ${st === "pre" ? `<button class="btn" onclick="lockCall('${h(m.id)}',false)">Change</button>` : ""}
-    </div></div>`;
+  if (!mine && !rivals.length) return "";
+  const verdict = mine ? callVerdict(mine, us, them, st) : "";
+  return `<div class="call" id="callBox">${mine ? `<div class="kicker">Your call</div><div class="mine">${h(callText(m, mine))}</div>
+    ${verdict ? `<div class="verdict">${verdict}</div>` : ""}` : ""}
+    ${boardHtml(m, mine, rivals, st, us, them)}
+    ${mine ? `<div class="acts" style="margin-top:10px">
+      ${st === "pre" ? `<button class="btn" onclick="openDuel('${h(m.id)}')">🆚 Challenge a friend</button><button class="btn" onclick="lockCall('${h(m.id)}',false)">Change</button>`
+        : `<button class="btn" id="shareCall" onclick="shareCall('${h(m.id)}')">↗ Share my call</button>`}
+    </div>` : ""}</div>`;
 }
 
 function sideHtml(name, logo) {
@@ -689,6 +793,7 @@ function renderHero() {
       <button class="btn" onclick="share()">↗ Share</button>
     </div>
   </div>`;
+  if (S.jump === m.id) { S.jump = null; const box = $("callBox"); if (box && box.scrollIntoView) box.scrollIntoView({ block: "center" }); }
 }
 
 function explainHtml(m, ed, first) {
@@ -1063,6 +1168,13 @@ async function loadTest(spec) {
   } catch (e) { S.test = null; }
 }
 const testSpec = new URLSearchParams(location.search).get("test");
+takeChallenge();
+/* A challenge link opened while the app is already showing: no reload happens, only the address changes. */
+window.addEventListener("hashchange", () => {
+  const t = location.hash.replace("#", "").split("&")[0], got = takeChallenge();
+  if (TEAM[t] && t !== S.team) { chose = true; S.team = t; S.pos = "all"; render(); loadTeam(t); }
+  else if (got) render();
+});
 render(); renderPoll();
 Promise.all([...ORDER.map(fetchData), testSpec ? loadTest(testSpec) : null]).then(() => { if (!pinned) S.team = soonest(); loadTeam(S.team); });
 checkBuild();

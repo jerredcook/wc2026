@@ -116,3 +116,64 @@ test("parseSummary: a broken or empty payload returns null instead of throwing",
   assert.equal(core.parseSummary({}, USA), null);
   assert.equal(core.parseSummary({ header: {} }, USA), null);
 });
+
+/* ── Score challenge: everything in a link is untrusted ── */
+const { cleanName, packChallenge, parseChallenge, mergeRivals, callDistance, rankCalls, MAX_RIVALS, MAX_NAME } = require("../js/core.js");
+
+test("cleanName: keeps ordinary names, strips anything that could be markup or break a link", () => {
+  assert.equal(cleanName("  Jerred  "), "Jerred");
+  assert.equal(cleanName("Zoë"), "Zoë");
+  assert.equal(cleanName("O’Brien"), "O’Brien");
+  assert.equal(cleanName("Mary-Jo   St. John"), "Mary-Jo St. John");
+  assert.equal(cleanName("李雷"), "李雷");
+  assert.equal(cleanName('<script>alert("x")</script>'), "scriptalertxscri");
+  assert.equal(cleanName("a~b:c&d#e=f/g?h"), "abcdefgh");
+  assert.equal(cleanName("😀😀"), "", "emoji are not letters");
+  assert.equal(Array.from(cleanName("x".repeat(50))).length, MAX_NAME);
+  assert.equal(cleanName("é".normalize("NFD")), "é", "accents typed as two characters are joined");
+  for (const v of [null, undefined, "", "   ", "~~~", 42, {}]) assert.equal(typeof cleanName(v), "string");
+});
+
+test("a challenge survives the trip through a link", () => {
+  const calls = [{ n: "Jerred", us: 2, them: 0 }, { n: "Zoë M.", us: 1, them: 1 }, { n: "O’Brien", us: 0, them: 15 }];
+  const packed = packChallenge("401929710", calls);
+  assert.equal(packed, "401929710~Jerred:2-0~Zo%C3%AB%20M.:1-1~O%E2%80%99Brien:0-15");
+  assert.match(packed, /^[A-Za-z0-9~:%.\-]+$/, "only characters that are safe after a # in a link");
+  assert.deepEqual(parseChallenge(packed), { id: "401929710", calls });
+  assert.equal(packChallenge("1", Array.from({ length: 20 }, (_, i) => ({ n: "P" + i, us: 0, them: 0 }))).split("~").length - 1, MAX_RIVALS + 1, "at most you plus eight friends");
+});
+
+test("parseChallenge: refuses what it cannot trust and keeps what it can", () => {
+  for (const bad of [null, undefined, 42, "", "garbage", "401929710", "x~Sam:1-0", "-1~Sam:1-0", "1234567890123~Sam:1-0", "1~", "1~:1-0", "1~Sam", "1~Sam:1", "1~Sam:a-b", "1~Sam:16-0", "1~Sam:0-99", "1~Sam:1-0-2", "1~%E0%A4%A:1-0", "1~😀:1-0", "1~Sam:1-0" + "~x:1-0".repeat(200)]) {
+    assert.equal(parseChallenge(bad), null, JSON.stringify(String(bad).slice(0, 30)));
+  }
+  assert.deepEqual(parseChallenge("1~Sam:1-0~bad~Pat:99-0~Lee:2-2").calls.map(c => c.n), ["Sam", "Lee"], "bad entries are dropped, good ones kept");
+  assert.deepEqual(parseChallenge("1~Sam:1-0~SAM:3-3~sam:4-4").calls, [{ n: "Sam", us: 1, them: 0 }], "one call per name");
+  assert.equal(parseChallenge("1~" + encodeURIComponent("<b>Sam</b>") + ":1-0").calls[0].n, "bSamb", "names are cleaned on the way in too");
+  assert.equal(parseChallenge("1" + "~P:1-0".replace("P", "Q") + Array.from({ length: 30 }, (_, i) => "~N" + i + ":1-0").join("")).calls.length, MAX_RIVALS + 1);
+  assert.equal(typeof parseChallenge("007~Sam:01-00").calls[0].us, "number");
+});
+
+test("mergeRivals: newest first, one per name, never yourself, at most eight", () => {
+  const have = [{ n: "Sam", us: 1, them: 0 }, { n: "Pat", us: 0, them: 0 }];
+  assert.deepEqual(mergeRivals(have, [{ n: "Lee", us: 2, them: 2 }, { n: "sam", us: 3, them: 3 }], "Jerred"),
+    [{ n: "Lee", us: 2, them: 2 }, { n: "sam", us: 3, them: 3 }, { n: "Pat", us: 0, them: 0 }], "a new call from Sam replaces the old one");
+  assert.deepEqual(mergeRivals([], [{ n: "JERRED", us: 2, them: 0 }], "Jerred"), [], "your own call coming back is not a rival");
+  assert.deepEqual(mergeRivals(undefined, [{ n: "Sam", us: 1, them: 0, extra: "x" }], ""), [{ n: "Sam", us: 1, them: 0 }], "only the three known fields are stored");
+  assert.equal(mergeRivals(have, Array.from({ length: 20 }, (_, i) => ({ n: "N" + i, us: 0, them: 0 })), "").length, MAX_RIVALS);
+});
+
+test("rankCalls: result first, then goal difference, then goals; equal calls share a place", () => {
+  const d = (us, them) => callDistance({ us, them }, 2, 1);
+  assert.deepEqual(d(2, 1), [0, 0, 0]);
+  assert.deepEqual(d(1, 0), [0, 0, 2], "right result and margin, both scores off by one");
+  assert.deepEqual(d(3, 0), [0, 2, 2]);
+  assert.deepEqual(d(1, 1), [1, 1, 1], "a draw called when it was a win");
+  const r = rankCalls([{ n: "Draw", us: 1, them: 1 }, { n: "Big", us: 3, them: 0 }, { n: "Exact", us: 2, them: 1 }, { n: "Margin", us: 1, them: 0 }, { n: "Twin", us: 1, them: 0 }, { n: "Loss", us: 0, them: 2 }], 2, 1);
+  assert.deepEqual(r.map(c => [c.n, c.place]), [["Exact", 1], ["Margin", 2], ["Twin", 2], ["Big", 4], ["Draw", 5], ["Loss", 6]]);
+  assert.deepEqual(r.map(c => c.exact), [true, false, false, false, false, false]);
+  assert.deepEqual(r.map(c => c.right), [true, true, true, true, false, false]);
+  assert.ok(r.every(c => !("i" in c)), "no working fields left behind");
+  assert.deepEqual(rankCalls([], 1, 0), []); assert.deepEqual(rankCalls(null, 1, 0), []);
+  assert.deepEqual(rankCalls([{ n: "A", us: 0, them: 0 }, { n: "B", us: 2, them: 2 }], 1, 1).map(c => c.place), [1, 1], "0–0 and 2–2 are equally close to 1–1");
+});

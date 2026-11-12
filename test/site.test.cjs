@@ -161,3 +161,23 @@ test("data files: the build's working flags never reach the published data", () 
     assert.ok(d.pool.filter(p => p.rec.length).length >= d.pool.length * 0.5, `${t}.json: fewer than half the pool has club form`);
   }
 });
+
+test("every script the front page loads is in the offline shell and in the build fingerprint", async () => {
+  const shell = /const SHELL = (\[[^\]]*\])/.exec(read("sw.js"))[1];
+  const code = /export const CODE = (\[[^\]]*\])/.exec(read("scripts/build-id.mjs"))[1];
+  const scripts = [...read("index.html").matchAll(/<script[^>]*\ssrc="([^"]+)"/g)].map(m => m[1]);
+  assert.ok(scripts.includes("js/core.js") && scripts.includes("js/qr.js"));
+  for (const f of scripts.filter(f => f !== "js/count.js")) {
+    assert.ok(shell.includes(`"./${f}"`), `${f} is not in the service worker's offline shell: the installed app would break offline`);
+    assert.ok(code.includes(`"${f}"`), `${f} is not in the build fingerprint: open copies would not notice it changing`);
+  }
+});
+
+test("the challenge dialog: every control it needs is in the page", () => {
+  const html = read("index.html"), dlg = /<dialog id="duel"[\s\S]*?<\/dialog>/.exec(html);
+  assert.ok(dlg, "the challenge dialog is missing");
+  for (const id of ["duelName", "duelInput", "duelBody", "duelText", "duelQr", "duelSend", "duelWho"]) assert.ok(dlg[0].includes(`id="${id}"`), `#${id} is missing from the dialog`);
+  assert.match(dlg[0], /<input id="duelInput" maxlength="16"/, "the name field is limited to 16 characters");
+  assert.match(dlg[0], /<div id="duelBody" hidden>/, "the QR part starts hidden");
+  assert.match(read("privacy.html"), /Challenging a friend/, "the privacy policy explains what a challenge link carries");
+});

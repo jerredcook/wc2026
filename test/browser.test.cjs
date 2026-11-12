@@ -112,6 +112,28 @@ test("World Cup page: layout holds as it opens on a small phone", opts, async ()
 for (const w of [320, 360, 390, 768]) {
   test(`World Cup page: layout holds at ${w}px wide with every section opened`, opts, async () => checkLayout(await probe("url=/worldcup.html&w=" + w + "&expand=1&sections=" + WC_ALL)));
 }
+test("a challenge link opens on the friend's call, in a real browser", opts, async () => {
+  const men = JSON.parse(fs.readFileSync(path.join(ROOT, "data", "usa", "men.json"), "utf8")), m = men.fixtures[0];
+  if (!m) return;   // nothing scheduled: there is no match to challenge on
+  const dom = await open(`/#men&c=${m.id}~Jerred:2-0~${encodeURIComponent("<i>Sam</i>")}:1-1`);
+  const hero = section(dom, "hero");
+  assert.match(hero, /Jerred/, "the friend's call is in the match card");
+  assert.match(hero, /iSami/, "a name with markup in it arrives as plain letters");
+  assert.ok(!/<i>Sam<\/i>/.test(dom), "and never as markup");
+  assert.ok(!dom.includes("couldn't be shown"));
+});
+test("layout holds on a small phone with a challenge on the card and the QR dialog open", opts, async () => {
+  const r = await probe("url=/&w=320&duel=1");
+  if (!r.duel.match) return;
+  assert.match(r.duel.board, /The challenge/); assert.match(r.duel.board, /Bartholomew-Jean/);
+  if (r.duel.open) {               // before kickoff: the dialog is showing
+    assert.ok(r.duel.qr, "the QR code is drawn");
+    const [w, hgt] = r.duel.qrSize.split("x").map(Number);
+    assert.ok(w >= 180 && w === hgt, `the QR code is square and big enough to scan (${r.duel.qrSize})`);
+    assert.match(r.duel.text, /^Maximilian-Josef says /);
+  }
+  checkLayout(r);
+});
 test("layout holds on a small phone with the 'newer version' and 'out of date' bars showing", opts, async () => {
   const r = await probe("url=/&w=320&notices=1");
   const bar = id => r.noticeBars.find(b => b.id === id);

@@ -1,0 +1,181 @@
+{
+ "note": "Expected QR patterns for js/qr.js. Each was compared module-for-module with the 'qrcode' npm package (v1.5.4) and read back with the 'jsqr' decoder on 2026-11-12. hex: the rows, top to bottom, four modules per hex digit (1 = dark), each row padded to a whole digit.",
+ "symbols": [
+  {
+   "text": "https://jerred",
+   "level": "M",
+   "version": 1,
+   "mask": 1,
+   "size": 21,
+   "hex": "feabf8824a08bad2e8ba5ae8ba5ae882e208feabf8006000a3092830ced8aea9e805d5c0d2ac1000cac8feade8824cc8ba3d00ba5d80baebf8826dc0fef988"
+  },
+  {
+   "text": "https://jerredcook.github.",
+   "level": "M",
+   "version": 2,
+   "mask": 2,
+   "size": 25,
+   "hex": "fe5cbf88225a08bac2ae8ba942e8baf4ae88297a08feaabf800b0800be563e03c08910967fed821c268846af6b89c2cd508a693d8bd33988927ffa000db8c0fe0aab882b88c0baeffa0bad46f8ba804688221bc8fee61f8"
+  },
+  {
+   "text": "https://jerredcook.github.io/wc2026/#men&c",
+   "level": "M",
+   "version": 3,
+   "mask": 2,
+   "size": 29,
+   "hex": "fe687bf8826da208bad2aae8baae4ae8baf41ae882930a08feaaabf800ba8000be17d3e074d03f8873cb680005aa38d06ae7e160cd6c7f888377406060a93c90ebadd160a56077a88ecf2da0b8981390a7ffdfb800e068f8fe0ddae082da1898ba916fb8bac8f878ba9bdff082028a50feb5d220"
+  },
+  {
+   "text": "https://jerredcook.github.io/wc2026/#men&c=401929710~Jerred:2-",
+   "level": "M",
+   "version": 4,
+   "mask": 6,
+   "size": 33,
+   "hex": "fe8c063f882a2d0208baa4362e8ba7f162e8baba76ae88226c1a08feaaaabf8003d380009ffad0cb879c7f30f08321a5ee80d4b78d20c7e61331878c76bd20e38bba280292e28528b2b90a780bc8f5e2b87b815f978452803cf0b3acca550e9511d9e0aafbc30d8a11258ae8f28b99fc000a1a98a0fee1fbab082a53b8f0ba9e11f88ba8f54d18ba3bb0d98824f3a3b8feefe1f80"
+  },
+  {
+   "text": "https://jerredcook.github.io/wc2026/#men&c=401929710~Jerred:2-0~Sam:1-1~Zo%C3%AB:3-1",
+   "level": "M",
+   "version": 5,
+   "mask": 6,
+   "size": 37,
+   "hex": "fea14ca3f882faf40a08baaea672e8ba47e7cae8baf3582ae88219a72208feaaaaabf800779870009fc9f29cb82480a554b09f6d8355c8d52cebbc38eb25b11b088c83a938d052e3969ae815c118a3687fb5c8fb28e05fb670204fa9173a28bc3a83d688faace89f808059bf34b00b7567f95879d35105e8576adb3200ac0d263ba0e7c170b23890df992028afad185fa800817a48a0fed1374a9882bea2d890baed791f88baf3c50638ba4b4bd0e88233d9a4b8fed6818d08"
+  },
+  {
+   "text": "https://jerredcook.github.io/wc2026/#men&c=401929710~Jerred:2-0~Sam:1-1~Zo%C3%AB:3-1~Alex:0-0~Pat:2-2~Kim:",
+   "level": "M",
+   "version": 6,
+   "mask": 2,
+   "size": 41,
+   "hex": "fe4876653f8820228faa08bad8951aae8bafac9272e8baef31a52e882d88ab6208feaaaaaabf800f59c8b800be16cae43e0f1f73d8ffa87b90247cb905cd40799fd866b2f17f978c5f51bcbcf836c888d2d60851e1592a9852c89b54538a0f0712d3d81bee8e1e4c0213416936c0ae5d6876d78b4239789398c61a6ad81e0c92f2639498467d72f4438e44c39093c842412456c10b4612f218d8976fc15d070a9c28ba7ff0b220229c760a9209e3afd88f541041fe800f36d89898fe67e81baa08285ac228d8baa4ab76fe8baff73ead78baf6047efc08241563bc90fee16bec5e0"
+  },
+  {
+   "text": "https://jerredcook.github.io/wc2026/#men&c=401929710~Jerred:2-0~Sam:1-1~Zo%C3%AB:3-1~Alex:0-0~Pat:2-2~Kim:1-0~Lee:4-1~Ray:",
+   "level": "M",
+   "version": 7,
+   "mask": 2,
+   "size": 45,
+   "hex": "fe0fc01e0bf8825f81f95208ba8111cbd2e8baaeabd21ae8baba4fcabae8829a88a48208feaaaaaaabf80085f8da6800be5d3fe573e02092dd5b08b8830158ad7f10c9ad519bb6a0921c7746674811dcc492593856e219e97a302409000adfe0265c23750440f911cc1f1858123bafb13700c8e4344bb3f03f86bfd67ff8a8bd088318f89acc1afdcaa0c89588ba88f87ff72fd41fc050463e4b8328271a0d79b9b0ec5627959e287f5f708662c8e5303a5b0a58f64e426de900f59994f4b3706fbee8c560f8b9aebf8686280ae66b701c2078ddafa8fb689a230fb72f80009b489b18e8fe3c7af4fab082ab58ded8f8baec2f877fd0bae229ce83b8ba9d80aaaa1082580aebc0a0fea837a22f50"
+  },
+  {
+   "text": "https://jerredcook.github.io/wc2026/#men&c=401929710~Jerred:2-0~Sam:1-1~Zo%C3%AB:3-1~Alex:0-0~Pat:2-2~Kim:1-0~Lee:4-1~Ray:0-1~abcdefghijklmnopqrstuvwxyz",
+   "level": "M",
+   "version": 8,
+   "mask": 2,
+   "size": 49,
+   "hex": "fe6e445688bf8824622f0ffa08bafa3b7fa1ae8babe61e22d2e8baa927ee0c2e8828eae396e208feaaaaaaaabf800eaea39e8000be51dbe07abe02037028a01740b70371b576438f9c0b419a09d87f967ac11d0785d78d1c3542b03f05d0bcab898fc37282880fc8b24f8ac51ca2058b4f5cf15300b702f4a8ee5c8b40d1511b1b88a605aac32bc38640be55f043b07ff4bfec67fe848861a22928d03a9a4ea11dae888e4423b088807fc3fbe92ff98ec501efac60184af51d61590d069acb5fb8d7401fcdc3493ba9850be8efc86c088fff0b637bda0d16274de054109e582208ebac821339e6ef000042c429672bba0fd1214de4d20847cd0810633f870142a6cd4c18e26f2be76fff800afc232988c0fe726eb42ea98828d163ca4890babb9bf77cfc8baf7701a9cdb8baa97bb59f760825ab75c81a08feaec1e73dc18"
+  },
+  {
+   "text": "https://jerredcook.github.io/wc2026/#men&c=401929710~Jerred:2-0~Sam:1-1~Zo%C3%AB:3-1~Alex:0-0~Pat:2-2~Kim:1-0~Lee:4-1~Ray:0-1~abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzab",
+   "level": "M",
+   "version": 9,
+   "mask": 5,
+   "size": 53,
+   "hex": "fe09d8b73363f8828d89d4b37208babfdc5a8492e8babd9247faeae8ba556bff1462e8824a888d62a208feaaaaaaaaabf800fa1c8f840000828c6df95e1e70fd050156a26b30022612707692e0d17cc5d291bd40dbb66682bbe4d07c5bc61745253847818b6563cfa0d97b54e2400a70038aa0295a1bb0d426e60a41219837b1545dd09cf8c0a152dbc4b550572ef0682e68e814568892f7fb78129acd61625a800d782bc781ba486f8737fec8df8028e2e68a4578c82a9482aca31a90e8b27f8f5368f0bfbbecfd1c6fe8f0e4e7379970e8d7990534198b2858bcaa3297b7406f88c5c1696720c86cc546ee21d08344945d6344e07561e1e568aa88f6eb4a34ae96580c0a07a6c0a7e8ffc67c09f30c30087f867c005df8764ff157180810acba4ba3546dd8dfd2f71084aba8618955b086b15013bab0f97e4ff000b02d8afe78e0fe4185ad631a90825a838891b8c8ba3417feffcf88ba4bb156dd7ad8ba3f6799b6d7d88242b452371be8fec433853d6ba0"
+  },
+  {
+   "text": "https://jerredcook.github.io/wc2026/#men&c=401929710~Jerred:2-0~Sam:1-1~Zo%C3%AB:3-1~Alex:0-0~Pat:2-2~Kim:1-0~Lee:4-1~Ray:0-1~abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghi",
+   "level": "M",
+   "version": 10,
+   "mask": 2,
+   "size": 57,
+   "hex": "fe06afc38c6b3f882348c047285208ba8f793dd4cf2e8bace01556e712e8bacf82be05a12e882d59fa2e256208feaaaaaaaaaabf800db5562c0ae800be77d07f29763e0c9bde6fb8479cb8aac536012ed726049f9b15bb29c2f0e232cc267b3591825c92d9f0061da867406575ee827d0b8bb9bd8c5ad0f0872923231e4571065ecb1eedde8878fe04c0f8ee87fb0846ed8888ffa8f8ea950d271a74240ddb8818785699085700fbd57287730c4f600dbd2ad0e88f4954112c12040cc117aab9c718e0ef8e777f7657fb0e89732a287a88a8dae1902b5a10ad878fc2ba29c688d89fc3ddff3dd2fa045c323f4f19b2788bf7442e1d76b806cf2f5b619f9870932bd47f6b1d5b8d857a99323dd2606badd33d1940a80f1c20780c4e8d782f8d8567a78a5700d68131797fbfe8b6e21b591e302c03d8408a7ccb1368f2af35ffafd6830ed051b1984c9b704f15215958142c0bc2450809d69438a78b065f6a27930f844c83091ad6300385063f1e56fc000fb81a30cf08e8fe3327ab23d3af082836923b68e8e8bae1f83e3d17fd0bafe23aac9e86e0bae3b3f2ef9fc60821217abd3d99e0fefa0c551c44610"
+  },
+  {
+   "text": "https://jerredcoo",
+   "level": "L",
+   "version": 1,
+   "mask": 4,
+   "size": 21,
+   "hex": "fee3f882fa08baaae8bad2e8ba62e882fa08feabf8007000ce197890a0e0c367d09564005e9dd000e4f0fe23d082bd10ba8cd8ba73a8ba25c082dc00fea848"
+  },
+  {
+   "text": "https://jerredcook.github.io/wc2",
+   "level": "L",
+   "version": 2,
+   "mask": 6,
+   "size": 25,
+   "hex": "fec23f88262a08ba562e8ba5fae8ba4eae88276208feaabf800b7800da3aa0845131f0b315a48813baf81a69b08e8d3c90dbedaf8a130168af0dfb000ea8b0fe3ca88821f888ba8bf88baf7e00ba120f882f07b8fed0c48"
+  },
+  {
+   "text": "https://jerredcook.github.io/wc2026/#men&c=401929710~",
+   "level": "L",
+   "version": 3,
+   "mask": 2,
+   "size": 29,
+   "hex": "fe787bf882c5a208ba72aae8ba864ae8ba7c1ae882c30a08feaaabf8004a8000fbb7d55084b83f88a22b6800b0da38d0ae47e160e15c7f88f2c7406098493c90fbd5d160911877a8afa72da0b46813909a87dfb800f868f8feaddae0822a1880bae56fa0badef868ba8bdff082c28a50fe85d220"
+  },
+  {
+   "text": "https://jerredcook.github.io/wc2026/#men&c=401929710~Jerred:2-0~Sam:1-1~Zo%C3%",
+   "level": "L",
+   "version": 4,
+   "mask": 2,
+   "size": 33,
+   "hex": "fe46113f882850a208ba61aeae8ba8d79ae8ba7a912e88285aaa08feaaaabf80071b7000fb9d63d50b4d49fa38aa6b22ed060fa1ff20ee55e2dc0d542d521893292071028501e620fed7f059059369f258bae7e8a50b9c9ace205ec361990c9badf25887a52cfd0b4220c36096fe70f8800d99f888fec149a90824a958e8bae6e0f98bafc97ce0ba8b2a27082bb1c5e0fef5f1f50"
+  },
+  {
+   "text": "https://jerredcook.github.io/wc2026/#men&c=401929710~Jerred:2-0~Sam:1-1~Zo%C3%AB:3-1~Alex:0-0~Pat:2-2~Kim:",
+   "level": "L",
+   "version": 5,
+   "mask": 3,
+   "size": 37,
+   "hex": "fe9497a3f88238c9a208ba84a1dae8ba9f785ae8baea9a12e8826eba8208feaaaaabf80001e13000f2b3458ce89cc69ba870cef2c74b30115cb353b87795c65ee86d6d347fe833407ea4d0dc19b4adc8879f66f0306897fb5a58e681e659b8ac1b53195033b06cbd90787c7fcd70da902d0920ddb7b26960ae24ea66f814215a3fc85764be6b70ad380c2b08076c7fdff800d20308a8fe2fe66af8827a7ba8d8ba4edd8fc8baf3959ec0bada8bc3a08284234460fe8f78e778"
+  },
+  {
+   "text": "https://jerredcook.github.io/wc2026/#men&c=401929710~Jerred:2-0~Sam:1-1~Zo%C3%AB:3-1~Alex:0-0~Pat:2-2~Kim:1-0~Lee:4-1~Ray:0-1~abcdefgh",
+   "level": "L",
+   "version": 6,
+   "mask": 2,
+   "size": 41,
+   "hex": "fe0cd1033f882d7801aa08ba1194292e8ba97e1652e8ba10d7eeae882eba674208feaaaaaabf800210e33800fbe56bf5550a102952fbc816512c38990e01a07939c04a0fd8cd868dd0c113bc88224dc274d405ca994a86d05a5cf9e40608492d1cbb9846a54e50c10c4882709840f3cf09cd970f070172d4e832852a52d200d110db0ed0764debd5058b9d095a5f886685e4d2d70f13ba503718c30fc2de4f8add43e013b89bab28d89a0b9122f1b1d892644944fa0008293ee8a8feeb22bfab082300dbb880badec656fa8bad05924070bac1c6936f882812f93f10fec6185c720"
+  },
+  {
+   "text": "https://jerredcook.github.io/wc2026/#men&c=401929710~Jerred:2-0~Sam:1-1~Zo%C3%AB:3-1~Alex:0-0~Pat:2-2~Kim:1-0~Lee:4-1~Ray:0-1~abcdefghijklmnopqrstuvwxyzab",
+   "level": "L",
+   "version": 7,
+   "mask": 2,
+   "size": 45,
+   "hex": "fe36151fcbf882d970ad9208ba2469ebd2e8bad0ee261ae8ba0b1fc2bae8829d88d08208feaaaaaaabf8006588dea800fbfcffa46550cc8600478d9833d6eba1f710f495340d82a04bf0a3364050857f4d43583816841eadae206c0ad01a88e83b44eee52240f93e05031c389ab189ecf250e1bd159af3a00f8dbfd37f90e8ae58d748a0fab45ae4bad0f8bf28fae8b04facffc10fc045ce1a8a9258a6e62d75b970c94b0aacd6a0f275a1d165c8dd0c1e1fd400c652c57af590aca97cda93b05724e1924990003e1b0a88280b5b416c6870782b74ac33689a4c3fb30fc8009a4886d8c8fedbdae1bac0827c989ae8b8bac4ef914f80babe119b15d0bac6b6e5280882c6a21fdce0fea0f68772b0"
+  },
+  {
+   "text": "https://jerredcook.github.io/wc2026/#men&c=401929710~Jerred:2-0~Sam:1-1~Zo%C3%AB:3-1~Alex:0-0~Pat:2-2~Kim:1-0~Lee:4-1~Ray:0-1~abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmn",
+   "level": "L",
+   "version": 8,
+   "mask": 2,
+   "size": 49,
+   "hex": "fe3e414790bf8828c7eb5efa08ba56660bd1ae8baf5ffa24d2e8ba6a57fa442e882eba2352e208feaaaaaaaabf80000523a87800fb99a7e35ad50e43615de846501a43703dec44888e0918bd56989215ffa669f308d025643546d06bfa7b25aa8781d62604a8058872d9efc71a8386d0e22c71d7408e3a783dea3a8b0ed5d1982fc0233dfbe679b28ade252dbd46b09f892ffc7fff80890662a808889a916ea17cad838aa3236048f07fc38bfdf7fe85c8aa8b2b4040e6fdf8413d4e0dde2559ad5a700346b10d73738492d03ea9200817f0b7453dbe018e6568f9853082ea0bc4eef285d277d28c0148974dfc262b7f83c6a57b29066046a18015f269870b101eef2888e244bbe34bfe800ff523e988b0fece16a4f6ab88248862ea6898baa5fbf51afe8bada16431cca8bafe3ad56351082b3584ee06c8fe9dbca7080b8"
+  },
+  {
+   "text": "https://jerredcook.github.io/wc2026/#men&c=401929710~Jerred:2-0~Sam:1-1~Zo%C3%AB:3-1~Alex:0-0~Pat:2-2~Kim:1-0~Lee:4-1~Ray:0-1~abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyz",
+   "level": "L",
+   "version": 9,
+   "mask": 2,
+   "size": 53,
+   "hex": "fe2e13bb58a3f882a665e5a2f208ba6a29d9a292e8badcb9391a6ae8ba7052ff0c62e882dd1088f3a208feaaaaaaaaabf80023678a91f800fb84e8fa2f7d500d36137ec5f088bf2f1b642a07c08168179ba0c850cedca8bf7c0df0f82355e61571189b440000e386e0c18e82ddd6bc184204e9280d0bf0a9ae12deddb1a8f63cad46a307c0196d11c3a0d0105645b1193a49e0c4f316ef84f020768a0f41225ea0d9d15cc3d4ca181fa4e8fc4d1fa8889e138e1d78a85abdd2a92b1aa098b5758bc0a890dff8b9fd5e3fe0bccf57369de3e8728bc6992250607885a1e2b69e803e0ce8176b6030944e13ff09f788a68220e94b1180ac9b11b7c4be90ea60f843186b386c47432f0c7be8c26a5619224070edaafee4f4dec03b90e88f6b4828cdc816228ca3f8de175e7c7b1040608504f7c4bf181305ecff7c0fe000a2238e1568b8fea245a93a5ab08241818991d8d0baf2e8f90e5fa0bab416c298ef18bad88ef43653c882f8c6dfc4a5d0feebfdc13a4fe0"
+  },
+  {
+   "text": "https://jerredcook.github.io/wc2026/#men&c=401929710~Jerred:2-0~Sam:1-1~Zo%C3%AB:3-1~Alex:0-0~Pat:2-2~Kim:1-0~Lee:4-1~Ray:0-1~abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmno",
+   "level": "L",
+   "version": 10,
+   "mask": 2,
+   "size": 57,
+   "hex": "fe1a12db5d773f882dcd5b03701208ba7f169ed3af2e8bad5e9654d012e8ba4a17bf05f92e882bc2fe32b0a208feaaaaaaaaaabf8005eb06282bb800fbe4f87f3a54d501d4e578704698880baffe85fbc7ab089e25e0dd7cc9f03235f9f15a1714040a217d6d571da8df13f44133867f000f8250dc6c4da86b3c29606b36608d88e529a846dd980e27ad70ac9b24001b6e1dcd3a86e872b1e9270a576087c5013c314798a8aee73695aa1aa90ed4ef658e0fbdf87398e8635c30c187d5057961d71de8dfb00d3ffbc7fb0c8a039e3c3e88e84a91f92b7c51ac808b207a344e88c8df9413ff320fff0a8421eedb1ff1b0efbab94c69760c8a452549505745588a5d2fc7c342ca0e9f7002cc2e97701601ed2f7e32b98687a138195798206f28a7663b9b4400cc19390e0fb2704a3ce83b1a76780843c57a38ce1e787a1b147efa46db0f4ec7ffd8799af06b69e9117e74048889006a659f1e28a60d27df724e9f0f928072cf09d6e00252b97f2d22fc800d716a30db48c8fe94362affdfaf08226d6a2d7ee8f0baa7ed3e3875f80baa613ab95780e0baf7ba53b203a208285c5cee0fbd60fef0e8557e12710"
+  },
+  {
+   "text": "Curaçao – Panamá ⚽",
+   "level": "M",
+   "version": 2,
+   "mask": 2,
+   "size": 25,
+   "hex": "fe44bf88253a08ba972e8bac32e8ba90ae882a5208feaabf800ce800be2c3e034509d0dab1a78743b018d3950f89908a50bb61398aced3b0860ffc800a08c8fe1dab882f48e8bab9fe0baef098baa57288225b08feb5478"
+  },
+  {
+   "text": "https://jerredcook.github.io/wc2026/#women&c=401870040~Zo%C3%AB:3-1",
+   "level": "M",
+   "version": 5,
+   "mask": 4,
+   "size": 37,
+   "hex": "fe8eb0abf882786c0a08ba30df32e8baf49b7ae8ba808d7ae882f23e2a08feaaaaabf8008563a8008bd23227c829c09d95f06b46a9f62095a647a670b34b7717787c1be978d02eed275df0dc1f1535a8873299a268142a77bdd00b1337d9e06d55fc2970433c66b760011fad7d806acb4931e0004773b5b8aab3324a78c1989dad803a60897c60080e6406e8d7a35d1fe800dbc16880fee72f8a90823a1d28f8ba9b994ff0ba3037ef08ba5f317a208205fc24f0fec0469378"
+  }
+ ]
+}

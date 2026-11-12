@@ -4,8 +4,8 @@
    last-cached app shell. Live score APIs (ESPN) are cross-origin
    and are never intercepted or cached — they always go straight to the network
    and degrade gracefully on their own when offline. */
-const CACHE = "wc2026-v8";
-const SHELL = ["./", "./index.html", "./js/core.js", "./worldcup.html", "./manifest.webmanifest", "./apple-touch-icon.png", "./icon-192.png", "./qr.svg"];
+const CACHE = "wc2026-v9";
+const SHELL = ["./", "./index.html", "./js/core.js", "./js/qr.js", "./worldcup.html", "./manifest.webmanifest", "./apple-touch-icon.png", "./icon-192.png", "./qr.svg"];
 
 self.addEventListener("install", function (e) {
   self.skipWaiting(); // activate this version immediately
