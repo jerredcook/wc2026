@@ -116,3 +116,40 @@ test("data files say when the feeds were last checked, and it is not before 'upd
     assert.ok(Date.parse(d.checked) >= Date.parse(d.updated), `${t}.json: checked is earlier than updated`);
   }
 });
+
+/* ── Supply chain ── */
+test("every GitHub action is pinned to an exact commit, with its version noted", () => {
+  const dir = path.join(ROOT, ".github", "workflows");
+  let n = 0;
+  for (const f of fs.readdirSync(dir)) {
+    for (const m of fs.readFileSync(path.join(dir, f), "utf8").matchAll(/uses:\s*(\S+)(.*)/g)) {
+      n++;
+      assert.match(m[1], /^[\w.-]+\/[\w.-]+@[0-9a-f]{40}$/, `${f}: "${m[1]}" should be pinned to a full commit id, not a tag`);
+      assert.match(m[2], /#\s*v\d+\.\d+\.\d+/, `${f}: note the version after "${m[1]}" so a reader knows what the commit is`);
+    }
+  }
+  assert.ok(n >= 10, "expected to find the workflows' actions");
+  assert.ok(exists(".github/dependabot.yml"), "Dependabot proposes updates to the pinned actions");
+});
+
+test("the pages load scripts only from this site", () => {
+  for (const f of ["index.html", "worldcup.html", "privacy.html", "usa.html"]) {
+    for (const m of read(f).matchAll(/<script[^>]*\ssrc="([^"]+)"/g)) {
+      assert.ok(!/^(https?:)?\/\//.test(m[1]), `${f} loads a script from another site: ${m[1]}`);
+      assert.ok(exists(m[1].split("?")[0]), `${f} loads ${m[1]}, which does not exist`);
+    }
+  }
+});
+
+test("the visit-counting script is the copy that was reviewed", () => {
+  /* js/count.js is GoatCounter's count.js (ISC licence), copied from https://gc.zgo.at/count.js
+     on 2026-11-12 and read through before being served from here. To update it: download the
+     new one, read the difference, replace the file and this fingerprint together. */
+  const sum = require("node:crypto").createHash("sha256").update(fs.readFileSync(path.join(ROOT, "js", "count.js"))).digest("hex");
+  assert.equal(sum, "792b7abd26c1fb6ae62906833e09a301251e2641816e69e4f95aba518f3fe3f0");
+});
+
+test("the World Cup page no longer calls the Anthropic API", () => {
+  assert.ok(!/api\.anthropic\.com/.test(read("worldcup.html")));
+  assert.ok(!/fetchLiveScores\s*\(/.test(read("worldcup.html")));
+});

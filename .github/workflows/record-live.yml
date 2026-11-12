@@ -1,0 +1,51 @@
+name: Record a live match
+
+# Saves ESPN's feed for a match while it is being played (scripts/record-live.mjs)
+# and keeps the recording as a download on the run's page. The recordings are
+# what the live-mode tests are built from.
+#
+# Start it by hand around kickoff (Actions tab → Record a live match → Run
+# workflow), or let one of the timed starts below catch it. GitHub's scheduler
+# often runs late, so each match has several starts; a start that finds no match
+# in progress or about to begin simply exits.
+
+on:
+  schedule:
+    # Nations League quarterfinal first legs, November 2026 (times are UTC).
+    - cron: "10,40 0,1 13 11 *"      # Curaçao v Panama, kickoff 00:30 on the 13th
+    - cron: "40 1 14 11 *"           # Guatemala v Canada, kickoff 02:00 on the 14th
+    - cron: "10,40 2 14 11 *"
+    - cron: "10,40 21,22 14 11 *"    # Haiti v USA, kickoff 21:30 on the 14th
+  workflow_dispatch:
+    inputs:
+      matches:
+        description: "Matches to consider, as league:event, separated by spaces"
+        default: "concacaf.nations.league:401929776 concacaf.nations.league:401929711 concacaf.nations.league:401929710"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: record-live
+  cancel-in-progress: false
+
+jobs:
+  record:
+    runs-on: ubuntu-latest
+    timeout-minutes: 300
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+      - name: Record the match
+        env:
+          MATCHES: ${{ inputs.matches || 'concacaf.nations.league:401929776 concacaf.nations.league:401929711 concacaf.nations.league:401929710' }}
+        run: node scripts/record-live.mjs $MATCHES --out recording
+      - name: Keep the recording
+        if: always() && hashFiles('recording/**') != ''
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: live-recording-${{ github.run_id }}
+          path: recording
+          retention-days: 90

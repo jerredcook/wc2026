@@ -1,0 +1,9 @@
+# The workflows pin each GitHub action to an exact commit, so a changed or
+# hijacked tag cannot alter what runs here. Dependabot proposes the update when
+# a new release of an action comes out. (The app itself has no dependencies.)
+version: 2
+updates:
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"

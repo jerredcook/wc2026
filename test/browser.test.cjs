@@ -106,6 +106,12 @@ for (const w of [320, 360, 390, 768]) {
   test(`layout holds at ${w}px wide`, opts, async () => checkLayout(await probe("url=/&w=" + w)));
 }
 test("layout holds for the women's view", opts, async () => checkLayout(await probe("url=/%23women&w=360")));
+/* The World Cup page keeps most of its sections collapsed: measure it as it opens, and again with everything opened. */
+const WC_OPEN = "rs-body,bk-body,sy-body,sc-body,sg-body,nw-body", WC_ALL = WC_OPEN + ",st-body,rk-body,hx-body,th-body,fr-body,sd-body,cd-body";
+test("World Cup page: layout holds as it opens on a small phone", opts, async () => checkLayout(await probe("url=/worldcup.html&w=360&sections=" + WC_OPEN)));
+for (const w of [320, 360, 390, 768]) {
+  test(`World Cup page: layout holds at ${w}px wide with every section opened`, opts, async () => checkLayout(await probe("url=/worldcup.html&w=" + w + "&expand=1&sections=" + WC_ALL)));
+}
 test("layout holds on a small phone with the 'newer version' and 'out of date' bars showing", opts, async () => {
   const r = await probe("url=/&w=320&notices=1");
   const bar = id => r.noticeBars.find(b => b.id === id);

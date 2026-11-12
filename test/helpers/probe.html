@@ -2,7 +2,9 @@
 <!-- Layout probe for test/browser.test.cjs: loads a page of the app in a frame of
      a given width, measures it, and writes the findings as JSON into #out.
      ?url=/&w=360[&live=1][&notices=1]  (live=1 swaps the match card into a live state using a recorded match;
-     notices=1 shows the "newer version" and "out of date" bars) -->
+     notices=1 shows the "newer version" and "out of date" bars; sections=a,b,c names the
+     elements that must not be empty, for pages other than the front page; expand=1 opens every
+     collapsed section first) -->
 <meta charset="utf-8">
 <body style="margin:0">
 <iframe id="f" style="border:0;display:block"></iframe>
@@ -20,6 +22,11 @@ async function measure() {
     win.__G = G;
     win.eval("clearTimeout(pollT); refreshLive = function () {}; S.live[focus().id] = parseSummary(__G, '660'); S.liveOk = Date.now(); S.open.xi = true; S.open.l5 = true; renderHero();");
   }
+  if (q.get("expand")) {
+    /* Open every collapsed section (a "-toggle" button with a "-body" beside it), then give them a moment to fill in. */
+    for (const b of d.querySelectorAll('[id$="-toggle"]')) { const body = d.getElementById(b.id.replace(/-toggle$/, "-body")); if (body && body.getBoundingClientRect().height === 0) b.click(); }
+    await new Promise(res => setTimeout(res, 2500));
+  }
   if (q.get("notices")) {
     win.eval("S.data[S.team].checked = new Date(Date.now() - 31 * 36e5).toISOString(); renderStale(); document.getElementById('update').hidden = false;");
     r.noticeBars = [...d.querySelectorAll(".notice")].map(e => ({ id: e.id, shown: win.getComputedStyle(e).display !== "none", text: e.textContent.trim().replace(/\s+/g, " ") }));
@@ -30,8 +37,8 @@ async function measure() {
   r.offScreen = [...d.querySelectorAll("body *")].filter(visible).filter(e => { const b = e.getBoundingClientRect(); return (b.right > w + 1 || b.left < -1) && !clipped(e); }).slice(0, 6).map(desc);
   r.hiddenButShown = [...d.querySelectorAll("[hidden]")].filter(e => win.getComputedStyle(e).display !== "none").map(desc);
   r.sections = {};
-  for (const id of ["nextup", "hero", "stories", "pool", "fixtures", "results", "poll"]) { const e = d.getElementById(id); r.sections[id] = e ? Math.round(e.getBoundingClientRect().height) : -1; }
-  r.smallTargets = [...d.querySelectorAll("button, a.btn, a.subopt, [role=button]")].filter(visible).filter(e => { const b = e.getBoundingClientRect(); return b.height < 32 || b.width < 32; }).slice(0, 8).map(e => desc(e) + " " + Math.round(e.getBoundingClientRect().width) + "x" + Math.round(e.getBoundingClientRect().height));
+  for (const id of (q.get("sections") || "nextup,hero,stories,pool,fixtures,results,poll").split(",")) { const e = d.getElementById(id); r.sections[id] = e ? Math.round(e.getBoundingClientRect().height) : -1; }
+  r.smallTargets = [...d.querySelectorAll("button, a.btn, a.subopt, [role=button]")].filter(visible).filter(e => { const b = e.getBoundingClientRect(); return b.height < 32 || b.width < 32; }).slice(0, 40).map(e => desc(e) + " " + Math.round(e.getBoundingClientRect().width) + "x" + Math.round(e.getBoundingClientRect().height));
   r.brokenLocalImages = [...d.images].filter(i => i.src.startsWith(location.origin) && i.complete && i.naturalWidth === 0).map(i => i.getAttribute("src"));
   r.unlabelledImages = [...d.images].filter(i => !i.hasAttribute("alt")).length;
   r.notices = [...d.querySelectorAll(".empty")].filter(e => /couldn't be shown/.test(e.textContent)).length;

@@ -1,7 +1,7 @@
 /* Network-first service worker for the WC 2026 app.
    Always tries the network first, so when you're online you get fresh content
    (no stale-cache surprises). When the network fails (offline), it serves the
-   last-cached app shell. Live score APIs (ESPN / Anthropic) are cross-origin
+   last-cached app shell. Live score APIs (ESPN) are cross-origin
    and are never intercepted or cached — they always go straight to the network
    and degrade gracefully on their own when offline. */
 const CACHE = "wc2026-v8";

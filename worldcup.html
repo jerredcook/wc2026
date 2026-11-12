@@ -1288,11 +1288,30 @@ html[data-theme="dark"] .hx-fact{background:#262318;border-color:#3d3a25;color:#
 html[data-theme="dark"] .mrow:focus-visible,html[data-theme="dark"] .td-row:focus-visible,html[data-theme="dark"] .bk-m:focus-visible,
 html[data-theme="dark"] .tsch-row:focus-visible,html[data-theme="dark"] .rk-row:focus-visible,html[data-theme="dark"] .tm-plk:focus-visible,
 html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
+
+/* ── Small screens and tap targets (checked by test/browser.test.cjs) ──
+   Match rows: the group-and-city label may wrap, so a long city name cannot push
+   the row wider than the screen. Controls: at least 36px tall, comfortable to tap. */
+.td-game{min-width:0}
+.td-meta{white-space:normal;flex-shrink:1;min-width:0;max-width:42%}
+.tzbtn,.tz-select,.theme-btn,.rs-mode,.bk-pathsel{min-height:36px}
+.tzbtn,.rs-mode{padding-left:12px;padding-right:12px}
+.rs-collapse{min-height:36px;padding:0 4px}
+.rs-rname{padding:10px 0;margin:0}
+.dg-line{min-height:36px}
+.fbtn,.hx-mode{min-height:36px;min-width:36px}
+.td-row{min-height:36px}
+.rs-modes{flex-wrap:wrap}
+.grid{grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr))}
+/* Tables: the group tables fit the screen; the wide rankings tables scroll sideways inside their own box. */
+.st-grid{grid-template-columns:repeat(auto-fill,minmax(min(288px,100%),1fr))}
+.st-card{overflow-x:auto}
+#rk-men,#rk-women{overflow-x:auto;-webkit-overflow-scrolling:touch}
 </style>
 </head>
 <body>
 
-<p style="margin-bottom:10px"><a href="./" style="font-size:13px;font-weight:700;text-decoration:none;color:inherit;border:1px solid rgba(128,128,128,.4);border-radius:16px;padding:5px 13px;display:inline-block">&larr; Cap Day</a></p>
+<p style="margin-bottom:10px"><a href="./" style="font-size:13px;font-weight:700;text-decoration:none;color:inherit;border:1px solid rgba(128,128,128,.4);border-radius:18px;padding:8px 14px;display:inline-block">&larr; Cap Day</a></p>
 <h1>🏆 World Cup</h1>
 <p class="subtitle">The FIFA World Cup, men's &amp; women's &middot; the complete 2026 tournament &middot; world rankings &middot; history to 1930</p>
 <p class="statusline"><span class="dot"></span><span class="et" id="tzNote">Kickoff times shown in U.S. Eastern (ET)</span> &middot; the 2026 archive loads on open &middot; FIFA rankings refresh with every official release</p>
@@ -5546,11 +5565,13 @@ function buildScorers(){
 function toggleScorers(){toggleSection("sc-body","sc-toggle","scorers");}
 
 /* ══════════ LIVE SCORE UPDATING ══════════
-   While this page runs inside Claude's artifact view, its script can ask
-   Claude (via the Anthropic API) to web-search current World Cup scores and
-   merge them in. If that call isn't available — e.g. a downloaded copy opened
-   on your own machine — it fails gracefully and keeps the saved scores, and
-   the status line says so plainly. */
+   Scores come from the preserved 2026 archive (data/2026-snapshot.json) now
+   that the tournament is over, with ESPN's public feed as the source before
+   that. If neither can be reached — e.g. a downloaded copy opened straight
+   from a folder — the page keeps its saved scores and the status line says so.
+   (An early version, built to run inside Claude's artifact view, also asked
+   the Anthropic API to search for scores; that call was removed in Nov 2026:
+   on the hosted site it had no key and could only fail.) */
 const liveState={busy:false};
 var __archive=false;   // true once the completed tournament archive is the data source
 /* The tournament is over: retire the live chrome (refresh / auto-poll / goal
@@ -5598,26 +5619,6 @@ function canon(name){
   const flat=String(name||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z]+/g," ").trim();
   const mapped=TEAM_ALIASES[flat]||name;
   return String(mapped).normalize("NFD").replace(/[\u0300-\u036f]/g,"").toLowerCase().replace(/[^a-z]/g,"");
-}
-
-async function fetchLiveScores(){
-  const prompt='Use web search to find the live or most recent scores for 2026 FIFA World Cup matches being played today. Reply with ONLY a JSON array, no markdown fences and no commentary. Each item must be {"home":string,"away":string,"hs":number|null,"as":number|null,"hr":number,"ar":number,"status":"LIVE"|"FT"|"UPCOMING","minute":string|null}. Use short English team names such as USA, South Korea, Ivory Coast, Turkiye, Curacao, DR Congo, Cape Verde, Bosnia. hs and as are goals scored so far (null if the match has not started). hr and ar are the number of red cards shown to the home and away team so far (0 if none). minute is the current match minute for LIVE games (e.g. "67" or "90+2"), otherwise null. If no matches are on today, reply with [].';
-  const res=await fetch("https://api.anthropic.com/v1/messages",{
-    method:"POST",
-    headers:{"Content-Type":"application/json"},
-    body:JSON.stringify({
-      model:"claude-sonnet-4-6",
-      max_tokens:1000,
-      messages:[{role:"user",content:prompt}],
-      tools:[{type:"web_search_20250305",name:"web_search"}]
-    })
-  });
-  if(!res.ok)throw new Error("api "+res.status);
-  const data=await res.json();
-  const text=(data.content||[]).filter(b=>b.type==="text").map(b=>b.text).join("").trim();
-  const start=text.indexOf("["),end=text.lastIndexOf("]");
-  if(start<0||end<0)throw new Error("no json in response");
-  return JSON.parse(text.slice(start,end+1));
 }
 
 /* Merge fetched results into the fixtures, matching by team pair (either order). */
@@ -5931,11 +5932,7 @@ async function refreshScores(){
   }
   // 1) Public endpoint first (works in a normal hosted browser tab)…
   if(!reached){try{const r=await fetchScoresFromESPN();results=r.group;espnEvents=r.events;reached=true;}catch(e){}}
-  // 2) …then Claude's own search (works inside Claude's artifact view).
-  if(!reached||!results||!results.length){
-    try{const r=await fetchLiveScores();if(r){results=r;reached=true;}}catch(e){}
-  }
-  // 3) …then the committed snapshot — preserves the whole tournament so the app
+  // 2) …then the committed snapshot — preserves the whole tournament so the app
   //    still works if the live sources are gone or change (scripts/snapshot-live.mjs).
   let fromSnap=null;
   if(!reached||!results||!results.length){
@@ -5979,7 +5976,7 @@ async function refreshScores(){
     enrichKnockouts();               // …then show those teams/scores in the schedule too
     const goals=detectGoals();
     const bgoals=detectBracketGoals();
-    scorersReached=!!espnEvents; // ESPN feed carries per-goal scorer detail; the Claude fallback doesn't
+    scorersReached=!!espnEvents; // ESPN feed carries per-goal scorer detail; the snapshot fallback may not
     aggregateScorers(espnEvents);
     computeLiveRanks();   // a finished match moves today's calculated FIFA ranking immediately
     simulateOdds();       // …and re-simulates the title odds
@@ -6013,7 +6010,7 @@ async function refreshScores(){
     else if(n>0)setLiveStatus('<span class="ok">✓ Updated</span> '+n+' match'+(n!==1?"es":"")+' &middot; last checked '+t);
     else setLiveStatus('<span class="ok">✓ Checked</span> &middot; no World Cup matches in progress right now &middot; '+t);
   }else{
-    setLiveStatus('<span class="warn">Couldn\'t reach a live source from here</span> — showing saved scores. Works in Claude\'s view, or host the page over http(s) for a normal browser.');
+    setLiveStatus('<span class="warn">Couldn\'t reach a live source from here</span> — showing saved scores.');
   }
   liveState.busy=false;
   liveState.lastFetch=Date.now();
@@ -6087,7 +6084,7 @@ async function refreshScores(){
   buildStory();
   buildNews();loadNews(true);   // digest + headlines
   buildGrid();
-  refreshScores(); // auto-pull live + final scores on load (works when hosted or in Claude's view)
+  refreshScores(); // auto-pull live + final scores on load (works when hosted)
 
   // Keep bracket connector lines aligned when the layout changes.
   let bkResizeT;
@@ -6108,6 +6105,6 @@ if("serviceWorker" in navigator &&
 /* This GoatCounter account is shared with other projects: label everything "capday". */
 window.goatcounter = { path: function (p) { return "capday" + p.replace(/^\/wc2026/, ""); } };
 </script>
-<script data-goatcounter="https://jerredcook.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
+<script data-goatcounter="https://jerredcook.goatcounter.com/count" async src="js/count.js"></script>
 </body>
 </html>
