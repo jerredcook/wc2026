@@ -77,3 +77,42 @@ test("hand-written files: editorial.json and ahead.json", () => {
     if (x.to) assert.ok(x.to >= x.date);
   }
 });
+
+/* ── Workflows ──
+   A push made by a workflow does not start other workflows. So any job that
+   commits data has to start the deploy itself, or the data is never published
+   (this went unnoticed from the switch to workflow deploys until Nov 2026). */
+test("every workflow that pushes also starts the deploy, and is allowed to", () => {
+  const dir = path.join(ROOT, ".github", "workflows");
+  let pushers = 0;
+  for (const f of fs.readdirSync(dir)) {
+    const y = fs.readFileSync(path.join(dir, f), "utf8");
+    if (!/^\s*git push\s*$/m.test(y)) continue;
+    pushers++;
+    assert.match(y, /gh workflow run deploy-pages\.yml/, `${f} pushes but never starts the deploy`);
+    assert.match(y, /^\s*actions: write/m, `${f} needs "actions: write" to start the deploy`);
+    assert.match(y, /echo "pushed=true" >> "\$GITHUB_OUTPUT"/, `${f} should record that it pushed`);
+  }
+  assert.ok(pushers >= 2, "expected the data workflows to be found");
+  const deploy = fs.readFileSync(path.join(dir, "deploy-pages.yml"), "utf8");
+  assert.match(deploy, /workflow_dispatch/, "the deploy must be startable by other workflows");
+  assert.match(deploy, /node scripts\/build-id\.mjs > build\.json/, "the deploy writes the build fingerprint");
+  assert.ok(deploy.indexOf("build-id.mjs") < deploy.indexOf("upload-pages-artifact"), "the fingerprint is written before the site is uploaded");
+});
+
+test("every scheduled workflow can also be started by hand", () => {
+  const dir = path.join(ROOT, ".github", "workflows");
+  for (const f of fs.readdirSync(dir)) {
+    const y = fs.readFileSync(path.join(dir, f), "utf8");
+    if (/^\s*schedule:/m.test(y)) assert.match(y, /workflow_dispatch/, `${f} is scheduled but cannot be run manually`);
+  }
+});
+
+test("data files: 'checked', when present, is a real time and not before 'updated'", () => {
+  for (const t of ["men", "women"]) {
+    const d = JSON.parse(read(`data/usa/${t}.json`));
+    if (d.checked == null) continue;
+    assert.ok(!isNaN(Date.parse(d.checked)), `${t}.json: checked is not a time`);
+    assert.ok(Date.parse(d.checked) >= Date.parse(d.updated), `${t}.json: checked is earlier than updated`);
+  }
+});

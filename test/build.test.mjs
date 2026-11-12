@@ -2,7 +2,7 @@
    the validation gate that stops thin data replacing good data. */
 import test from "node:test";
 import assert from "node:assert/strict";
-import { wikiPlayer, unwiki, nameKey, ics, calEvents, validate } from "../scripts/build-usa.mjs";
+import { wikiPlayer, unwiki, nameKey, ics, calEvents, validate, stamp, CHECK_EVERY } from "../scripts/build-usa.mjs";
 
 test("wikiPlayer: a called-up player row", () => {
   const p = wikiPlayer("{{nat fs g player|no=|pos=DF|name={{sortname|Antonee|Robinson}}|age={{birth date and age|1997|8|8}}|caps=62|goals=5|club=[[Fulham F.C.|Fulham]]|clubnat=ENG}}", true);
@@ -67,4 +67,29 @@ test("validate: data that shrank sharply against the previous file is refused", 
   assert.ok(validate(good(), prev).some(e => /pool shrank/.test(e)));
   const noForm = good(); noForm.pool.forEach(p => { p.rec = []; });
   assert.ok(validate(noForm, good()).some(e => /club form fell/.test(e)));
+});
+
+test("stamp: 'updated' moves only when the content changes; 'checked' is refreshed every six hours", () => {
+  const T0 = Date.parse("2026-11-12T00:00:00Z"), iso = t => new Date(t).toISOString(), hour = 36e5;
+  const file = extra => ({ updated: "", checked: "", fixtures: [{ id: "1" }], ...extra });
+
+  const first = stamp(file(), null, T0);
+  assert.equal(first.updated, iso(T0)); assert.equal(first.checked, iso(T0));
+
+  /* Same content an hour later: byte-identical, so the job commits nothing. */
+  const idle = stamp(file(), first, T0 + hour);
+  assert.equal(JSON.stringify(idle), JSON.stringify(first));
+
+  /* Same content after six hours: only 'checked' moves. */
+  const later = stamp(file(), first, T0 + CHECK_EVERY + 1);
+  assert.equal(later.updated, iso(T0)); assert.equal(later.checked, iso(T0 + CHECK_EVERY + 1));
+
+  /* Changed content: both move. */
+  const changed = stamp(file({ fixtures: [{ id: "2" }] }), first, T0 + hour);
+  assert.equal(changed.updated, iso(T0 + hour)); assert.equal(changed.checked, iso(T0 + hour));
+
+  /* A file from before 'checked' existed: content unchanged, so 'updated' is kept and 'checked' is added. */
+  const legacy = { updated: iso(T0 - 9 * hour), fixtures: [{ id: "1" }] };
+  const upgraded = stamp(file(), legacy, T0);
+  assert.equal(upgraded.updated, legacy.updated); assert.equal(upgraded.checked, iso(T0));
 });

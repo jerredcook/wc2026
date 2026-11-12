@@ -1,0 +1,33 @@
+name: Canary (feeds and live site)
+
+# Checks, from outside, the things the live app depends on and cannot watch for
+# itself: that ESPN's feed still has the shape the app's parser expects and still
+# lets a web page read it, and that the live site's data has been refreshed
+# within the last day. See scripts/canary.mjs for the list.
+#
+# A failed run emails the repository owner (GitHub's default for scheduled
+# workflows), so a feed change or a stalled data job is noticed before a visitor
+# sees it. The run's summary page says which check failed and why.
+
+on:
+  schedule:
+    - cron: "50 */6 * * *"   # four times a day; GitHub's scheduler is best-effort and may run late or skip
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: canary
+  cancel-in-progress: true
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Check the feeds and the live site
+        run: node scripts/canary.mjs

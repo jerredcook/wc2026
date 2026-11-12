@@ -1,7 +1,8 @@
 <!DOCTYPE html>
 <!-- Layout probe for test/browser.test.cjs: loads a page of the app in a frame of
      a given width, measures it, and writes the findings as JSON into #out.
-     ?url=/&w=360[&live=1]  (live=1 swaps the match card into a live state using a recorded match) -->
+     ?url=/&w=360[&live=1][&notices=1]  (live=1 swaps the match card into a live state using a recorded match;
+     notices=1 shows the "newer version" and "out of date" bars) -->
 <meta charset="utf-8">
 <body style="margin:0">
 <iframe id="f" style="border:0;display:block"></iframe>
@@ -18,6 +19,10 @@ async function measure() {
     G.header.competitions[0].status = { displayClock: "67'", type: { state: "in", shortDetail: "67'" } };
     win.__G = G;
     win.eval("clearTimeout(pollT); refreshLive = function () {}; S.live[focus().id] = parseSummary(__G, '660'); S.liveOk = Date.now(); S.open.xi = true; S.open.l5 = true; renderHero();");
+  }
+  if (q.get("notices")) {
+    win.eval("S.data[S.team].checked = new Date(Date.now() - 31 * 36e5).toISOString(); renderStale(); document.getElementById('update').hidden = false;");
+    r.noticeBars = [...d.querySelectorAll(".notice")].map(e => ({ id: e.id, shown: win.getComputedStyle(e).display !== "none", text: e.textContent.trim().replace(/\s+/g, " ") }));
   }
   const visible = e => { const b = e.getBoundingClientRect(), s = win.getComputedStyle(e); return b.width > 0 && b.height > 0 && s.visibility !== "hidden" && s.display !== "none"; };
   const clipped = e => { for (let p = e.parentElement; p; p = p.parentElement) { const s = win.getComputedStyle(p); if (/(auto|scroll|hidden)/.test(s.overflowX)) return true; } return false; };

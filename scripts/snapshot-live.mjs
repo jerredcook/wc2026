@@ -42,7 +42,7 @@ const CAP_TODAY = process.argv.includes("--today");
 async function getJSON(url, tries = 4) {
   for (let i = 0; i < tries; i++) {
     try {
-      const r = await fetch(url, { headers: { "User-Agent": "wc2026-snapshot/1.0" } });
+      const r = await fetch(url, { headers: { "User-Agent": "wc2026-snapshot/1.0" }, signal: AbortSignal.timeout(30000) });
       if (r.ok) return await r.json();
       if (r.status === 404) return null;
     } catch (e) { /* retry */ }

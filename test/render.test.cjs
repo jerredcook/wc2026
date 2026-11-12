@@ -303,10 +303,91 @@ test("one broken section shows a notice, the rest carry on, and the error is rep
   assert.ok(p.tracked.some(x => /^capday: error players: .+ \[v\d+\.\d+\.\d+(-pre)?\]$/.test(x)), "the report names the section and the app version");
 });
 
-test("the data files failing to load leaves a loading state, not a crash", async () => {
+test("the data files failing to load: the page says so, keeps trying, and fills in when they come back", async () => {
   const p = await boot({ data: { men: null, women: null } });
-  assert.match(p.text("hero"), /Loading/);
+  assert.match(p.text("hero"), /Couldn't load the schedule.*trying again/);
+  assert.match(p.text("nextup"), /Couldn't load/);
   assert.deepEqual(p.tracked.filter(x => /error/.test(x)), []);
+  const retry = t => t.ms === 5000;
+  assert.equal(p.timers.filter(retry).length, 1, "a retry is scheduled");
+
+  assert.equal(await p.fire(retry), 1);                       // still unreachable
+  assert.match(p.text("hero"), /Couldn't load the schedule/);
+  assert.equal(p.timers.filter(t => t.ms === 10000 && !/refreshLive/.test(t.fn.name)).length >= 1, true, "the next retry waits longer");
+
+  p.setData("men", fixture("data-men.json")); p.setData("women", fixture("data-women.json"));
+  await p.fire(t => t.ms === 10000 && !/refreshLive/.test(t.fn.name));
+  assert.match(p.text("hero"), /Haiti/, "the match card fills in once the data arrives");
+  for (const id of SECTIONS) assert.ok(!p.text(id).includes(NOTICE), `#${id}`);
+});
+
+test("a data file that is not the expected shape is treated as not loaded", async () => {
+  const p = await boot({ data: { men: { hello: "world" }, women: { fixtures: "nope" } } });
+  assert.match(p.text("hero"), /Couldn't load the schedule/);
+  assert.deepEqual(p.tracked.filter(x => /error/.test(x)), []);
+});
+
+test("a request that hangs is given up on after ten seconds", async () => {
+  const p = await boot({ hang: /\/summary\?event=/ });
+  const giveUp = t => t.ms === 10000;
+  assert.match(p.text("hero"), /Haiti/, "the card shows what the data file has while the live feed hangs");
+  assert.equal(p.timers.filter(t => /refreshLive/.test(t.fn.name)).length, 0, "the live check is still waiting");
+  assert.ok(p.timers.filter(giveUp).length >= 1, "a time limit is running");
+  await p.fire(giveUp);
+  assert.equal(p.timers.filter(t => /refreshLive/.test(t.fn.name)).length, 1, "after giving up, the next live check is scheduled");
+  assert.deepEqual(p.tracked.filter(x => /error/.test(x)), []);
+
+  const q = await boot({ hang: /data\/usa\/(men|women)\.json/ });
+  assert.match(q.text("hero"), /Loading/);
+  await q.fire(giveUp); await q.fire(giveUp);
+  assert.match(q.text("hero"), /Couldn't load the schedule/, "a hung data file ends as a clear message, not endless loading");
+});
+
+test("old information is flagged: a notice when the data job has not checked for over 30 hours", async () => {
+  const at = hoursAgo => new Date(Date.parse("2026-11-12T15:00:00Z") - hoursAgo * 36e5).toISOString();
+  const withChecked = hrs => { const m = fixture("data-men.json"), w = fixture("data-women.json"); if (hrs != null) { m.checked = at(hrs); w.checked = at(hrs); } return { men: m, women: w }; };
+
+  const fresh = await boot({ data: withChecked(3) });
+  assert.equal(fresh.el("stale").hidden, true);
+  assert.match(fresh.el("stamp").textContent, /checked Nov 12/);
+
+  const old = await boot({ data: withChecked(31) });
+  assert.equal(old.el("stale").hidden, false);
+  assert.match(old.el("stale").textContent, /last checked 31 hours ago and may be out of date\. Live scores are not affected/);
+  assert.equal(old.tracked.filter(x => x === "capday: stale-data").length, 1, "counted once, so it can be noticed");
+
+  const ancient = await boot({ data: withChecked(24 * 9) });
+  assert.match(ancient.el("stale").textContent, /last checked 9 days ago/);
+
+  const unknown = await boot({ data: withChecked(null) });
+  assert.equal(unknown.el("stale").hidden, true, "no claim either way when the file does not say when it was checked");
+});
+
+test("a newer build: a refresh is offered when the app's code has changed since the page opened", async () => {
+  const p = await boot({ build: { code: "aaa" } });
+  assert.equal(p.el("update").hidden, true);
+  const recheck = async () => { p.run("buildChecked = 0; checkBuild()"); await p.settle(); };
+
+  await recheck();
+  assert.equal(p.el("update").hidden, true, "same build: nothing to offer");
+
+  p.setBuild("<html>not json</html>"); await recheck();
+  p.setBuild(null); await recheck();
+  assert.equal(p.el("update").hidden, true, "an unreadable or missing answer changes nothing");
+
+  p.setBuild({ code: "bbb" }); await recheck();
+  assert.equal(p.el("update").hidden, false);
+  assert.equal(p.tracked.filter(x => x === "capday: update-offered").length, 1);
+  await recheck();
+  assert.equal(p.tracked.filter(x => x === "capday: update-offered").length, 1, "offered once");
+  assert.deepEqual(p.tracked.filter(x => /error/.test(x)), []);
+
+  const before = p.fetched.filter(u => u.includes("build.json")).length;
+  p.run("checkBuild(); checkBuild()"); await p.settle();
+  assert.equal(p.fetched.filter(u => u.includes("build.json")).length, before, "it does not ask again within five minutes");
+
+  const none = await boot();
+  assert.equal(none.el("update").hidden, true, "no build file (opened from a folder): the feature stays quiet");
 });
 
 test("the live feed being unreachable before kickoff still shows everything the data file has", async () => {

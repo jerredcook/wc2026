@@ -15,6 +15,7 @@ on:
 
 permissions:
   contents: write           # so the job can push the updated snapshot
+  actions: write            # to start the deploy after committing (see "Publish the new data")
 
 concurrency:
   group: snapshot
@@ -44,6 +45,7 @@ jobs:
         run: node scripts/fetch-rankings.mjs --women
 
       - name: Commit changed data
+        id: commit
         if: always()
         run: |
           git config user.name  "github-actions[bot]"
@@ -53,7 +55,16 @@ jobs:
             git commit -m "Update live data — snapshot + FIFA rankings ($(date -u +%Y-%m-%d))"
             git pull --rebase origin main   # avoid losing the capture to a race with a manual push
             git push
+            echo "pushed=true" >> "$GITHUB_OUTPUT"
             echo "Pushed updated data."
           else
             echo "No data changes — nothing to commit."
           fi
+
+      # A push made by a workflow does not start other workflows, so the deploy
+      # has to be started explicitly or the new data never reaches the live site.
+      - name: Publish the new data
+        if: always() && steps.commit.outputs.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy-pages.yml --ref main

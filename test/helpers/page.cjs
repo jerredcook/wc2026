@@ -51,12 +51,14 @@ function makeElement(id) {
 
 /* opts: { now, hash, search, userAgent, data: {men, women}, summary, news, editorial, ahead, storage }
    - data.men / data.women: the hub data files (default: the recorded fixtures)
-   - summary: the live match feed's answer — an object, a function (url) => object, or null for "offline" */
+   - summary: the live match feed's answer — an object, a function (url) => object, or null for "offline"
+   - build: what build.json says (default: missing, as when the page is opened from a folder)
+   - hang: a RegExp of addresses whose requests never answer */
 async function boot(opts = {}) {
   const data = { men: fixture("data-men.json"), women: fixture("data-women.json"), ...(opts.data || {}) };
   const store = { ...(opts.storage || {}) };
   const els = {}, tracked = [], fetched = [], timers = [];
-  const page = { summary: opts.summary === undefined ? null : opts.summary, news: opts.news || { articles: [] } };
+  const page = { summary: opts.summary === undefined ? null : opts.summary, news: opts.news || { articles: [] }, build: opts.build || null, hang: opts.hang || null };
 
   const answer = url => {
     if (/data\/usa\/(men|women)\.json/.test(url)) return data[/men\.json/.test(url) && !/women/.test(url) ? "men" : "women"];
@@ -66,11 +68,12 @@ async function boot(opts = {}) {
     if (url.includes("rankings.json")) return RANKS_MEN;
     if (url.includes("/summary?event=")) return typeof page.summary === "function" ? page.summary(url) : page.summary;
     if (url.includes("/news?")) return page.news;
+    if (url.includes("build.json")) return page.build;
     return undefined;
   };
 
   const sandbox = {
-    console, URL, URLSearchParams, Blob, structuredClone,
+    console, URL, URLSearchParams, Blob, structuredClone, AbortController,
     document: {
       hidden: false, title: "Cap Day", body: makeElement("body"),
       getElementById(id) { return els[id] || (els[id] = makeElement(id)); },
@@ -89,8 +92,12 @@ async function boot(opts = {}) {
     addEventListener() {},
     setTimeout: (fn, ms) => { timers.push({ fn, ms }); return timers.length; },
     clearTimeout() {}, setInterval: () => 0, clearInterval() {},
-    fetch: async url => {
+    fetch: async (url, init) => {
       url = String(url); fetched.push(url);
+      /* A connection that neither answers nor fails: it only ends if the page gives up on it. */
+      if (page.hang && page.hang.test(url)) {
+        return new Promise((_, reject) => { if (init && init.signal) init.signal.addEventListener("abort", () => reject(new Error("aborted (test): " + url))); });
+      }
       const body = answer(url);
       if (body == null) throw new Error("offline (test): " + url);
       return { ok: true, status: 200, json: async () => clone(body) };
@@ -114,6 +121,11 @@ async function boot(opts = {}) {
     html: id => (els[id] ? els[id].innerHTML : ""),
     text: id => (els[id] ? els[id].innerHTML : "").replace(/<[^>]+>/g, " ").replace(/&middot;/g, "·").replace(/&amp;/g, "&").replace(/&rarr;/g, "→").replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/\s+/g, " ").trim(),
     setSummary: s => { page.summary = s; },
+    setBuild: b => { page.build = b; },
+    setHang: re => { page.hang = re; },
+    setData: (team, d) => { data[team] = d; },
+    /* Run the timers the page has set that match, as if their time had come. */
+    async fire(match) { const due = timers.filter(match); for (const t of due) { timers.splice(timers.indexOf(t), 1); t.fn(); } await settle(); return due.length; },
     setNews: n => { page.news = n; },
     /* Ask the page to check the live feed again, as its timer would. */
     async refresh() { vm.runInContext("refreshLive()", ctx); await settle(); },

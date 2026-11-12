@@ -25,4 +25,5 @@ The first numbered version of Cap Day: when the U.S. women's and men's national 
 - **News** for each team, recent results, stadium details, and FIFA rankings with a win chance worked out from them.
 - **Installable** on Android from the browser, with a tip for iPhone. Works offline with the last copy it loaded.
 - **The World Cup section:** the complete 2026 tournament, men's and women's world rankings, and every World Cup since 1930. This was the whole app before Cap Day.
+- **Honest about its own state:** it says so when its schedule information is more than a day or so old, when it cannot load, and when a newer version is ready to refresh to.
 - **Privacy:** no accounts and no cookies. Visits are counted anonymously.

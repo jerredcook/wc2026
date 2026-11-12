@@ -45,7 +45,7 @@ const key = s => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "")
   .toLowerCase().replace(/[^a-z0-9]/g, "");
 
 async function getText(u) {
-  const r = await fetch(u, { headers: { "User-Agent": "wc2026-rankings", "Accept": "text/html,application/json" } });
+  const r = await fetch(u, { headers: { "User-Agent": "wc2026-rankings", "Accept": "text/html,application/json" }, signal: AbortSignal.timeout(30000) });
   if (!r.ok) throw new Error(`${u} → HTTP ${r.status}`);
   return r.text();
 }

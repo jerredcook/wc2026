@@ -5,3 +5,6 @@ deep-review.html
 # Local Claude Code config — never publish
 .claude/
 .DS_Store
+
+# Written by the deploy workflow (scripts/build-id.mjs); never committed
+build.json

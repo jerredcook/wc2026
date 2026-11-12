@@ -36,7 +36,7 @@ const SITE = "https://jerredcook.github.io/wc2026/";
 async function get(url, tries = 3) {
   for (let i = 1; ; i++) {
     try {
-      const r = await fetch(url, { headers: { "User-Agent": "wc2026-usa-hub (github actions)" } });
+      const r = await fetch(url, { headers: { "User-Agent": "wc2026-usa-hub (github actions)" }, signal: AbortSignal.timeout(20000) });   // a hung connection counts as a failed try
       if (!r.ok) throw new Error("HTTP " + r.status);
       return await r.json();
     } catch (e) {
@@ -394,17 +394,16 @@ async function build(key) {
   }
 
   const out = {
-    updated: new Date().toISOString(), team: { key, id: T.id, label: T.label },
+    updated: "", checked: "", team: { key, id: T.id, label: T.label },
     fixtures, results, pool: players, squadNote, capsAsOf, opp,
   };
   await mkdir(join(ROOT, "data", "usa"), { recursive: true });
-  /* Keep the old timestamp when nothing else changed, so an idle run commits nothing. */
   const file = join(ROOT, "data", "usa", key + ".json");
   let old = null;
   try { old = JSON.parse(await readFile(file, "utf8")); } catch { /* first run */ }
   const problems = validate(out, old);
   if (problems.length) throw new Error("refusing to write " + key + ".json — " + problems.join("; "));
-  if (old && JSON.stringify({ ...old, updated: 0 }) === JSON.stringify({ ...out, updated: 0 })) out.updated = old.updated;
+  stamp(out, old);
   await writeFile(file, JSON.stringify(out) + "\n");
   CAL[key] = calEvents(T.label, fixtures, results);
   await writeFile(join(ROOT, "data", "usa", key + ".ics"), ics(`Cap Day — USA ${T.label}`, CAL[key]));
@@ -470,6 +469,22 @@ export function validate(out, prev) {
   }
   if (prev && Array.isArray(prev.results) && prev.results.length) need(out.results.length >= prev.results.length * 0.5, `results shrank from ${prev.results.length} to ${out.results.length}`);
   return errs;
+}
+
+/* Two timestamps, set after a successful build.
+   - updated: when the content last changed.
+   - checked: when the feeds were last read successfully. The app warns when this
+     is old. It is only rewritten once it is six hours old, so a run that finds
+     nothing new still commits nothing most of the time. */
+export const CHECK_EVERY = 6 * 36e5;
+export function stamp(out, old, now = Date.now()) {
+  const bare = o => { const { updated, checked, ...rest } = o; return JSON.stringify(rest); };
+  const same = !!old && bare(old) === bare(out);
+  const recent = !!old && !!old.checked && now - Date.parse(old.checked) < CHECK_EVERY;
+  const iso = new Date(now).toISOString();
+  out.updated = same ? old.updated : iso;
+  out.checked = same && recent ? old.checked : iso;
+  return out;
 }
 
 /* Run only when executed directly, so the tests can import the helpers above. */

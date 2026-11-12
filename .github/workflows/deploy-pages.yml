@@ -8,6 +8,10 @@ name: Deploy to GitHub Pages
 # automatically (3 attempts with backoff). A single blip now self-heals and the
 # run still goes green; the job only fails if GitHub Pages is down for minutes.
 
+# Also started by the data jobs (usa-hub.yml, snapshot.yml) after they commit:
+# a push made by a workflow does not trigger other workflows, so without that
+# explicit start, refreshed data would sit in the repository unpublished.
+
 on:
   push:
     branches: [main]
@@ -46,6 +50,10 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      # A fingerprint of the app's code. Open copies of the app compare it with
+      # the one they started with and offer a refresh when it has changed.
+      - name: Write the build fingerprint
+        run: node scripts/build-id.mjs > build.json && cat build.json
       - name: Configure Pages
         uses: actions/configure-pages@v5
       - name: Upload site

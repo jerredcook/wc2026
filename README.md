@@ -25,16 +25,23 @@ The schedule, squads and club form are built by [`scripts/build-usa.mjs`](script
 ## Engineering
 
 - **Core logic is separate and tested.** [`js/core.js`](js/core.js) holds the pure match logic (feed parsing, competition and match explanations, prediction grading, win expectancy). The page loads it as a plain script; the tests load it with `require()`.
-- **Tests:** `node --test` (82 tests, no dependencies, about ten seconds).
+- **Tests:** `node --test` (99 tests, no dependencies, about ten seconds).
   - [`test/core.test.cjs`](test/core.test.cjs): the logic against real recorded feed data in `test/fixtures/`.
   - [`test/render.test.cjs`](test/render.test.cjs): what each section puts on screen in every state — before kickoff, live, connection lost, full time, second leg, friendly, no match scheduled, women's view, test mode — plus the prediction flow, the feedback poll, escaping of feed text, and one section failing without taking the others down. The page's own code runs in a sandbox with a stand-in document, a fixed clock and recorded data ([`test/helpers/page.cjs`](test/helpers/page.cjs)).
   - [`test/browser.test.cjs`](test/browser.test.cjs): the whole app in headless Chrome, served locally — it boots, every section fills in, old links redirect. Skipped where no Chrome is installed.
   - The same file measures layout in the browser ([`test/helpers/probe.html`](test/helpers/probe.html)) at 320, 360, 390 and 768px, for the women's view, and with a live match open: no sideways scrolling, nothing off-screen, nothing marked hidden left visible, no empty sections, tap targets at least 32px, tappable rows reachable by keyboard.
   - [`test/sw.test.cjs`](test/sw.test.cjs): the service worker's offline rules (network first, only good answers stored, stored copy when offline, other sites untouched).
   - [`test/build.test.mjs`](test/build.test.mjs): the data pipeline's helpers and its validation gate.
+  - [`test/canary.test.mjs`](test/canary.test.mjs): each canary check passes on recorded feed data and fails, with a readable reason, on a changed feed; the build fingerprint changes only when the app's code does.
   - [`test/version.test.mjs`](test/version.test.mjs): the version number, the changelog and the release check agree.
   - [`test/site.test.cjs`](test/site.test.cjs): the shipped files (pages parse, every button calls a function that exists, every referenced file is present, `[hidden]` is never overridden, committed data is well-formed).
 - **Nothing publishes without passing them.** The deploy workflow runs the tests first, and the hourly data job only commits data the tests accept.
+- **Data commits are published.** A push made by a workflow does not start other workflows, so the data jobs start the deploy themselves after committing. (Until November 2026 they did not, and refreshed data only went live with the next hand-made push.) A test fails if a workflow pushes without doing this.
+- **Every request has a time limit.** The app gives up on a request after 10 seconds and the data scripts after 20–30, so a connection that hangs behaves like one that fails: retried, with the last good state kept.
+- **A failed first load says so and retries** (5, 10, 20 … up to 60 seconds apart) instead of showing "Loading…" indefinitely. A data file that is not the expected shape is treated as not loaded.
+- **Old data is flagged.** Each data file carries `updated` (content last changed) and `checked` (feeds last read successfully, rewritten at most every six hours). GitHub's scheduler is best-effort and often runs hours late; if `checked` is over 30 hours old the app shows a notice and counts a `capday: stale-data` event.
+- **A canary watches from outside.** [`scripts/canary.mjs`](scripts/canary.mjs), run four times a day by the [`canary`](.github/workflows/canary.yml) Action, checks that ESPN's feed still parses to a known result with the app's own parser, still allows a web page to read it, that each team's next match and news can be read, and that the live site's data was checked within 24 hours. A failed run emails the repository owner.
+- **Open copies notice a new build.** The deploy writes `build.json`, a fingerprint of the app's code ([`scripts/build-id.mjs`](scripts/build-id.mjs)); a page that sees it change offers a refresh. Data-only deploys leave the fingerprint alone.
 - **The data pipeline refuses thin data.** `build-usa.mjs` validates each file before writing and will not replace a good file with one that is malformed or has shrunk sharply.
 - **Sections fail on their own.** Each part of the page draws inside a guard; if one throws, it shows a short notice, the rest keeps working, and the error is counted anonymously (GoatCounter event `capday: error …`).
 - **Live mode degrades gently:** a failed score request keeps the last known state, retries, and says "Connection lost" after about 100 seconds.

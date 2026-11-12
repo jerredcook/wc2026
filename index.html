@@ -164,6 +164,9 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,summary:focus-v
 .ah small{display:block;color:var(--ink3);font-size:12px;margin-top:1px}
 .pollq{font-size:15px;font-weight:700;margin-bottom:8px}
 .iostip[hidden]{display:none}
+.notice[hidden]{display:none}
+.notice{display:flex;gap:10px;align-items:center;justify-content:space-between;font-size:13px;line-height:1.4;padding:12px 14px}
+.notice.warn{border-left:4px solid var(--warn);background:var(--warnbg)}
 .iostip{display:flex;gap:10px;align-items:center;justify-content:space-between;font-size:13px;line-height:1.4;padding:12px 14px}
 .testbar{background:#f0cf70;color:#3a2a00;font-size:12px;font-weight:700;border-radius:8px;padding:6px 10px;margin-bottom:10px}
 .testbar a{color:#3a2a00}
@@ -273,6 +276,11 @@ dialog button{border:0;border-radius:16px;padding:8px 22px;background:#0b2a5b;co
     <span><b>Add Cap Day to your iPhone.</b> Tap the Share button <span aria-hidden="true">(the square with an arrow)</span>, then <b>Add to Home Screen</b>.</span>
     <button class="btn" aria-label="Dismiss">Got it</button>
   </div>
+  <div class="card notice" id="update" role="status" hidden>
+    <span><b>A newer version of Cap Day is ready.</b></span>
+    <button class="btn" onclick="applyUpdate()">Refresh</button>
+  </div>
+  <div class="card notice warn" id="stale" role="status" hidden></div>
   <div class="nextup" id="nextup"></div>
 
   <div id="hero"></div>
@@ -322,7 +330,7 @@ const TEAM = { women: { id: "2765" }, men: { id: "660" } };
 const USA_LOGO = "https://a.espncdn.com/i/teamlogos/countries/500/usa.png";
 const KEY = "wc2026.usa.v1";
 
-const S = { team: "men", data: {}, ranks: {}, live: {}, sums: {}, open: {}, pos: "all", sort: "pos", ed: null, calls: {}, flash: false, news: {}, ahead: null, liveOk: 0 };
+const S = { team: "men", data: {}, ranks: {}, live: {}, sums: {}, open: {}, pos: "all", sort: "pos", ed: null, calls: {}, flash: false, news: {}, ahead: null, liveOk: 0, failed: {} };
 try { S.calls = JSON.parse(localStorage.getItem(KEY + ".calls") || "{}") || {}; } catch (e) {}
 const hashTeam = location.hash.replace("#", "");
 const pinned = !!TEAM[hashTeam];
@@ -374,8 +382,59 @@ function relDay(iso) {
 
 /* ── Loading ── */
 const ORDER = ["women", "men"], NAME = { women: "Women", men: "Men" };
+
+/* Every request gives up after a set time. A connection that hangs (rather than
+   failing) would otherwise leave a section loading forever or stall the live
+   score. Returns the parsed answer, null for an error status, and throws when
+   the network fails or the time runs out. */
+const TIMEOUT = 10e3;
+async function getJson(url, opts, ms) {
+  const ac = typeof AbortController === "function" ? new AbortController() : null;
+  const timer = ac ? setTimeout(() => ac.abort(), ms || TIMEOUT) : null;
+  try {
+    const r = await fetch(url, Object.assign({}, opts, ac ? { signal: ac.signal } : null));
+    return r.ok ? await r.json() : null;
+  } finally { clearTimeout(timer); }
+}
+
+/* The schedule and squad files. S.failed marks a team whose file could not be
+   fetched at all, so the page can say so and try again instead of "Loading…". */
 async function fetchData(team) {
-  try { const r = await fetch("data/usa/" + team + ".json", { cache: "no-cache" }); if (r.ok) S.data[team] = await r.json(); } catch (e) {}
+  try {
+    const j = await getJson("data/usa/" + team + ".json", { cache: "no-cache" });
+    if (j && Array.isArray(j.fixtures) && Array.isArray(j.results) && Array.isArray(j.pool)) { S.data[team] = j; S.failed[team] = false; return true; }
+  } catch (e) {}
+  if (!S.data[team]) S.failed[team] = true;
+  return false;
+}
+let retryT = null, retries = 0, chose = pinned;   // chose: the visitor picked a team, so don't switch it for them
+function retryData() {
+  clearTimeout(retryT);
+  if (!ORDER.some(t => S.failed[t])) { retries = 0; return; }
+  retryT = setTimeout(async () => {
+    retries++;
+    await Promise.all(ORDER.filter(t => S.failed[t]).map(fetchData));
+    if (!chose) S.team = soonest();
+    if (S.data[S.team]) loadTeam(S.team); else render();
+    retryData();
+  }, Math.min(5e3 * Math.pow(2, retries), 60e3));
+}
+const LOADING = () => S.failed[S.team] ? "Couldn't load the schedule. Check your connection; trying again…" : "Loading…";
+
+/* How long ago the data job last read the feeds successfully. The job runs on a
+   best-effort schedule, so say so plainly when the information is old. */
+const STALE_AFTER = 30 * 36e5;
+function staleHours() {
+  const d = S.data[S.team];
+  if (!d || !d.checked) return 0;
+  const age = Date.now() - D(d.checked);
+  return age > STALE_AFTER ? Math.round(age / 36e5) : 0;
+}
+function renderStale() {
+  const el = $("stale"), hrs = staleHours();
+  el.hidden = !hrs;
+  if (hrs) el.textContent = `The schedule and squads were last checked ${hrs < 48 ? hrs + " hours" : Math.round(hrs / 24) + " days"} ago and may be out of date. Live scores are not affected.`;
+  if (hrs && !renderStale.sent) { renderStale.sent = true; track("stale-data"); }
 }
 /* The team whose match comes first (women on a tie): the page opens on it. */
 function soonest() {
@@ -388,6 +447,7 @@ function soonest() {
 }
 function pickTeam(t) {
   if (!TEAM[t]) return;
+  chose = true;
   if (t !== S.team) { track("team-" + t); S.team = t; S.pos = "all"; history.replaceState(null, "", "#" + t); render(); loadTeam(t); }
   const el = $("hero"); if (el && el.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "start" });
 }
@@ -395,7 +455,7 @@ function renderNextUp() {
   $("nextup").innerHTML = ORDER.map(t => {
     const d = S.data[t], m = d && d.fixtures[0], L = m && S.live[m.id];
     let body;
-    if (!d) body = `<span class="nu-d">Loading…</span>`;
+    if (!d) body = `<span class="nu-d">${S.failed[t] ? "Couldn't load" : "Loading…"}</span>`;
     else if (!m) body = `<span class="nu-t">No match scheduled</span><span class="nu-d">The next window will show here.</span>`;
     else body = `<span class="nu-t">${m.ha === "H" ? "vs" : "at"} ${h(m.opp.name)}</span>
       <span class="nu-d">${fmtDay(m.date)} &middot; ${fmtTime(m.date)}</span>
@@ -404,24 +464,22 @@ function renderNextUp() {
   }).join("");
 }
 async function loadTeam(team, force) {
-  if (!S.data[team] || force) {
-    try {
-      const r = await fetch("data/usa/" + team + ".json", { cache: "no-cache" });
-      if (r.ok) S.data[team] = await r.json();
-    } catch (e) {}
-  }
+  if (!S.data[team] || force) await fetchData(team);
+  retryData();
   if (!S.ranks[team]) {
-    fetch("data/" + (team === "men" ? "rankings.json" : "rankings-women.json"))
-      .then(r => r.ok ? r.json() : null).then(j => { if (j) { S.ranks[team] = j; if (S.team === team) renderHero(); } }).catch(() => {});
+    getJson("data/" + (team === "men" ? "rankings.json" : "rankings-women.json"))
+      .then(j => { if (j) { S.ranks[team] = j; if (S.team === team) renderHero(); } }).catch(() => {});
   }
+  /* The hand-written files: a failed fetch is forgotten so the next load tries again. */
   if (!S.ed) {
     S.ed = {};
-    fetch("data/usa/editorial.json", { cache: "no-cache" }).then(r => r.ok ? r.json() : null)
-      .then(j => { if (j) { S.ed = j; renderHero(); } }).catch(() => {});
+    getJson("data/usa/editorial.json", { cache: "no-cache" })
+      .then(j => { if (j) { S.ed = j; renderHero(); } else S.ed = null; }).catch(() => { S.ed = null; });
   }
   if (!S.ahead) {
     S.ahead = {};
-    fetch("data/usa/ahead.json", { cache: "no-cache" }).then(r => r.ok ? r.json() : null).then(j => { if (j) { S.ahead = j; renderFixtures(); } }).catch(() => {});
+    getJson("data/usa/ahead.json", { cache: "no-cache" })
+      .then(j => { if (j) { S.ahead = j; renderFixtures(); } else S.ahead = null; }).catch(() => { S.ahead = null; });
   }
   if (S.team === team) { render(); refreshLive(); loadNews(team); }
 }
@@ -440,9 +498,9 @@ async function refreshLive() {
   clearTimeout(pollT);
   const team = S.team, m = focus(); if (!m) return;
   try {
-    const r = await fetch(`${API}/${m.lg}/summary?event=${m.id}`, { cache: "no-store" });
-    if (r.ok) {
-      const L = parseSummary(await r.json(), S.test ? S.test.usId : TEAM[team].id), old = S.live[m.id];
+    const G = await getJson(`${API}/${m.lg}/summary?event=${m.id}`, { cache: "no-store" });
+    if (G) {
+      const L = parseSummary(G, S.test ? S.test.usId : TEAM[team].id), old = S.live[m.id];
       if (L) {
         /* A goal since the last look (either side): flash the card. */
         if (old && L.state === "in" && old.us != null && (L.us !== old.us || L.them !== old.them)) {
@@ -464,8 +522,27 @@ async function refreshLive() {
 document.addEventListener("visibilitychange", () => {
   if (document.hidden) return;
   const d = S.data[S.team];
-  if (d && Date.now() - D(d.updated) > 30 * 6e4) loadTeam(S.team, true); else refreshLive();
+  if (!d || Date.now() - lastLoad > 30 * 6e4) { lastLoad = Date.now(); loadTeam(S.team, true); } else refreshLive();
+  checkBuild();
 });
+let lastLoad = Date.now();
+
+/* ── A newer build ──
+   An installed app can stay open for days and keep running old code. Each
+   deploy publishes build.json (a fingerprint of the app's code, written by the
+   deploy workflow); if it changes while the page is open, offer a refresh. */
+let buildId = null, buildChecked = 0;
+async function checkBuild() {
+  if (Date.now() - buildChecked < 5 * 6e4) return;
+  buildChecked = Date.now();
+  try {
+    const b = await getJson("build.json", { cache: "no-store" });
+    if (!b || typeof b.code !== "string") return;
+    if (!buildId) buildId = b.code;
+    else if (b.code !== buildId && $("update").hidden) { $("update").hidden = false; track("update-offered"); }
+  } catch (e) {}
+}
+function applyUpdate() { track("update-applied"); location.reload(); }
 
 /* ── Hero ── */
 function cdTiles(iso) {
@@ -523,7 +600,7 @@ function sideHtml(name, logo) {
 }
 function renderHero() {
   const d = S.data[S.team], m = focus(), el = $("hero");
-  if (!d) { el.innerHTML = `<div class="card"><div class="empty">Loading…</div></div>`; return; }
+  if (!d) { el.innerHTML = `<div class="card"><div class="empty">${LOADING()}</div></div>`; return; }
   if (!m) { el.innerHTML = `<div class="card hero"><div class="kicker">Next match</div><div class="empty" style="margin-top:8px">No match on the schedule yet — the next international window will show here.</div></div>`; return; }
   const L = S.live[m.id] || {}, st = L.state || m.state;
   const us = L.us != null ? L.us : m.us, them = L.them != null ? L.them : m.them;
@@ -850,10 +927,9 @@ async function loadNews(team) {
   if (S.news[team]) return;
   S.news[team] = [];
   try {
-    const r = await fetch(`${API}/${team === "men" ? "fifa.friendly" : "fifa.friendly.w"}/news?team=${TEAM[team].id}&limit=10`);
-    const j = r.ok ? await r.json() : {};
+    const j = (await getJson(`${API}/${team === "men" ? "fifa.friendly" : "fifa.friendly.w"}/news?team=${TEAM[team].id}&limit=10`)) || {};
     S.news[team] = (j.articles || []).map(a => ({ t: a.headline, d: a.published, v: a.type === "Media", u: a.links && a.links.web && a.links.web.href })).filter(a => a.t && /^https:\/\//.test(a.u || "")).slice(0, 6);   // feed links must be plain https
-  } catch (e) {}
+  } catch (e) { S.news[team] = null; /* try again next time this team is shown */ }
   if (S.team === team) renderNews();
 }
 function renderNews() {
@@ -909,8 +985,8 @@ async function toggleMatch(id) {
   if (!S.open[k] || S.sums[id]) return;
   const team = S.team, m = S.data[team].results.find(x => x.id === id);
   try {
-    const r = await fetch(`${API}/${m.lg}/summary?event=${id}`);
-    S.sums[id] = (r.ok && parseSummary(await r.json(), TEAM[team].id)) || "err";
+    const G = await getJson(`${API}/${m.lg}/summary?event=${id}`);
+    S.sums[id] = (G && parseSummary(G, TEAM[team].id)) || "err";
   } catch (e) { S.sums[id] = "err"; }
   if (S.team === team) renderResults();
 }
@@ -919,7 +995,9 @@ async function toggleMatch(id) {
 function render() {
   renderNextUp();
   const d = S.data[S.team];
-  $("stamp").textContent = d ? "Club form updated " + D(d.updated).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" }) : "";
+  const when = iso => D(iso).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  $("stamp").textContent = d ? (d.checked ? "Schedule, squads and club form checked " + when(d.checked) : "Club form updated " + when(d.updated)) : "";
+  renderStale();
   renderHero(); renderStories(); renderNews(); renderPool(); renderOppo(); renderFixtures(); renderResults();
 }
 /* ── Fail-safe sections ──
@@ -972,7 +1050,7 @@ if ("serviceWorker" in navigator && location.protocol === "https:") navigator.se
 async function loadTest(spec) {
   const [lg, id] = spec.split(":");
   try {
-    const G = await (await fetch(`${API}/${lg}/summary?event=${id}`, { cache: "no-store" })).json();
+    const G = await getJson(`${API}/${lg}/summary?event=${id}`, { cache: "no-store" });
     const c = G.header.competitions[0], hm = c.competitors.find(x => x.homeAway === "home"), aw = c.competitors.find(x => x.homeAway === "away");
     const logo = t => (t.logos && t.logos[0] && t.logos[0].href) || t.logo || "";
     const sn = String((G.header.season && G.header.season.name) || "").split(", ");
@@ -987,6 +1065,7 @@ async function loadTest(spec) {
 const testSpec = new URLSearchParams(location.search).get("test");
 render(); renderPoll();
 Promise.all([...ORDER.map(fetchData), testSpec ? loadTest(testSpec) : null]).then(() => { if (!pinned) S.team = soonest(); loadTeam(S.team); });
+checkBuild();
 
 /* iPhone has no install prompt: show how to add the app to the home screen. */
 (function () {

@@ -106,6 +106,15 @@ for (const w of [320, 360, 390, 768]) {
   test(`layout holds at ${w}px wide`, opts, async () => checkLayout(await probe("url=/&w=" + w)));
 }
 test("layout holds for the women's view", opts, async () => checkLayout(await probe("url=/%23women&w=360")));
+test("layout holds on a small phone with the 'newer version' and 'out of date' bars showing", opts, async () => {
+  const r = await probe("url=/&w=320&notices=1");
+  const bar = id => r.noticeBars.find(b => b.id === id);
+  assert.ok(bar("update").shown, "the refresh offer is visible");
+  assert.match(bar("update").text, /newer version of Cap Day is ready.*Refresh/);
+  assert.ok(bar("stale").shown, "the out-of-date notice is visible");
+  assert.match(bar("stale").text, /last checked 31 hours ago/);
+  checkLayout(r);
+});
 test("layout holds with a live match on a small phone (timeline, stats, lineups open)", opts, async () => {
   const r = await probe("url=/&w=320&live=1");
   if (r.noMatch) return;   // nothing scheduled for either team: there is no card to put into a live state
