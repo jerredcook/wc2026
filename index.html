@@ -293,7 +293,7 @@ dialog button{border:0;border-radius:16px;padding:8px 22px;background:#0b2a5b;co
   </a>
 
   <p class="foot">
-    <a href="privacy.html">Privacy</a> &middot; Unofficial and fan-made — not affiliated with or endorsed by U.S. Soccer, Concacaf or FIFA.
+    <a id="ver" href="https://github.com/jerredcook/wc2026/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Cap Day</a> &middot; <a href="privacy.html">Privacy</a> &middot; Unofficial and fan-made — not affiliated with or endorsed by U.S. Soccer, Concacaf or FIFA.
     Match and squad data from ESPN's public feed; rankings from FIFA. Club form covers each player's last three club matches and refreshes a few times a day.
     Kickoff times are shown in your local time zone. Visits are counted anonymously, without cookies. "Cap" is the football word for an international appearance: in 1886 England began giving each player a white silk cap for every international match.
   </p>
@@ -929,7 +929,7 @@ function render() {
 let errorsSent = 0;
 function reportError(where, e) {
   if (errorsSent++ >= 5) return;
-  track("error " + where + ": " + String((e && e.message) || e).slice(0, 90));
+  track("error " + where + ": " + String((e && e.message) || e).slice(0, 90) + " [v" + VERSION + "]");
 }
 function guard(fn, id, where) {
   return function () {
@@ -958,6 +958,9 @@ document.addEventListener("keydown", e => {
   const t = e.target;
   if ((e.key === "Enter" || e.key === " ") && t && t.getAttribute && t.getAttribute("role") === "button" && t.tagName !== "BUTTON") { e.preventDefault(); t.click(); }
 });
+
+/* Which version this is, in the footer (the number lives in js/core.js). */
+$("ver").textContent = "Cap Day v" + VERSION;
 
 let installEvt = null;
 window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; $("installBtn").hidden = false; });

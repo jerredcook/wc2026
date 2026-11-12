@@ -300,7 +300,7 @@ test("one broken section shows a notice, the rest carry on, and the error is rep
   p.run("S.data.men.pool = null; render()");
   assert.match(p.text("pool"), /couldn't be shown just now/);
   for (const id of ["nextup", "hero", "fixtures", "results"]) { assert.ok(p.text(id).length > 40); assert.ok(!p.text(id).includes(NOTICE)); }
-  assert.ok(p.tracked.some(x => /^capday: error players:/.test(x)));
+  assert.ok(p.tracked.some(x => /^capday: error players: .+ \[v\d+\.\d+\.\d+(-pre)?\]$/.test(x)), "the report names the section and the app version");
 });
 
 test("the data files failing to load leaves a loading state, not a crash", async () => {
@@ -348,4 +348,10 @@ test("rows that act as buttons are announced as buttons and reachable by keyboar
     for (const r of rows) assert.ok(/role="button"/.test(r) && /tabindex="0"/.test(r), `in #${id}: ${r.slice(0, 90)}`);
   }
   assert.match(p.html("results"), /aria-expanded="true"/, "an opened result says it is expanded");
+});
+
+test("the footer says which version this is", async () => {
+  const { VERSION } = require("../js/core.js");
+  const p = await boot();
+  assert.equal(p.el("ver").textContent, "Cap Day v" + VERSION);
 });

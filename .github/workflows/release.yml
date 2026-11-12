@@ -1,0 +1,38 @@
+name: Release
+
+# Pushing a tag like v0.1.0 publishes a GitHub release for it.
+#
+# A release is a named checkpoint: the live site already updates on every push
+# to main (deploy-pages.yml), so this changes nothing users see. It records
+# "this exact code was version 0.1.0", with that version's notes from
+# CHANGELOG.md, so there is always a known-good point to go back to.
+#
+# The tag is refused unless it matches the VERSION line in js/core.js and a
+# dated entry at the top of CHANGELOG.md (scripts/release-notes.mjs).
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Run tests
+        run: node --test
+
+      - name: Check the tag against the app's version, and collect the notes
+        run: node scripts/release-notes.mjs "$GITHUB_REF_NAME" > "$RUNNER_TEMP/notes.md"
+
+      - name: Publish the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release create "$GITHUB_REF_NAME" --verify-tag --title "Cap Day $GITHUB_REF_NAME" --notes-file "$RUNNER_TEMP/notes.md"

@@ -20,23 +20,40 @@ Cap Day answers three questions for both teams: **when do they play next, what i
 - **Player pool club form:** every recently called-up player with what they did in their club's last three matches (started / came on / unused sub / not in squad, goals, assists, cards). The next opponent's squad gets the same treatment.
 - **Fixtures and results**, a Men / Women toggle, calendar export, a QR code for sharing.
 
-The schedule, squads and club form are built by [`scripts/build-usa.mjs`](scripts/build-usa.mjs) into `data/usa/men.json` and `data/usa/women.json`, refreshed four times a day by the [`usa-hub`](.github/workflows/usa-hub.yml) Action. Live match detail is fetched by the page itself. [`usa.html`](usa.html) is only a redirect, kept so old links and QR codes still work.
+The schedule, squads and club form are built by [`scripts/build-usa.mjs`](scripts/build-usa.mjs) into `data/usa/men.json` and `data/usa/women.json`, refreshed hourly by the [`usa-hub`](.github/workflows/usa-hub.yml) Action. Live match detail is fetched by the page itself. [`usa.html`](usa.html) is only a redirect, kept so old links and QR codes still work.
 
 ## Engineering
 
 - **Core logic is separate and tested.** [`js/core.js`](js/core.js) holds the pure match logic (feed parsing, competition and match explanations, prediction grading, win expectancy). The page loads it as a plain script; the tests load it with `require()`.
-- **Tests:** `node --test` (75 tests, no dependencies, about ten seconds).
+- **Tests:** `node --test` (82 tests, no dependencies, about ten seconds).
   - [`test/core.test.cjs`](test/core.test.cjs): the logic against real recorded feed data in `test/fixtures/`.
   - [`test/render.test.cjs`](test/render.test.cjs): what each section puts on screen in every state — before kickoff, live, connection lost, full time, second leg, friendly, no match scheduled, women's view, test mode — plus the prediction flow, the feedback poll, escaping of feed text, and one section failing without taking the others down. The page's own code runs in a sandbox with a stand-in document, a fixed clock and recorded data ([`test/helpers/page.cjs`](test/helpers/page.cjs)).
   - [`test/browser.test.cjs`](test/browser.test.cjs): the whole app in headless Chrome, served locally — it boots, every section fills in, old links redirect. Skipped where no Chrome is installed.
   - The same file measures layout in the browser ([`test/helpers/probe.html`](test/helpers/probe.html)) at 320, 360, 390 and 768px, for the women's view, and with a live match open: no sideways scrolling, nothing off-screen, nothing marked hidden left visible, no empty sections, tap targets at least 32px, tappable rows reachable by keyboard.
   - [`test/sw.test.cjs`](test/sw.test.cjs): the service worker's offline rules (network first, only good answers stored, stored copy when offline, other sites untouched).
   - [`test/build.test.mjs`](test/build.test.mjs): the data pipeline's helpers and its validation gate.
+  - [`test/version.test.mjs`](test/version.test.mjs): the version number, the changelog and the release check agree.
   - [`test/site.test.cjs`](test/site.test.cjs): the shipped files (pages parse, every button calls a function that exists, every referenced file is present, `[hidden]` is never overridden, committed data is well-formed).
 - **Nothing publishes without passing them.** The deploy workflow runs the tests first, and the hourly data job only commits data the tests accept.
 - **The data pipeline refuses thin data.** `build-usa.mjs` validates each file before writing and will not replace a good file with one that is malformed or has shrunk sharply.
 - **Sections fail on their own.** Each part of the page draws inside a guard; if one throws, it shows a short notice, the rest keeps working, and the error is counted anonymously (GoatCounter event `capday: error …`).
 - **Live mode degrades gently:** a failed score request keeps the last known state, retries, and says "Connection lost" after about 100 seconds.
+
+## Versions
+
+The app's version is one line in [`js/core.js`](js/core.js) (`const VERSION`). The footer shows it, and the anonymous error reports carry it. [`CHANGELOG.md`](CHANGELOG.md) says what changed in each version, in plain words.
+
+- **The numbers:** a fix raises the last one (0.1.0 → 0.1.1), something new raises the middle one (0.1.1 → 0.2.0), and 1.0.0 is kept for the first app-store release.
+- **Between versions** the line ends in `-pre` (`0.2.0-pre` means "on the way to 0.2.0") and the top changelog entry reads "not yet released". Every push to `main` still goes live once the tests pass; a version is a named checkpoint on top of that.
+- **Data is not a version.** The hourly schedule, squad and score refreshes, and the weekly rankings, do not change the number.
+
+To release a version:
+
+1. In `js/core.js`, remove `-pre` from the `VERSION` line.
+2. In `CHANGELOG.md`, replace "not yet released" with the date, like `## 0.1.0 — 2026-11-15`.
+3. Commit, push, then tag that commit and push the tag: `git tag v0.1.0 && git push origin v0.1.0`.
+
+The [`release`](.github/workflows/release.yml) Action then runs the tests, refuses the tag unless it matches the version line and a dated changelog entry ([`scripts/release-notes.mjs`](scripts/release-notes.mjs)), and publishes a GitHub release with that entry as its notes. The next change after a release starts a new `-pre` version with its own changelog entry; the tests fail if the number moves without one.
 
 ## Road to Google Play
 
