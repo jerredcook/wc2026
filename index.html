@@ -151,6 +151,9 @@ details[open]>summary::before{content:"▾ "}
 .empty{font-size:13px;color:var(--ink3);padding:6px 0}
 .foot{font-size:11px;color:var(--ink3);line-height:1.6;margin-top:18px}
 .morecard{display:block;text-decoration:none;color:inherit}
+.iostip{display:flex;gap:10px;align-items:center;justify-content:space-between;font-size:13px;line-height:1.4;padding:12px 14px}
+.testbar{background:#f0cf70;color:#3a2a00;font-size:12px;font-weight:700;border-radius:8px;padding:6px 10px;margin-bottom:10px}
+.testbar a{color:#3a2a00}
 .explain{margin-top:14px;background:rgba(255,255,255,.08);border-radius:12px;padding:12px}
 .explain .kicker{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
 .ex{display:grid;grid-template-columns:92px 1fr;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:13.5px;line-height:1.4;color:var(--ink2)}
@@ -253,6 +256,10 @@ dialog button{border:0;border-radius:16px;padding:8px 22px;background:#0b2a5b;co
       <a class="back" href="worldcup.html">World Cup &rarr;</a>
     </div>
   </div>
+  <div class="card iostip" id="iosTip" hidden>
+    <span><b>Add Cap Day to your iPhone.</b> Tap the Share button <span aria-hidden="true">(the square with an arrow)</span>, then <b>Add to Home Screen</b>.</span>
+    <button class="btn" aria-label="Dismiss">Got it</button>
+  </div>
   <div class="nextup" id="nextup"></div>
 
   <div id="hero"></div>
@@ -335,7 +342,7 @@ function ptsOf(name) {
 }
 /* FIFA's own win-expectancy formula on current rating points (a draw counts half). */
 function winExp(oppName) {
-  const a = ptsOf("United States"), b = ptsOf(oppName);
+  const a = ptsOf(S.test ? S.test.usName : "United States"), b = ptsOf(oppName);
   return a == null || b == null ? null : 1 / (1 + Math.pow(10, -(a - b) / 600));
 }
 
@@ -429,6 +436,7 @@ async function loadTeam(team, force) {
    kicked off stays here (live, then full time) until the data file moves it to
    the results. */
 function focus() {
+  if (S.test) return S.test.m;
   const d = S.data[S.team]; if (!d) return null;
   return d.fixtures.find(m => (S.live[m.id] ? S.live[m.id].state : m.state) !== "post" || Date.now() - D(m.date) < 6 * 36e5) || d.fixtures[0] || null;
 }
@@ -503,7 +511,7 @@ async function refreshLive() {
   try {
     const r = await fetch(`${API}/${m.lg}/summary?event=${m.id}`, { cache: "no-store" });
     if (r.ok) {
-      const L = parseSummary(await r.json(), TEAM[team].id), old = S.live[m.id];
+      const L = parseSummary(await r.json(), S.test ? S.test.usId : TEAM[team].id), old = S.live[m.id];
       if (L) {
         /* A goal since the last look (either side): flash the card. */
         if (old && L.state === "in" && old.us != null && (L.us !== old.us || L.them !== old.them)) {
@@ -541,14 +549,15 @@ function cdTiles(iso) {
 setInterval(() => { const el = $("cd"); if (el && el.dataset.iso) el.innerHTML = cdTiles(el.dataset.iso); }, 1000);
 
 /* Count a named action in GoatCounter (shows up as an event, e.g. "call-locked"). */
-function track(name) { try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: name, title: name, event: true }); } catch (e) {} }
+function track(name) { name = "capday: " + name; try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: name, title: name, event: true }); } catch (e) {} }
 
 /* ── Call the score ── */
 function saveCalls() { try { localStorage.setItem(KEY + ".calls", JSON.stringify(S.calls)); } catch (e) {} }
 function callOf(id) { return S.calls[id] || (S.calls[id] = { us: 2, them: 0, locked: false }); }
 function bump(id, side, n) { const c = callOf(id); c[side] = Math.max(0, Math.min(15, c[side] + n)); renderHero(); }
 function lockCall(id, on) { callOf(id).locked = on; saveCalls(); renderHero(); if (on) track("call-locked"); }
-function callText(m, c) { return m.ha === "H" ? `USA ${c.us}–${c.them} ${m.opp.name}` : `${m.opp.name} ${c.them}–${c.us} USA`; }
+const usShort = () => S.test ? S.test.usName : "USA";
+function callText(m, c) { return m.ha === "H" ? `${usShort()} ${c.us}–${c.them} ${m.opp.name}` : `${m.opp.name} ${c.them}–${c.us} ${usShort()}`; }
 function shareCall(id) {
   const d = S.data[S.team], m = d && d.fixtures.concat(d.results).find(x => x.id === id); if (!m) return;
   const url = location.origin + location.pathname + "#" + S.team;
@@ -564,7 +573,7 @@ function callHtml(m, st, us, them) {
     const row = (label, side) => `<div class="row"><span>${h(label)}</span><span class="step">
       <button aria-label="${h(label)} fewer" onclick="bump('${h(m.id)}','${side}',-1)">−</button><b>${cc[side]}</b>
       <button aria-label="${h(label)} more" onclick="bump('${h(m.id)}','${side}',1)">+</button></span></div>`;
-    const rows = [row("USA", "us"), row(m.opp.name, "them")];
+    const rows = [row(usShort(), "us"), row(m.opp.name, "them")];
     return `<div class="call"><div class="kicker">Call the score</div>${home ? rows.join("") : rows.reverse().join("")}
       <button class="lock" onclick="lockCall('${h(m.id)}',true)">Lock in my call</button></div>`;
   }
@@ -589,7 +598,7 @@ function renderHero() {
   if (!m) { el.innerHTML = `<div class="card hero"><div class="kicker">Next match</div><div class="empty" style="margin-top:8px">No match on the schedule yet — the next international window will show here.</div></div>`; return; }
   const L = S.live[m.id] || {}, st = L.state || m.state;
   const us = L.us != null ? L.us : m.us, them = L.them != null ? L.them : m.them;
-  const usSide = sideHtml("United States", USA_LOGO), oppSide = sideHtml(m.opp.name, m.opp.logo);
+  const usSide = S.test ? sideHtml(S.test.usName, S.test.usLogo) : sideHtml("United States", USA_LOGO), oppSide = sideHtml(m.opp.name, m.opp.logo);
   const home = m.ha === "H";
   const label = [m.comp, m.round, m.leg].filter(Boolean).join(" · ");
   let mid;
@@ -653,6 +662,7 @@ function renderHero() {
     if (rowsS.length) statsHtml = `<div class="stats">${rowsS.join("")}</div>`;
   }
   el.innerHTML = `<div class="card hero ${st === "in" ? "live" : ""} ${S.flash ? "flash" : ""}">
+    ${S.test ? `<div class="testbar">TEST MODE: following another match to check live updates. <a href="./">Exit</a></div>` : ""}
     <div class="kicker">${st === "in" ? "Live now" : st === "post" ? "Full time" : "Next match"} &middot; ${h(label)}</div>
     <div class="vs">${home ? usSide : oppSide}<div class="mid">${mid}</div>${home ? oppSide : usSide}</div>
     ${st === "pre" ? `<div class="when">${fmtDay(m.date)} &middot; ${fmtTime(m.date)} <span style="font-weight:600;color:var(--ink3)">${h(fmtZone(m.date))}</span></div>
@@ -944,10 +954,41 @@ window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); instal
 window.addEventListener("appinstalled", () => track("installed"));
 $("installBtn").addEventListener("click", () => { if (installEvt) { installEvt.prompt(); installEvt = null; $("installBtn").hidden = true; } });
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+/* Test mode (?test=<league>:<event id>): point the match card at any match in the
+   feed, with the home side standing in for the USA, to rehearse live updates. */
+async function loadTest(spec) {
+  const [lg, id] = spec.split(":");
+  try {
+    const G = await (await fetch(`${API}/${lg}/summary?event=${id}`, { cache: "no-store" })).json();
+    const c = G.header.competitions[0], hm = c.competitors.find(x => x.homeAway === "home"), aw = c.competitors.find(x => x.homeAway === "away");
+    const logo = t => (t.logos && t.logos[0] && t.logos[0].href) || t.logo || "";
+    const sn = String((G.header.season && G.header.season.name) || "").split(", ");
+    const v = (G.gameInfo && G.gameInfo.venue) || {};
+    S.test = { usId: hm.id, usName: hm.team.displayName, usLogo: logo(hm.team), m: {
+      id, lg, date: c.date, comp: (G.header.league && G.header.league.name) || sn[0] || "", round: sn[1] || "", leg: (c.leg && c.leg.displayValue) || "",
+      venue: v.fullName || "", city: (v.address && v.address.city) || "", ha: "H",
+      opp: { id: aw.id, name: aw.team.displayName, abbr: aw.team.abbreviation, logo: logo(aw.team) },
+      us: null, them: null, pen: null, state: (c.status && c.status.type && c.status.type.state) || "pre", tv: [] } };
+  } catch (e) { S.test = null; }
+}
+const testSpec = new URLSearchParams(location.search).get("test");
 render();
-Promise.all(ORDER.map(fetchData)).then(() => { if (!pinned) S.team = soonest(); loadTeam(S.team); });
+Promise.all([...ORDER.map(fetchData), testSpec ? loadTest(testSpec) : null]).then(() => { if (!pinned) S.team = soonest(); loadTeam(S.team); });
+
+/* iPhone has no install prompt: show how to add the app to the home screen. */
+(function () {
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) && !navigator.standalone;
+  let seen = false; try { seen = localStorage.getItem(KEY + ".iostip") === "1"; } catch (e) {}
+  if (!ios || seen) return;
+  const el = $("iosTip"); el.hidden = false;
+  el.querySelector("button").onclick = () => { el.hidden = true; try { localStorage.setItem(KEY + ".iostip", "1"); } catch (e) {} };
+})();
 </script>
 <!-- Visit counting: GoatCounter (no cookies, no personal data). -->
+<script>
+/* This GoatCounter account is shared with other projects: label everything "capday". */
+window.goatcounter = { path: function (p) { return "capday" + p.replace(/^\/wc2026/, ""); } };
+</script>
 <script data-goatcounter="https://jerredcook.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 </body>
 </html>
