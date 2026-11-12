@@ -161,3 +161,9 @@ test("data files: the build's working flags never reach the published data", () 
     assert.ok(d.pool.filter(p => p.rec.length).length >= d.pool.length * 0.5, `${t}.json: fewer than half the pool has club form`);
   }
 });
+
+test("page order: next matches, match card, storylines, then the score call, then everything else", () => {
+  const html = read("index.html"), at = id => { const i = html.indexOf(`id="${id}"`); assert.ok(i > 0, `#${id} is missing`); return i; };
+  const order = ["nextup", "hero", "stories", "call", "news", "pool", "oppo", "fixtures", "results", "poll"];
+  for (let i = 1; i < order.length; i++) assert.ok(at(order[i - 1]) < at(order[i]), `#${order[i - 1]} should come before #${order[i]}`);
+});
