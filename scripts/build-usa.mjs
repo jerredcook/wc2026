@@ -297,6 +297,31 @@ async function standing(m, teamId) {
   return list.length ? { kind: "ties", title: (mine.season.type && mine.season.type.name) || m.round || "This round", slug, ties: list } : null;
 }
 
+/* ── How each side got here: its earlier matches in this competition, and for
+   an opponent that came through a group, where it finished. ── */
+async function road(m, teamId, usResults) {
+  const since = new Date(m.date).getTime() - 330 * 864e5;
+  const mine = r => r.lg === m.lg && new Date(r.date).getTime() > since && r.date < m.date;
+  const slim = r => ({ date: r.date, opp: r.opp.name, ha: r.ha, f: r.us, a: r.them, pen: r.pen, round: r.round });
+  const out = { us: usResults.filter(mine).map(slim).reverse(), opp: [], oppTable: null };
+  try {
+    const sc = await get(`${API}/${m.lg}/teams/${m.opp.id}/schedule`);
+    out.opp = (sc.events || []).map(e => slimMatch(e, m.opp.id)).filter(Boolean)
+      .filter(r => r.state === "post" && mine(r)).sort((a, b) => a.date.localeCompare(b.date)).map(slim);
+  } catch (e) { console.warn("  ! opponent road: " + e.message); }
+  try {
+    const st = await get(`https://site.api.espn.com/apis/v2/sports/soccer/${m.lg}/standings`);
+    const g = (st.children || []).find(c => ((c.standings || {}).entries || []).some(e => e.team.id === m.opp.id));
+    if (g) {
+      const v = (e, n) => { const x = e.stats.find(q => q.name === n); return x ? x.displayValue : ""; };
+      const rows = g.standings.entries.map(e => ({ name: e.team.displayName, me: e.team.id === m.opp.id, p: v(e, "gamesPlayed"), w: v(e, "wins"), d: v(e, "ties"), l: v(e, "losses"), gd: v(e, "pointDifferential"), pts: v(e, "points"), rank: Number(v(e, "rank")) || 0 }));
+      if (rows.every(r => r.rank)) rows.sort((a, b) => a.rank - b.rank); else rows.sort((a, b) => Number(b.pts) - Number(a.pts) || parseInt(b.gd) - parseInt(a.gd));
+      out.oppTable = { title: g.name, rows };
+    }
+  } catch (e) { /* no table for this competition */ }
+  return out;
+}
+
 async function build(key) {
   const T = TEAMS[key];
   console.log(`\n== ${T.label} (team ${T.id})`);
@@ -352,6 +377,10 @@ async function build(key) {
       const st = await standing(next, T.id);
       for (const m of fixtures) if (st && m.lg === next.lg && m.round === next.round) m.stand = st;
     } catch (e) { console.warn("  ! standings: " + e.message); }
+    if (!/friendly/i.test(next.comp)) {
+      const rd = await road(next, T.id, results);
+      for (const m of fixtures) if (m.lg === next.lg && m.opp.id === next.opp.id) m.road = rd;
+    }
   }
 
   /* The next opponent gets the same treatment, so the page can show who to

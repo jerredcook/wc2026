@@ -249,7 +249,7 @@ dialog button{border:0;border-radius:16px;padding:8px 22px;background:#0b2a5b;co
     </div>
     <div class="hbtns">
       <button class="btn" id="installBtn" hidden>⬇ Install</button>
-      <button class="btn" onclick="document.getElementById('qr').showModal()">▦ QR code</button>
+      <button class="btn" onclick="document.getElementById('qr').showModal();track('qr-opened')">▦ QR code</button>
       <a class="back" href="worldcup.html">World Cup &rarr;</a>
     </div>
   </div>
@@ -272,7 +272,7 @@ dialog button{border:0;border-radius:16px;padding:8px 22px;background:#0b2a5b;co
   <p class="foot">
     Unofficial and fan-made — not affiliated with or endorsed by U.S. Soccer, Concacaf or FIFA.
     Match and squad data from ESPN's public feed; rankings from FIFA. Club form covers each player's last three club matches and refreshes a few times a day.
-    Kickoff times are shown in your local time zone. "Cap" is the football word for an international appearance: in 1886 England began giving each player a white silk cap for every international match.
+    Kickoff times are shown in your local time zone. Visits are counted anonymously, without cookies. "Cap" is the football word for an international appearance: in 1886 England began giving each player a white silk cap for every international match.
   </p>
 </div>
 
@@ -391,7 +391,7 @@ function soonest() {
 }
 function pickTeam(t) {
   if (!TEAM[t]) return;
-  if (t !== S.team) { S.team = t; S.pos = "all"; history.replaceState(null, "", "#" + t); render(); loadTeam(t); }
+  if (t !== S.team) { track("team-" + t); S.team = t; S.pos = "all"; history.replaceState(null, "", "#" + t); render(); loadTeam(t); }
   const el = $("hero"); if (el && el.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 function renderNextUp() {
@@ -540,16 +540,20 @@ function cdTiles(iso) {
 }
 setInterval(() => { const el = $("cd"); if (el && el.dataset.iso) el.innerHTML = cdTiles(el.dataset.iso); }, 1000);
 
+/* Count a named action in GoatCounter (shows up as an event, e.g. "call-locked"). */
+function track(name) { try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: name, title: name, event: true }); } catch (e) {} }
+
 /* ── Call the score ── */
 function saveCalls() { try { localStorage.setItem(KEY + ".calls", JSON.stringify(S.calls)); } catch (e) {} }
 function callOf(id) { return S.calls[id] || (S.calls[id] = { us: 2, them: 0, locked: false }); }
 function bump(id, side, n) { const c = callOf(id); c[side] = Math.max(0, Math.min(15, c[side] + n)); renderHero(); }
-function lockCall(id, on) { callOf(id).locked = on; saveCalls(); renderHero(); }
+function lockCall(id, on) { callOf(id).locked = on; saveCalls(); renderHero(); if (on) track("call-locked"); }
 function callText(m, c) { return m.ha === "H" ? `USA ${c.us}–${c.them} ${m.opp.name}` : `${m.opp.name} ${c.them}–${c.us} USA`; }
 function shareCall(id) {
   const d = S.data[S.team], m = d && d.fixtures.concat(d.results).find(x => x.id === id); if (!m) return;
   const url = location.origin + location.pathname + "#" + S.team;
   const text = `My call: ${callText(m, callOf(id))}. What's yours?`;
+  track("call-shared");
   if (navigator.share) navigator.share({ title: "Cap Day", text, url }).catch(() => {});
   else if (navigator.clipboard) navigator.clipboard.writeText(text + " " + url).then(() => { const b = $("shareCall"); if (b) { b.textContent = "Copied"; setTimeout(renderHero, 1500); } });
 }
@@ -676,7 +680,27 @@ function explainHtml(m, ed, first) {
   if (ed.stakes) ex.push(["At stake", h(ed.stakes)]);
   else if (ci.kind === "friendly") ex.push(["At stake", "Nothing but form, places in the squad and FIFA ranking points."]);
   return ex.length ? `<div class="explain"><div class="kicker">What is this match? ${ctag(m)}</div>` +
-    ex.map(([l, t]) => `<div class="ex"><span class="exl">${l}</span><span>${t}</span></div>`).join("") + `</div>` : "";
+    ex.map(([l, t]) => `<div class="ex"><span class="exl">${l}</span><span>${t}</span></div>`).join("") + moreHtml(m, ci) + `</div>` : "";
+}
+/* The deeper story: how the competition works, its history, how each side got
+   here, and what comes next. Hand-written parts come from editorial.json. */
+function roadList(list) {
+  return list.map(r => { const o = outcome(r.f, r.a, r.pen); return `<div class="g"><span class="pill ${o}">${o}</span>${r.f}–${r.a} ${r.ha === "H" ? "v" : "at"} ${h(r.opp)}${r.pen ? ` (${r.pen[0]}–${r.pen[1]} pens)` : ""} <span style="color:var(--ink3)">&middot; ${fmtShort(r.date)}${r.round ? ", " + h(r.round) : ""}</span></div>`; }).join("");
+}
+function moreHtml(m, ci) {
+  const c = (S.ed && S.ed.comps && S.ed.comps[m.lg]) || {}, rd = m.road || { us: [], opp: [] }, parts = [];
+  if (c.how) parts.push(["How it works", h(c.how)]);
+  if (c.history) parts.push(["History", h(c.history)]);
+  if (rd.us.length || c.usRoad) parts.push(["How the USA got here", (rd.us.length ? `<div class="l5" style="grid-template-columns:1fr;margin-top:0"><div>${roadList(rd.us)}</div></div>` : "") + (rd.us.length ? "" : h(c.usRoad))]);
+  if (rd.opp.length) {
+    const t = rd.oppTable, i = t ? t.rows.findIndex(r => r.me) : -1;
+    const place = i >= 0 ? `${h(m.opp.name)} finished ${["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"][i] || (i + 1) + "th"} of ${t.rows.length} in ${h(t.title)} (${h(t.rows[i].w)} won, ${h(t.rows[i].d)} drawn, ${h(t.rows[i].l)} lost).` : "";
+    parts.push([`How ${h(m.opp.name)} got here`, (place ? `<div style="margin-bottom:6px">${place}</div>` : "") + `<div class="l5" style="grid-template-columns:1fr;margin-top:0"><div>${roadList(rd.opp)}</div></div>`]);
+  }
+  if (c.next) parts.push(["What comes next", h(c.next)]);
+  if (!parts.length) return "";
+  return `<details ${S.open.more ? "open" : ""} ontoggle="S.open.more=this.open" style="border-top:1px solid var(--line)"><summary style="margin-top:8px">More about the ${h(ci.name || "competition")}: how it works and how we got here</summary>` +
+    parts.map(([l, t]) => `<div class="ex" style="grid-template-columns:1fr;gap:3px"><span class="exl">${l}</span><span>${t}</span></div>`).join("") + `</details>`;
 }
 function standHtml(m) {
   const sd = m.stand; if (!sd) return "";
@@ -763,6 +787,7 @@ function renderOppo() {
 }
 
 function addCal(id) {
+  track("calendar-single");
   const m = S.data[S.team].fixtures.find(x => x.id === id); if (!m) return;
   const z = t => new Date(t).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
   const title = (m.ha === "H" ? "USA vs " + m.opp.name : m.opp.name + " vs USA") + (S.team === "women" ? " (W)" : "");
@@ -777,6 +802,7 @@ function addCal(id) {
   document.body.appendChild(a); a.click(); a.remove();
 }
 function share() {
+  track("share");
   const url = location.origin + location.pathname + "#" + S.team;
   if (navigator.share) navigator.share({ title: document.title, url }).catch(() => {});
   else if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => { const b = event.target; const t = b.textContent; b.textContent = "Link copied"; setTimeout(() => b.textContent = t, 1500); });
@@ -817,7 +843,7 @@ function playerRow(p, hasExtra) {
 }
 function renderPool() {
   const d = S.data[S.team], el = $("pool"); if (!d) { el.innerHTML = ""; return; }
-  const all = d.pool, hasExtra = all.some(p => !p.cur) && all.some(p => p.cur);
+  const all = d.pool.filter(p => p.flag !== "RET"), hasExtra = all.some(p => !p.cur) && all.some(p => p.cur);   // retired players stay on Wikipedia's list for a year; they are not part of the pool
   /* "Last club matchday": each player's most recent club match, if recent. */
   const recent = all.map(p => ({ p, r: p.rec[0] })).filter(x => x.r && Date.now() - D(x.r.d) < 10 * 864e5);
   const started = recent.filter(x => x.r.st === "S").length, cameOn = recent.filter(x => x.r.st === "I").length;
@@ -871,7 +897,7 @@ function openSub() {
   const feed = new URL("data/usa/all.ics", location.href).href;
   $("subApple").href = feed.replace(/^https?:/, "webcal:");
   $("subGoogle").href = "https://calendar.google.com/calendar/render?cid=" + encodeURIComponent(feed.replace(/^https:/, "http:"));
-  $("sub").showModal();
+  $("sub").showModal(); track("calendar-opened");
 }
 function renderResults() {
   const d = S.data[S.team], el = $("results"); if (!d) { el.innerHTML = ""; return; }
@@ -915,10 +941,13 @@ function render() {
 }
 let installEvt = null;
 window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; $("installBtn").hidden = false; });
+window.addEventListener("appinstalled", () => track("installed"));
 $("installBtn").addEventListener("click", () => { if (installEvt) { installEvt.prompt(); installEvt = null; $("installBtn").hidden = true; } });
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 render();
 Promise.all(ORDER.map(fetchData)).then(() => { if (!pinned) S.team = soonest(); loadTeam(S.team); });
 </script>
+<!-- Visit counting: GoatCounter (no cookies, no personal data). -->
+<script data-goatcounter="https://jerredcook.goatcounter.com/count" async src="https://gc.zgo.at/count.js"></script>
 </body>
 </html>

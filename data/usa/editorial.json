@@ -1,5 +1,5 @@
 {
- "_note": "Hand-written 'at stake' line per match, keyed by ESPN event id. The build script never touches this file. Keep each to one or two plain sentences.",
+ "_note": "Hand-written context. Match entries are keyed by ESPN event id ('stakes' = the At stake line). 'comps' entries are keyed by ESPN league slug and fill the 'More about…' section: how = format, history = past winners, next = dates ahead, usRoad = how the USA got to this stage when it played no earlier matches. The build script never touches this file.",
  "401929710": {
   "stakes": "The winner over the two matches goes to the Nations League finals in March and qualifies for next summer's Gold Cup. The loser has to win a playoff in March to reach the Gold Cup."
  },
@@ -8,5 +8,19 @@
  },
  "401870040": {
   "stakes": "Win, and the USA qualifies for the 2027 Women's World Cup and plays a semifinal on December 1. Lose, and it drops into a play-in match for a second chance to qualify."
+ },
+ "comps": {
+  "concacaf.nations.league": {
+   "how": "Sixteen teams play in the top division. The twelve lowest-ranked start in a group stage. The four highest-ranked in the region skip it and go straight to the quarterfinals, where the top two from each group join them. Each quarterfinal is two matches, one at each team's home. The four winners meet in March for semifinals and a final.",
+   "history": "This is the fifth edition. The USA won the first three, in 2021, 2023 and 2024. Mexico won the most recent, in 2025.",
+   "next": "The finals are on March 22–30, 2027.",
+   "usRoad": "The USA did not play the group stage. As one of the four highest-ranked teams in the region, it went straight to the quarterfinals."
+  },
+  "concacaf.womens.championship": {
+   "how": "Eight teams play a straight knockout in the United States from November 27 to December 5. The four quarterfinal winners qualify for the 2027 Women's World Cup and go on to the semifinals. The four losers play one more match for two places in a further World Cup playoff.",
+   "history": "This is the 12th edition. The USA has won it nine times, including the last three, in 2014, 2018 and 2022.",
+   "next": "Semifinals are on December 1. The final and third-place match are on December 5 in Houston.",
+   "usRoad": "The USA and Canada went straight into the tournament as the region's two highest-ranked teams. The other six came through a qualifying competition."
+  }
  }
 }
