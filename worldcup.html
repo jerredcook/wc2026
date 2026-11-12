@@ -1297,10 +1297,14 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
 .tzbtn,.tz-select,.theme-btn,.rs-mode,.bk-pathsel{min-height:36px}
 .tzbtn,.rs-mode{padding-left:12px;padding-right:12px}
 .rs-collapse{min-height:36px;padding:0 4px}
-.rs-rname{padding:10px 0;margin:0}
+.rs-rname{padding:12px 0;margin:0}
 .dg-line{min-height:36px}
 .fbtn,.hx-mode{min-height:36px;min-width:36px}
 .td-row{min-height:36px}
+/* Rows that act as buttons get an explicit height: left to their contents, they come out a few
+   pixels shorter in browsers whose emoji font is smaller (flags), and dip under the tap-size limit. */
+.cd-trow,.rk-row,.rk-table th.rk-sort{height:40px}
+.mrow,.hx-row,.bk-head,.st-head,.sc-head,.th-head,.sd-head,.fr-head,.hx-head{min-height:40px}
 .rs-modes{flex-wrap:wrap}
 .grid{grid-template-columns:repeat(auto-fill,minmax(min(320px,100%),1fr))}
 /* Tables: the group tables fit the screen; the wide rankings tables scroll sideways inside their own box. */
