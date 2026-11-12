@@ -338,3 +338,14 @@ test("polling: every 30 seconds while live, and it stops at full time", async ()
   const done = await boot({ summary: summaryAs("post") });
   assert.equal(done.timers.filter(t => /refreshLive/.test(t.fn.name)).length, 0);
 });
+
+test("rows that act as buttons are announced as buttons and reachable by keyboard", async () => {
+  const p = await boot({ summary: summaryAs("post") });
+  p.run("toggleMatch(S.data.men.results[0].id)"); await p.settle();
+  for (const id of ["pool", "oppo", "fixtures", "results"]) {
+    const rows = p.html(id).match(/<(div|span|li)[^>]*onclick=[^>]*>/g) || [];
+    assert.ok(rows.length > 0, `#${id} should have tappable rows`);
+    for (const r of rows) assert.ok(/role="button"/.test(r) && /tabindex="0"/.test(r), `in #${id}: ${r.slice(0, 90)}`);
+  }
+  assert.match(p.html("results"), /aria-expanded="true"/, "an opened result says it is expanded");
+});

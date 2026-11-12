@@ -25,10 +25,12 @@ The schedule, squads and club form are built by [`scripts/build-usa.mjs`](script
 ## Engineering
 
 - **Core logic is separate and tested.** [`js/core.js`](js/core.js) holds the pure match logic (feed parsing, competition and match explanations, prediction grading, win expectancy). The page loads it as a plain script; the tests load it with `require()`.
-- **Tests:** `node --test` (61 tests, no dependencies, about four seconds).
+- **Tests:** `node --test` (75 tests, no dependencies, about ten seconds).
   - [`test/core.test.cjs`](test/core.test.cjs): the logic against real recorded feed data in `test/fixtures/`.
   - [`test/render.test.cjs`](test/render.test.cjs): what each section puts on screen in every state — before kickoff, live, connection lost, full time, second leg, friendly, no match scheduled, women's view, test mode — plus the prediction flow, the feedback poll, escaping of feed text, and one section failing without taking the others down. The page's own code runs in a sandbox with a stand-in document, a fixed clock and recorded data ([`test/helpers/page.cjs`](test/helpers/page.cjs)).
   - [`test/browser.test.cjs`](test/browser.test.cjs): the whole app in headless Chrome, served locally — it boots, every section fills in, old links redirect. Skipped where no Chrome is installed.
+  - The same file measures layout in the browser ([`test/helpers/probe.html`](test/helpers/probe.html)) at 320, 360, 390 and 768px, for the women's view, and with a live match open: no sideways scrolling, nothing off-screen, nothing marked hidden left visible, no empty sections, tap targets at least 32px, tappable rows reachable by keyboard.
+  - [`test/sw.test.cjs`](test/sw.test.cjs): the service worker's offline rules (network first, only good answers stored, stored copy when offline, other sites untouched).
   - [`test/build.test.mjs`](test/build.test.mjs): the data pipeline's helpers and its validation gate.
   - [`test/site.test.cjs`](test/site.test.cjs): the shipped files (pages parse, every button calls a function that exists, every referenced file is present, `[hidden]` is never overridden, committed data is well-formed).
 - **Nothing publishes without passing them.** The deploy workflow runs the tests first, and the hourly data job only commits data the tests accept.

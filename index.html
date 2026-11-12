@@ -151,6 +151,9 @@ details[open]>summary::before{content:"▾ "}
 .empty{font-size:13px;color:var(--ink3);padding:6px 0}
 .foot{font-size:11px;color:var(--ink3);line-height:1.6;margin-top:18px}
 .morecard{display:block;text-decoration:none;color:inherit}
+.btn,.fb{min-height:36px}
+.seg button,.step button,.call .lock,dialog button{min-height:36px}
+button:focus-visible,a:focus-visible,[role=button]:focus-visible,summary:focus-visible{outline:2px solid var(--navy);outline-offset:2px;border-radius:6px}
 .watch{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;margin-top:10px}
 .watch .exl{padding:0;margin-right:2px}
 .nw{display:block;padding:9px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink);font-size:14px;font-weight:600;line-height:1.35}
@@ -296,7 +299,7 @@ dialog button{border:0;border-radius:16px;padding:8px 22px;background:#0b2a5b;co
   </p>
 </div>
 
-<dialog id="sub">
+<dialog id="sub" aria-label="Add matches to your calendar">
   <h3 style="font-size:17px;margin-bottom:6px">Never miss a match</h3>
   <p style="word-break:normal">Add every USA women's and men's match to your phone's calendar. New fixtures and kickoff changes arrive automatically.</p>
   <a class="subopt" id="subGoogle" target="_blank" rel="noopener">Google Calendar</a>
@@ -305,7 +308,7 @@ dialog button{border:0;border-radius:16px;padding:8px 22px;background:#0b2a5b;co
   <button onclick="this.closest('dialog').close()">Close</button>
 </dialog>
 
-<dialog id="qr">
+<dialog id="qr" aria-label="QR code for Cap Day">
   <img src="qr.svg" alt="QR code for this page" width="240" height="240">
   <p>Scan to open Cap Day<br>jerredcook.github.io/wc2026</p>
   <button onclick="this.closest('dialog').close()">Close</button>
@@ -768,7 +771,7 @@ function playerRow(p, hasExtra) {
     /* National-team status, in words: retired / injured / when last called. */
     const status = p.flag === "RET" ? "retired from international play" : p.flag === "INJ" ? "injured" : p.inj ? "injured"
       : hasExtra && !p.cur ? (p.latest ? "last called up: " + p.latest : "not in this squad") : "";
-    return `<div class="p" onclick="togglePlayer('${h(p.id)}')">
+    return `<div class="p" role="button" tabindex="0" aria-expanded="${open ? "true" : "false"}" onclick="togglePlayer('${h(p.id)}')">
       ${img(p.club && p.club.logo, cn)}
       <div><div class="pn">${h(p.name)}${caps}</div>
         ${status ? `<div class="pstat">${h(status)}</div>` : ""}
@@ -824,7 +827,7 @@ function renderFixtures() {
   if (!all.length) { el.innerHTML = ""; return; }
   el.innerHTML = `<div class="card"><div class="ctitle">Calendar — every upcoming match</div>
     <div class="cnote">Women and men together, in your local time. Tap a match to open it.</div>` + all.map(({ t, m }) =>
-    `<div class="m tap" onclick="pickTeam('${t}')"><div class="md">${fmtShort(m.date)}<small>${fmtTime(m.date)}</small></div>
+    `<div class="m tap" role="button" tabindex="0" onclick="pickTeam('${t}')"><div class="md">${fmtShort(m.date)}<small>${fmtTime(m.date)}</small></div>
       <div><div class="mt"><span class="wm" title="${NAME[t]}">${NAME[t][0]}</span>${img(m.opp.logo, "")}${m.ha === "H" ? "vs" : "at"} ${h(m.opp.name)}</div>
       <div class="ms">${ctag(m)} ${h([compLine(m), m.city].filter(Boolean).join(" · "))}</div>
       ${m.tv.length ? `<div class="chips" style="margin-top:5px">${m.tv.map(x => `<span class="chip">${h(x)}</span>`).join("")}</div>` : ""}</div><span></span></div>`).join("") +
@@ -895,7 +898,7 @@ function renderResults() {
           `<li class="${e.us ? "us" : "them"}"><span class="min">${h(e.min)}</span><span>${e.icon} ${h(e.who)}${e.note ? ` <small>(${h(e.note)})</small>` : ""}</span></li>`).join("") + `</ul>` :
         `<div class="empty">No goals or cards recorded.</div>`) + `</div>`;
     }
-    return `<div class="m tap" onclick="toggleMatch('${h(m.id)}')"><div class="md">${fmtShort(m.date)}<small>${yearOf(m.date)}</small></div>
+    return `<div class="m tap" role="button" tabindex="0" aria-expanded="${S.open["m" + m.id] ? "true" : "false"}" onclick="toggleMatch('${h(m.id)}')"><div class="md">${fmtShort(m.date)}<small>${yearOf(m.date)}</small></div>
       <div><div class="mt">${img(m.opp.logo, "")}${m.ha === "H" ? "vs" : "at"} ${h(m.opp.name)}</div>
       <div class="ms">${ctag(m)} ${h(compLine(m))}</div></div>
       <div class="res">${m.us}–${m.them}${m.pen ? ` <small style="font-weight:600;color:var(--ink3)">(${m.pen[0]}–${m.pen[1]} p)</small>` : ""} ${pill(m)}</div>${extra}</div>`;
@@ -949,6 +952,12 @@ renderNextUp = guard(renderNextUp, "nextup", "next-up");
 renderPoll = guard(renderPoll, "poll", "poll");
 window.addEventListener("error", e => reportError("script", e.error || e.message));
 window.addEventListener("unhandledrejection", e => reportError("promise", e.reason));
+
+/* Rows that act as buttons respond to Enter and Space, like real buttons. */
+document.addEventListener("keydown", e => {
+  const t = e.target;
+  if ((e.key === "Enter" || e.key === " ") && t && t.getAttribute && t.getAttribute("role") === "button" && t.tagName !== "BUTTON") { e.preventDefault(); t.click(); }
+});
 
 let installEvt = null;
 window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; $("installBtn").hidden = false; });

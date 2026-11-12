@@ -44,7 +44,7 @@ test.after(() => { if (server) server.close(); });
 function chrome(url, ua) {
   return new Promise(resolve => {
     execFile(CHROME, ["--headless=new", "--no-sandbox", "--disable-gpu", "--hide-scrollbars", "--user-agent=" + (ua || ANDROID),
-      "--virtual-time-budget=9000", "--dump-dom", url], { encoding: "utf8", timeout: 60000, maxBuffer: 64 * 1024 * 1024 },
+      "--window-size=1000,3400", "--virtual-time-budget=12000", "--dump-dom", url], { encoding: "utf8", timeout: 60000, maxBuffer: 64 * 1024 * 1024 },
       (err, stdout, stderr) => resolve({ stdout: stdout || "", note: String((err && err.message) || stderr || "").slice(0, 300) }));
   });
 }
@@ -80,4 +80,35 @@ test("old links still land on the app, and the other pages load", opts, async ()
   const wc = await open("/worldcup.html");
   assert.ok(wc.includes("World Cup") && wc.includes("Back to matchday"));
   assert.ok((await open("/privacy.html")).includes("What Cap Day does not do"));
+});
+
+/* ── Layout, measured in the browser (helpers/probe.html) ── */
+async function probe(query) {
+  const dom = await chrome(base + "/test/helpers/probe.html?" + query);
+  const m = /<pre id="out">([\s\S]*?)<\/pre>/.exec(dom.stdout);
+  assert.ok(m && m[1] !== "pending", "the layout probe did not finish: " + dom.note);
+  const r = JSON.parse(m[1].replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&quot;/g, '"'));
+  assert.ok(!r.error, "the layout probe failed: " + r.error);
+  return r;
+}
+function checkLayout(r) {
+  assert.equal(r.pageOverflow, 0, "the page scrolls sideways");
+  assert.deepEqual(r.offScreen, [], "something sticks out past the edge of the screen");
+  assert.deepEqual(r.hiddenButShown, [], "something marked hidden is visible");
+  assert.deepEqual(r.smallTargets, [], "a button is too small to tap comfortably (under 32px)");
+  assert.deepEqual(r.unreachableRows, [], "a tappable row cannot be reached by keyboard or screen reader");
+  assert.deepEqual(r.brokenLocalImages, [], "one of the app's own images is broken");
+  assert.equal(r.unlabelledImages, 0, "an image has no alt text");
+  assert.equal(r.notices, 0, "a section shows the failure notice");
+  for (const [id, hgt] of Object.entries(r.sections)) assert.ok(hgt > 20, `#${id} is empty or missing (height ${hgt})`);
+}
+for (const w of [320, 360, 390, 768]) {
+  test(`layout holds at ${w}px wide`, opts, async () => checkLayout(await probe("url=/&w=" + w)));
+}
+test("layout holds for the women's view", opts, async () => checkLayout(await probe("url=/%23women&w=360")));
+test("layout holds with a live match on a small phone (timeline, stats, lineups open)", opts, async () => {
+  const r = await probe("url=/&w=320&live=1");
+  if (r.noMatch) return;   // nothing scheduled for either team: there is no card to put into a live state
+  assert.match(r.state, /^Live now/);
+  checkLayout(r);
 });

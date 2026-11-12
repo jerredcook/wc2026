@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<!-- Layout probe for test/browser.test.cjs: loads a page of the app in a frame of
+     a given width, measures it, and writes the findings as JSON into #out.
+     ?url=/&w=360[&live=1]  (live=1 swaps the match card into a live state using a recorded match) -->
+<meta charset="utf-8">
+<body style="margin:0">
+<iframe id="f" style="border:0;display:block"></iframe>
+<pre id="out">pending</pre>
+<script>
+const q = new URLSearchParams(location.search), w = +q.get("w") || 390, f = document.getElementById("f");
+f.style.width = w + "px"; f.style.height = "3000px";
+const desc = e => (e.tagName.toLowerCase() + (e.id ? "#" + e.id : "") + (e.className && typeof e.className === "string" ? "." + e.className.trim().split(/\s+/).join(".") : "")).slice(0, 60) + " «" + (e.textContent || "").trim().slice(0, 30) + "»";
+async function measure() {
+  const d = f.contentDocument, win = f.contentWindow, r = { width: w };
+  if (q.get("live") && !win.eval("!!focus()")) r.noMatch = true;
+  else if (q.get("live")) {
+    const G = await (await fetch("/test/fixtures/summary-finished-usa-canada.json")).json();
+    G.header.competitions[0].status = { displayClock: "67'", type: { state: "in", shortDetail: "67'" } };
+    win.__G = G;
+    win.eval("clearTimeout(pollT); refreshLive = function () {}; S.live[focus().id] = parseSummary(__G, '660'); S.liveOk = Date.now(); S.open.xi = true; S.open.l5 = true; renderHero();");
+  }
+  const visible = e => { const b = e.getBoundingClientRect(), s = win.getComputedStyle(e); return b.width > 0 && b.height > 0 && s.visibility !== "hidden" && s.display !== "none"; };
+  const clipped = e => { for (let p = e.parentElement; p; p = p.parentElement) { const s = win.getComputedStyle(p); if (/(auto|scroll|hidden)/.test(s.overflowX)) return true; } return false; };
+  r.pageOverflow = d.documentElement.scrollWidth - d.documentElement.clientWidth;
+  r.offScreen = [...d.querySelectorAll("body *")].filter(visible).filter(e => { const b = e.getBoundingClientRect(); return (b.right > w + 1 || b.left < -1) && !clipped(e); }).slice(0, 6).map(desc);
+  r.hiddenButShown = [...d.querySelectorAll("[hidden]")].filter(e => win.getComputedStyle(e).display !== "none").map(desc);
+  r.sections = {};
+  for (const id of ["nextup", "hero", "stories", "pool", "fixtures", "results", "poll"]) { const e = d.getElementById(id); r.sections[id] = e ? Math.round(e.getBoundingClientRect().height) : -1; }
+  r.smallTargets = [...d.querySelectorAll("button, a.btn, a.subopt, [role=button]")].filter(visible).filter(e => { const b = e.getBoundingClientRect(); return b.height < 32 || b.width < 32; }).slice(0, 8).map(e => desc(e) + " " + Math.round(e.getBoundingClientRect().width) + "x" + Math.round(e.getBoundingClientRect().height));
+  r.brokenLocalImages = [...d.images].filter(i => i.src.startsWith(location.origin) && i.complete && i.naturalWidth === 0).map(i => i.getAttribute("src"));
+  r.unlabelledImages = [...d.images].filter(i => !i.hasAttribute("alt")).length;
+  r.notices = [...d.querySelectorAll(".empty")].filter(e => /couldn't be shown/.test(e.textContent)).length;
+  r.unreachableRows = [...d.querySelectorAll("div[onclick], span[onclick], li[onclick]")].filter(e => e.getAttribute("role") !== "button" || e.getAttribute("tabindex") == null).slice(0, 5).map(desc);
+  r.state = (d.querySelector(".hero .kicker") || {}).textContent || "";
+  return r;
+}
+f.onload = () => setTimeout(() => measure().then(r => { document.getElementById("out").textContent = JSON.stringify(r); }, e => { document.getElementById("out").textContent = JSON.stringify({ error: String(e && e.stack || e) }); }), 2500);
+f.src = q.get("url") || "/";
+</script>

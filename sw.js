@@ -4,7 +4,7 @@
    last-cached app shell. Live score APIs (ESPN / Anthropic) are cross-origin
    and are never intercepted or cached — they always go straight to the network
    and degrade gracefully on their own when offline. */
-const CACHE = "wc2026-v7";
+const CACHE = "wc2026-v8";
 const SHELL = ["./", "./index.html", "./js/core.js", "./worldcup.html", "./manifest.webmanifest", "./apple-touch-icon.png", "./icon-192.png", "./qr.svg"];
 
 self.addEventListener("install", function (e) {
@@ -31,8 +31,12 @@ self.addEventListener("fetch", function (e) {
   if (url.origin !== self.location.origin) return;
   e.respondWith(
     fetch(req).then(function (res) {
-      const copy = res.clone();
-      caches.open(CACHE).then(function (c) { c.put(req, copy); }).catch(function () {});
+      // Keep a copy for offline use, but only of good answers: caching an error
+      // page mid-deploy would replace a working offline copy with a broken one.
+      if (res.ok) {
+        const copy = res.clone();
+        caches.open(CACHE).then(function (c) { c.put(req, copy); }).catch(function () {});
+      }
       return res;
     }).catch(function () {
       return caches.match(req).then(function (hit) {
