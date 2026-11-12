@@ -153,3 +153,11 @@ test("the World Cup page no longer calls the Anthropic API", () => {
   assert.ok(!/api\.anthropic\.com/.test(read("worldcup.html")));
   assert.ok(!/fetchLiveScores\s*\(/.test(read("worldcup.html")));
 });
+
+test("data files: the build's working flags never reach the published data", () => {
+  for (const t of ["men", "women"]) {
+    const d = JSON.parse(read(`data/usa/${t}.json`));
+    for (const p of d.pool) assert.ok(!("unanswered" in p), `${t}.json: ${p.name} still carries a working flag`);
+    assert.ok(d.pool.filter(p => p.rec.length).length >= d.pool.length * 0.5, `${t}.json: fewer than half the pool has club form`);
+  }
+});

@@ -2,7 +2,7 @@
    the validation gate that stops thin data replacing good data. */
 import test from "node:test";
 import assert from "node:assert/strict";
-import { wikiPlayer, unwiki, nameKey, ics, calEvents, validate, stamp, CHECK_EVERY } from "../scripts/build-usa.mjs";
+import { wikiPlayer, unwiki, nameKey, ics, calEvents, validate, stamp, CHECK_EVERY, clubKey, indexClubs, findAthlete, keepPrevClubs } from "../scripts/build-usa.mjs";
 
 test("wikiPlayer: a called-up player row", () => {
   const p = wikiPlayer("{{nat fs g player|no=|pos=DF|name={{sortname|Antonee|Robinson}}|age={{birth date and age|1997|8|8}}|caps=62|goals=5|club=[[Fulham F.C.|Fulham]]|clubnat=ENG}}", true);
@@ -92,4 +92,65 @@ test("stamp: 'updated' moves only when the content changes; 'checked' is refresh
   const legacy = { updated: iso(T0 - 9 * hour), fixtures: [{ id: "1" }] };
   const upgraded = stamp(file(), legacy, T0);
   assert.equal(upgraded.updated, legacy.updated); assert.equal(upgraded.checked, iso(T0));
+});
+
+/* ── Club lookup for players the squad feed does not list ── */
+test("clubKey: the same club written two ways gives the same key", () => {
+  assert.equal(clubKey("St. Louis City SC"), clubKey("St. Louis CITY SC"));
+  assert.equal(clubKey("Gotham FC"), clubKey("NJ/NY Gotham FC"));
+  assert.equal(clubKey("Atlético Madrid"), clubKey("Atletico Madrid"));
+  assert.equal(clubKey("AC Milan"), "milan");
+  assert.equal(clubKey("SV Elversberg"), "elversberg");
+  assert.notEqual(clubKey("Manchester City"), clubKey("Manchester United"));
+  assert.notEqual(clubKey("Inter Milan"), clubKey("AC Milan"));
+  assert.equal(clubKey("FC"), "fc", "a name made only of filler words is kept as it is");
+  assert.equal(clubKey(null), "");
+});
+
+test("indexClubs: finds a club by any of its names, and refuses a name two clubs share", () => {
+  const idx = indexClubs([
+    { lg: "ita.1", teams: [{ id: 103, displayName: "AC Milan", shortDisplayName: "Milan", name: "AC Milan", location: "AC Milan", abbreviation: "MIL", logos: [{ href: "https://x/milan.png" }] }] },
+    { lg: "eng.1", teams: [{ id: 1, displayName: "Newcastle United", shortDisplayName: "Newcastle", abbreviation: "NEW" }, { id: 2, displayName: "Manchester United", shortDisplayName: "Man United" }] },
+    { lg: "eng.2", teams: [{ id: 3, displayName: "Sheffield United", shortDisplayName: "Sheffield" }, { id: 4, displayName: "Sheffield Wednesday", shortDisplayName: "Sheffield" }] },
+    { lg: "bad", teams: null },
+  ]);
+  assert.deepEqual(idx.get(clubKey("AC Milan")), { id: "103", lg: "ita.1", name: "AC Milan", abbr: "MIL", logo: "https://x/milan.png" });
+  assert.equal(idx.get(clubKey("Milan")).id, "103");
+  assert.equal(idx.get(clubKey("Newcastle")).id, "1");
+  assert.equal(idx.get(clubKey("Sheffield United")).id, "3");
+  assert.equal(idx.get(clubKey("Sheffield")), undefined, "two clubs answer to 'Sheffield': neither is guessed");
+  assert.equal(idx.get(clubKey("Real Madrid")), undefined);
+});
+
+test("findAthlete: the full name, or a surname only one player has, never a guess", () => {
+  const roster = [
+    { id: "1", displayName: "Yunus Musah" }, { id: "2", displayName: "Christian Pulisic" },
+    { id: "3", displayName: "Lo'eau LaBonta" }, { id: "4", displayName: "G. Campbell", fullName: "George Campbell" },
+    { id: "5", displayName: "Tyler Adams" }, { id: "6", displayName: "Che Adams" }, { displayName: "No Id" }, null,
+  ];
+  assert.equal(findAthlete(roster, "Yunus Musah").id, "1");
+  assert.equal(findAthlete(roster, "Lo’eau LaBonta").id, "3", "punctuation differences do not matter");
+  assert.equal(findAthlete(roster, "George Campbell").id, "4", "the feed's full name counts");
+  assert.equal(findAthlete(roster, "Chris Pulisic").id, "2", "a unique surname with the same initial");
+  assert.equal(findAthlete(roster, "Mark Pulisic"), null, "same surname, different initial: someone else");
+  assert.equal(findAthlete(roster, "Taylor Adams"), null, "two players share the surname: not guessed");
+  assert.equal(findAthlete(roster, "Weston McKennie"), null);
+  assert.equal(findAthlete(null, "Anyone"), null);
+});
+
+test("keepPrevClubs: an unanswered lookup keeps last run's club form; an answered one is respected", () => {
+  const milan = { id: "103", name: "AC Milan" }, rec = [{ d: "2026-11-08T17:00Z", st: "S" }];
+  const prev = { pool: [{ id: "307527", name: "Yunus Musah", club: milan, rec }, { id: "9", name: "Left Club", club: milan, rec }, { id: "w-new-guy", name: "New Guy", club: { id: null, name: "Lyon" }, rec: [] }] };
+  const players = [
+    { id: "w-yunus-musah", name: "Yunus Musah", club: { id: null, name: "AC Milan" }, rec: [], unanswered: true },
+    { id: "w-left-club", name: "Left Club", club: { id: "7", name: "Lyon" }, rec: [] },                     // the feed answered: not in the roster
+    { id: "w-new-guy", name: "New Guy", club: { id: null, name: "Lyon" }, rec: [], unanswered: true },       // nothing good to fall back on
+    { id: "5", name: "Fine Already", club: milan, rec },
+  ];
+  assert.equal(keepPrevClubs(players, prev), 1);
+  assert.deepEqual(players[0], { id: "307527", name: "Yunus Musah", club: milan, rec });
+  assert.equal(players[1].club.name, "Lyon"); assert.deepEqual(players[1].rec, []);
+  assert.deepEqual(players[2].rec, []);
+  assert.ok(players.every(p => !("unanswered" in p)), "the working flag never reaches the data file");
+  assert.equal(keepPrevClubs([{ name: "X", club: null, rec: [], unanswered: true }], null), 0, "first run: nothing to keep");
 });

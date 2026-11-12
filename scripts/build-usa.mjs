@@ -147,6 +147,14 @@ async function clubForm(clubId) {
   };
 }
 
+/* What one athlete did in each of a club's recent matches. */
+const recFor = (form, athleteId) => form.matches.map(m => {
+  const line = m.players[athleteId];
+  const base = { d: m.d, lg: m.lg, opp: m.opp, ha: m.ha, sf: m.sf, sa: m.sa };
+  if (!m.hasLineups) return { ...base, st: "?" };          // feed has no lineups for this match
+  return line ? { ...base, ...line } : { ...base, st: "X" }; // X = not in the matchday squad
+});
+
 /* A squad (union of the squads listed for `slugs`) with each player's club form. */
 const formCache = new Map();
 async function squadPool(teamId, slugs, curSlug) {
@@ -171,12 +179,7 @@ async function squadPool(teamId, slugs, curSlug) {
     const f = formCache.get(p.club);
     if (!f) { p.club = null; p.rec = []; continue; }
     p.club = f.club;
-    p.rec = f.matches.map(m => {
-      const line = m.players[p.id];
-      const base = { d: m.d, lg: m.lg, opp: m.opp, ha: m.ha, sf: m.sf, sa: m.sa };
-      if (!m.hasLineups) return { ...base, st: "?" };          // feed has no lineups for this match
-      return line ? { ...base, ...line } : { ...base, st: "X" }; // X = not in the matchday squad
-    });
+    p.rec = recFor(f, p.id);
   }
   const order = { G: 0, D: 1, M: 2, F: 3 };
   return players.sort((a, b) => order[a.pos] - order[b.pos] || a.name.localeCompare(b.name));
@@ -187,6 +190,90 @@ async function squadPool(teamId, slugs, curSlug) {
    actually named for the latest camp) and "Recent call-ups", each with caps
    and goals and an "as of" date. ESPN's squad lists are broader and carry no
    caps, so Wikipedia decides who is in the pool and ESPN supplies club form. */
+/* ── Clubs for players the squad feed does not list ──────────────────────────
+   The feed's squad lists cover the latest squads only. A player Wikipedia lists
+   as a recent call-up but who is in none of them arrives with a club *name* and
+   nothing else. To give him the same club form as everyone else: find that club
+   in the leagues below, find the player in the club's roster, and read his line
+   from the club's recent matches. */
+const CLUB_LEAGUES = {
+  men: ["usa.1", "eng.1", "eng.2", "eng.3", "ger.1", "ger.2", "ita.1", "ita.2", "esp.1", "esp.2", "fra.1", "fra.2", "ned.1", "por.1", "bel.1", "sco.1", "mex.1", "tur.1", "den.1", "aut.1", "sui.1", "nor.1", "swe.1", "gre.1", "usa.usl.1"],
+  women: ["usa.nwsl", "eng.w.1", "fra.w.1", "esp.w.1"],
+};
+/* A club's name reduced to its distinctive words: "St. Louis CITY SC" and "St. Louis City SC" agree. */
+const CLUB_NOISE = new Set(["fc", "cf", "sc", "ac", "afc", "as", "sv", "club", "the", "de", "nj", "ny", "njny"]);
+export const clubKey = n => { const w = nameKey(String(n || "").replace(/[\/.-]/g, " ")).split(/\s+/).filter(Boolean); const k = w.filter(x => !CLUB_NOISE.has(x)); return (k.length ? k : w).join(" "); };
+
+/* lists: [{ lg, teams: [team, …] }] in priority order → Map(clubKey → { id, lg, name, abbr, logo }).
+   A name that could mean two different clubs is left out rather than guessed. */
+export function indexClubs(lists) {
+  const idx = new Map();
+  for (const { lg, teams } of lists) {
+    for (const t of teams || []) {
+      const club = { id: String(t.id), lg, name: t.displayName, abbr: t.abbreviation || "", logo: logoOf(t) };
+      for (const n of new Set([t.displayName, t.shortDisplayName, t.name, t.location].filter(Boolean).map(clubKey))) {
+        if (!n) continue;
+        const had = idx.get(n);
+        if (had === undefined) idx.set(n, club);
+        else if (had && had.id !== club.id) idx.set(n, null);
+      }
+    }
+  }
+  for (const [k, v] of idx) if (!v) idx.delete(k);
+  return idx;
+}
+
+/* The athlete in a club roster who is this player: the full name, or a surname only one of them has. */
+export function findAthlete(athletes, name) {
+  const want = nameKey(name), list = (athletes || []).filter(a => a && a.id && a.displayName);
+  const exact = list.find(a => nameKey(a.displayName) === want || nameKey(a.fullName) === want);
+  if (exact) return exact;
+  const last = want.split(" ").pop(), first = want[0];
+  const same = list.filter(a => nameKey(a.displayName).split(" ").pop() === last);
+  return same.length === 1 && nameKey(same[0].displayName)[0] === first ? same[0] : null;
+}
+
+const clubIndexCache = new Map();
+function clubIndex(key) {
+  if (!clubIndexCache.has(key)) clubIndexCache.set(key, (async () => {
+    const lists = await pool(CLUB_LEAGUES[key] || [], async lg => {
+      const d = await get(`${API}/${lg}/teams`);
+      return { lg, teams: (((d.sports || [])[0] || {}).leagues || [])[0].teams.map(x => x.team) };
+    });
+    return indexClubs(lists.filter(Boolean));
+  })());
+  return clubIndexCache.get(key);
+}
+
+/* Fill in club and club form for the players who have only a club name. A
+   player whose club or roster entry is not there is left as he was. A player
+   whose lookup *failed* (the feed did not answer) is marked `unanswered`, so
+   last run's answer can stand in (keepPrevClubs). */
+async function fillClubs(players, key) {
+  const todo = players.filter(p => p.club && !p.club.id && p.club.name);
+  if (!todo.length) return 0;
+  let idx;
+  try { idx = await clubIndex(key); if (!idx.size) throw new Error("no club lists could be read"); }
+  catch (e) { for (const p of todo) p.unanswered = true; throw e; }
+  const rosters = new Map();
+  let filled = 0;
+  await pool(todo, async p => {
+    try {
+      const club = idx.get(clubKey(p.club.name));
+      if (!club) { console.warn(`  ! no club found for ${p.name} (${p.club.name})`); return; }
+      if (!rosters.has(club.id)) rosters.set(club.id, get(`${API}/${club.lg}/teams/${club.id}/roster`));
+      const a = findAthlete((await rosters.get(club.id)).athletes, p.name);
+      if (!a) { console.warn(`  ! ${p.name} is not in ${club.name}'s roster`); p.club = { id: club.id, name: club.name, abbr: club.abbr, logo: club.logo }; return; }
+      if (!formCache.has(club.id)) formCache.set(club.id, await clubForm(club.id));
+      const f = formCache.get(club.id);
+      p.id = String(a.id); p.club = f.club; p.rec = recFor(f, p.id);
+      if (!p.age && a.age) p.age = a.age;
+      filled++;
+    } catch (e) { p.unanswered = true; console.warn(`  ! club lookup for ${p.name}: ${e.message}`); }
+  });
+  return filled;
+}
+
 export const unwiki = t => String(t || "")
   .replace(/<ref[^>]*\/>/g, "").replace(/<ref[\s\S]*?<\/ref>/g, "").replace(/<!--[\s\S]*?-->/g, "")
   .replace(/\[\[(?:[^\]|]*\|)?([^\]]*)\]\]/g, "$1").replace(/\{\{(?:fb|fbw|#invoke:flag\|fbw?)\|([A-Z]{3})\}\}/g, "$1")
@@ -365,9 +452,18 @@ async function build(key) {
     console.log(`  wikipedia: ${players.filter(p => p.called).length} called up + ${players.filter(p => !p.called).length} recent; ${matched} matched to club form; caps as of ${capsAsOf || "?"}`);
   } catch (e) { console.warn("  ! wikipedia squad: " + e.message + " — using the feed's squad list"); }
 
-  /* Stadium details for every fixture, and where the competition stands. */
   let prev = null;
   try { prev = JSON.parse(await readFile(join(ROOT, "data", "usa", key + ".json"), "utf8")); } catch { /* first run */ }
+
+  /* Players the squad feed does not list: look their clubs up. If that fails
+     for a player this time, last run's answer for him stands. */
+  try {
+    const n = await fillClubs(players, key);
+    if (n) console.log(`  club lookup: ${n} more players matched to club form`);
+  } catch (e) { console.warn("  ! club lookup: " + e.message); }
+  keepPrevClubs(players, prev);
+
+  /* Stadium details for every fixture, and where the competition stands. */
   for (const m of fixtures) {
     m.vinfo = await venueInfo(m.venue, m.city);
     if (!m.vinfo && prev) { const o = prev.fixtures.find(x => x.venue === m.venue && x.vinfo); if (o) m.vinfo = o.vinfo; }   // a failed lookup never erases a good one
@@ -469,6 +565,24 @@ export function validate(out, prev) {
   }
   if (prev && Array.isArray(prev.results) && prev.results.length) need(out.results.length >= prev.results.length * 0.5, `results shrank from ${prev.results.length} to ${out.results.length}`);
   return errs;
+}
+
+/* A player whose club lookup went unanswered this run keeps last run's club
+   form, if there was one: a failed lookup never erases a good one. A lookup
+   that did answer ("no such club", "not in the roster") is respected. Matched
+   by name, because a matched player's id changes from a made-up one to the
+   feed's. */
+export function keepPrevClubs(players, prev) {
+  const before = new Map(((prev && prev.pool) || []).filter(p => p.club && p.club.id && p.rec && p.rec.length).map(p => [nameKey(p.name), p]));
+  let kept = 0;
+  for (const p of players) {
+    const failed = p.unanswered; delete p.unanswered;
+    if (!failed) continue;
+    const o = before.get(nameKey(p.name));
+    if (!o) continue;
+    p.id = o.id; p.club = o.club; p.rec = o.rec; kept++;
+  }
+  return kept;
 }
 
 /* Two timestamps, set after a successful build.

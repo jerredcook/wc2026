@@ -25,7 +25,7 @@ The schedule, squads and club form are built by [`scripts/build-usa.mjs`](script
 ## Engineering
 
 - **Core logic is separate and tested.** [`js/core.js`](js/core.js) holds the pure match logic (feed parsing, competition and match explanations, prediction grading, win expectancy). The page loads it as a plain script; the tests load it with `require()`.
-- **Tests:** `node --test` (113 tests, no dependencies, about ten seconds).
+- **Tests:** `node --test` (118 tests, no dependencies, about ten seconds).
   - [`test/core.test.cjs`](test/core.test.cjs): the logic against real recorded feed data in `test/fixtures/`.
   - [`test/render.test.cjs`](test/render.test.cjs): what each section puts on screen in every state — before kickoff, live, connection lost, full time, second leg, friendly, no match scheduled, women's view, test mode — plus the prediction flow, the feedback poll, escaping of feed text, and one section failing without taking the others down. The page's own code runs in a sandbox with a stand-in document, a fixed clock and recorded data ([`test/helpers/page.cjs`](test/helpers/page.cjs)).
   - [`test/browser.test.cjs`](test/browser.test.cjs): the whole app in headless Chrome, served locally — it boots, every section fills in, old links redirect. Skipped where no Chrome is installed.
@@ -46,6 +46,7 @@ The schedule, squads and club form are built by [`scripts/build-usa.mjs`](script
 - **Live matches are recorded.** [`scripts/record-live.mjs`](scripts/record-live.mjs) saves ESPN's feed through a match (a snapshot at every change, plus a line per look), run by hand or by the [`record-live`](.github/workflows/record-live.yml) Action, which keeps the recording as a download. Live mode's tests are built from these recordings.
 - **Supply chain.** Every GitHub action is pinned to an exact commit (Dependabot proposes updates monthly), the pages load scripts only from this site, and the visit-counting script is a reviewed copy of GoatCounter's `count.js` whose fingerprint a test checks. `main` cannot be force-pushed or deleted.
 - **Open copies notice a new build.** The deploy writes `build.json`, a fingerprint of the app's code ([`scripts/build-id.mjs`](scripts/build-id.mjs)); a page that sees it change offers a refresh. Data-only deploys leave the fingerprint alone.
+- **Every pool player gets club form.** ESPN's squad lists cover only the latest squads, so recent call-ups outside them arrive from Wikipedia with a club name and nothing else. The build finds that club in ESPN's league lists, finds the player in its roster (full name, or a surname only he has) and reads his line from the club's recent matches. An ambiguous club or player name is left alone rather than guessed, and a lookup that fails keeps last run's answer.
 - **The data pipeline refuses thin data.** `build-usa.mjs` validates each file before writing and will not replace a good file with one that is malformed or has shrunk sharply.
 - **Sections fail on their own.** Each part of the page draws inside a guard; if one throws, it shows a short notice, the rest keeps working, and the error is counted anonymously (GoatCounter event `capday: error …`).
 - **Live mode degrades gently:** a failed score request keeps the last known state, retries, and says "Connection lost" after about 100 seconds.
