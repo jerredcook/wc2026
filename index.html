@@ -151,6 +151,25 @@ details[open]>summary::before{content:"▾ "}
 .empty{font-size:13px;color:var(--ink3);padding:6px 0}
 .foot{font-size:11px;color:var(--ink3);line-height:1.6;margin-top:18px}
 .morecard{display:block;text-decoration:none;color:inherit}
+.explain{margin-top:14px;background:rgba(255,255,255,.08);border-radius:12px;padding:12px}
+.explain .kicker{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.ex{display:grid;grid-template-columns:92px 1fr;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:13.5px;line-height:1.4;color:var(--ink2)}
+.ex b{color:var(--ink)}
+.exl{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);padding-top:2px}
+.stand>summary{margin-bottom:6px}
+.tie{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:5px 0;border-top:1px solid var(--line);color:var(--ink2)}
+.tie.me{color:var(--ink);font-weight:700}
+.tie .tr{white-space:nowrap;font-variant-numeric:tabular-nums}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+.tbl th{font-size:10px;color:var(--ink3);text-align:right;padding:3px 4px}.tbl td{text-align:right;padding:5px 4px;border-top:1px solid var(--line)}
+.tbl td:first-child{text-align:left}.tbl tr.me td{font-weight:800;color:var(--ink)}
+.venue{display:flex;gap:12px;margin-top:8px;align-items:flex-start}
+.venue img{width:118px;height:84px;object-fit:cover;border-radius:10px;flex:0 0 118px}
+.vf{font-size:13px;margin-bottom:4px}.vb{font-size:12.5px;color:var(--ink2);line-height:1.4;margin-bottom:4px}
+.caps{font-size:11.5px;font-weight:700;color:var(--navy);margin-left:7px;white-space:nowrap}
+.pstat{font-size:11.5px;font-weight:700;color:var(--warn)}
+.blk{font-size:13px;font-weight:800;margin:16px 0 0;padding-top:12px;border-top:2px solid var(--line)}
+.blk:first-of-type{border-top:0;padding-top:0;margin-top:6px}
 .nextup{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
 .nu{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:2px solid transparent;background:var(--card);border-radius:14px;padding:11px 12px;cursor:pointer;box-shadow:var(--shadow);min-width:0}
 .nu.on{border-color:var(--navy)}
@@ -324,20 +343,29 @@ function winExp(oppName) {
    Every fixture gets a kind (the coloured tag) and a one-line plain-English
    explainer, matched on the competition's name. */
 const COMPS = [
-  [/friendly/i, "friendly", "Friendly", "A friendly. Nothing is at stake except form, places in the squad and FIFA ranking points."],
-  [/nations league/i, "competitive", "Competitive", "The Concacaf Nations League: the region's competition for national teams, played between the big tournaments. It ends with a four-team finals in March and also decides places at the Gold Cup."],
-  [/gold cup/i, "tournament", "Tournament", "The Gold Cup: the championship of North America, Central America and the Caribbean."],
-  [/w championship|women.?s championship/i, "qualifier", "Qualifier", "The Concacaf W Championship: the women's regional championship, which also decides the region's places at the Women's World Cup."],
-  [/shebelieves/i, "tournament", "Tournament", "The SheBelieves Cup: an annual invitational tournament hosted by the United States."],
-  [/qualif/i, "qualifier", "Qualifier", "A qualifier: results decide who reaches the tournament."],
-  [/women.?s world cup/i, "tournament", "World Cup", "The Women's World Cup."],
-  [/world cup/i, "tournament", "World Cup", "The World Cup."],
-  [/olympic/i, "tournament", "Tournament", "The Olympic football tournament."],
-  [/copa am/i, "tournament", "Tournament", "The Copa América: South America's championship, with invited guests."],
+  [/friendly/i, "friendly", "Friendly", "", "An exhibition match. Nothing rides on the result."],
+  [/nations league/i, "competitive", "Competitive", "Concacaf Nations League", "A competition between the national teams of North America, Central America and the Caribbean."],
+  [/gold cup/i, "tournament", "Tournament", "Concacaf Gold Cup", "The men's championship of North America, Central America and the Caribbean."],
+  [/w championship|women.?s championship/i, "qualifier", "Qualifier", "Concacaf W Championship", "The women's championship of North America, Central America and the Caribbean. It doubles as World Cup qualifying."],
+  [/shebelieves/i, "tournament", "Tournament", "SheBelieves Cup", "An invitational tournament the United States hosts each year."],
+  [/qualif/i, "qualifier", "Qualifier", "", "A qualifying match: results decide who reaches the tournament."],
+  [/women.?s world cup/i, "tournament", "World Cup", "Women's World Cup", "The world championship, held every four years."],
+  [/world cup/i, "tournament", "World Cup", "World Cup", "The world championship, held every four years."],
+  [/olympic/i, "tournament", "Tournament", "Olympic Games", "The Olympic football tournament."],
+  [/copa am/i, "tournament", "Tournament", "Copa América", "South America's championship, with invited guests."],
 ];
 function compInfo(m) {
   const c = COMPS.find(x => x[0].test(m.comp || ""));
-  return c ? { kind: c[1], label: c[2], blurb: c[3] } : { kind: "competitive", label: "Competitive", blurb: "" };
+  return c ? { kind: c[1], label: c[2], name: c[3] || m.comp, what: c[4] } : { kind: "competitive", label: "Competitive", name: m.comp || "", what: "" };
+}
+/* "This match" in one plain sentence, from the round and leg. */
+function matchLine(m, first) {
+  const ci = compInfo(m), round = (m.round || "").replace(/s$/, "");
+  if (ci.kind === "friendly") return "A friendly against " + m.opp.name + ".";
+  if (/1st/i.test(m.leg)) return `${round}, the first of two matches against ${m.opp.name}. The scores from both are added together to decide who goes through.`;
+  if (/2nd/i.test(m.leg)) return `${round}, the second of two matches against ${m.opp.name}. ` + (first ? `The USA ${first.us > first.them ? "leads" : first.us < first.them ? "trails" : "is level"} ${Math.max(first.us, first.them)}–${Math.min(first.us, first.them)} from the first; the combined score decides who goes through.` : "The combined score decides who goes through.");
+  if (/final|quarter|semi|round of|play/i.test(round)) return `${round}: a single knockout match against ${m.opp.name}.`;
+  return round ? `${round} match against ${m.opp.name}.` : "";
 }
 const ctag = m => { const c = compInfo(m); return `<span class="ctag ${c.kind}">${c.label}</span>`; };
 const compLine = m => [compInfo(m).kind === "friendly" ? "" : m.comp, m.round, m.leg].filter(Boolean).join(" · ");
@@ -572,7 +600,6 @@ function renderHero() {
   const tv = (L.tv && L.tv.length ? L.tv : m.tv) || [];
   const first = /2nd/i.test(m.leg) && d.results.find(r => r.opp.id === m.opp.id && r.lg === m.lg && D(m.date) - D(r.date) < 12 * 864e5);
   const rows = [], ci = compInfo(m);
-  if (ci.blurb && st !== "post") rows.push(`<div class="mrow"><span class="lab">${ctag(m)}</span><span>${h(ci.blurb)}</span></div>`);
   if (st !== "post") rows.push(`<div class="mrow"><span class="lab">Watch</span><span class="chips">${tv.length ? tv.map(t => `<span class="chip">${h(t)}</span>`).join("") : `<span style="color:var(--ink3)">Broadcast to be announced</span>`}</span></div>`);
   if (first) rows.push(`<div class="mrow"><span class="lab">First leg</span><span>USA ${first.us}–${first.them} ${h(m.opp.name)} &middot; ${fmtShort(first.date)}</span></div>`);
   if (L.series) rows.push(`<div class="mrow"><span class="lab">Series</span><span>${h(L.series)}</span></div>`);
@@ -631,14 +658,60 @@ function renderHero() {
     ${tl}
     ${statsHtml}
     ${callHtml(m, st, us, them)}
-    ${ed.stakes && st !== "post" ? `<div class="stakes"><b>What's at stake.</b> ${h(ed.stakes)}</div>` : ""}
+    ${explainHtml(m, ed, first)}
+    ${standHtml(m)}
     ${rows.length ? `<div class="meta">${rows.join("")}</div>` : ""}
-    ${xi}${l5}
+    ${xi}${l5}${venueHtml(m)}
     <div class="acts">
       ${st === "pre" ? `<button class="btn" onclick="addCal('${h(m.id)}')">📅 Add to calendar</button>` : ""}
       <button class="btn" onclick="share()">↗ Share</button>
     </div>
   </div>`;
+}
+
+function explainHtml(m, ed, first) {
+  const ci = compInfo(m), line = matchLine(m, first), ex = [];
+  if (ci.kind !== "friendly" && ci.name) ex.push(["Competition", `<b>${h(ci.name)}.</b> ${h(ci.what)}`]);
+  if (line) ex.push(["This match", h(line)]);
+  if (ed.stakes) ex.push(["At stake", h(ed.stakes)]);
+  else if (ci.kind === "friendly") ex.push(["At stake", "Nothing but form, places in the squad and FIFA ranking points."]);
+  return ex.length ? `<div class="explain"><div class="kicker">What is this match? ${ctag(m)}</div>` +
+    ex.map(([l, t]) => `<div class="ex"><span class="exl">${l}</span><span>${t}</span></div>`).join("") + `</div>` : "";
+}
+function standHtml(m) {
+  const sd = m.stand; if (!sd) return "";
+  let body = "";
+  if (sd.kind === "table") {
+    body = `<table class="tbl"><tr><th></th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr>` + sd.rows.map(r =>
+      `<tr class="${r.us ? "me" : ""}"><td>${h(r.name)}</td><td>${h(r.p)}</td><td>${h(r.w)}</td><td>${h(r.d)}</td><td>${h(r.l)}</td><td>${h(r.gd)}</td><td><b>${h(r.pts)}</b></td></tr>`).join("") + `</table>`;
+  } else {
+    body = sd.ties.map(t => {
+      const first = t.legs[0], a = t.teams[first.home], b = t.teams[first.away];
+      const L = t.legs.map(g => {   // each leg as "home–away" from the first leg's point of view
+        const live = S.live[g.id], hs = g.hs, as = g.as;
+        if (live && live.state !== "pre" && t.us) { /* the hero carries the live score; keep the table simple */ }
+        if (hs == null) return fmtShort(g.date);
+        return g.home === first.home ? `${hs}–${as}` : `${as}–${hs}`;
+      });
+      const played = t.legs.filter(g => g.hs != null);
+      let agg = "";
+      if (t.legs.length > 1 && played.length) {
+        const A = played.reduce((n, g) => n + (g.home === first.home ? g.hs : g.as), 0), B = played.reduce((n, g) => n + (g.home === first.home ? g.as : g.hs), 0);
+        agg = ` <b>(${A}–${B} overall)</b>`;
+      }
+      return `<div class="tie ${t.us ? "me" : ""}"><span>${h(a.name)} v ${h(b.name)}</span><span class="tr">${L.join(" · ")}${agg}</span></div>`;
+    }).join("");
+  }
+  return `<details class="stand" ${S.open.stand !== false ? "open" : ""} ontoggle="S.open.stand=this.open"><summary>${h(sd.title)} — where it stands</summary>${body}
+    ${sd.kind === "ties" && sd.ties.some(t => t.legs.length > 1) ? `<div class="cnote" style="margin:6px 0 0">Scores read home team first for the opening match. A date means that match hasn't been played.</div>` : ""}</details>`;
+}
+function venueHtml(m) {
+  const v = m.vinfo; if (!v) return "";
+  const facts = [v.capacity ? `<b>${v.capacity.toLocaleString()}</b> seats` : "", v.opened ? `opened <b>${v.opened}</b>` : "", v.tenants && v.tenants.length ? `home of <b>${v.tenants.map(h).join(", ")}</b>` : ""].filter(Boolean);
+  return `<details ${S.open.venue ? "open" : ""} ontoggle="S.open.venue=this.open"><summary>The stadium — ${h(v.title)}</summary>
+    <div class="venue">${v.img ? `<img src="${h(v.img)}" alt="${h(v.title)}" loading="lazy" onerror="this.remove()">` : ""}
+    <div>${facts.length ? `<div class="vf">${facts.join(" &middot; ")}</div>` : ""}<div class="vb">${h(v.blurb)}</div>
+    ${v.url ? `<a href="${h(v.url)}" target="_blank" rel="noopener" style="font-size:12px">More on Wikipedia</a>` : ""}</div></div></details>`;
 }
 
 /* ── Storylines: written from the data, only when true ── */
@@ -710,32 +783,38 @@ function share() {
 }
 
 /* ── Player pool ── */
-const ST = { S: "Started", I: "Came on", B: "Unused sub", X: "Not in squad", "?": "No lineup data" };
+const ST = { S: "Started", I: "Came on", B: "On the bench, didn't play", X: "Not in the matchday squad", "?": "No lineup available" };
 const cls = st => st === "?" ? "Q" : st;
-function recLine(r, long) {
+function recLine(r, long, club) {
   const res = outcome(r.sf, r.sa);
-  let s = `<span class="${cls(r.st)}">${ST[r.st]}</span>`;
+  let s = `<span class="${cls(r.st)}">${r.st === "X" && club ? "Left out of " + h(club) + "'s matchday squad" : ST[r.st]}</span>`;
   if (r.st === "I" && r.on) s += ` ${h(r.on)}`;
   if (r.st === "S" && r.off) s += `, off ${h(r.off)}`;
   if (r.g) s += ` &middot; <b>⚽${r.g > 1 ? " ×" + r.g : ""}</b>`;
   if (r.a) s += ` &middot; <b>${r.a > 1 ? r.a + " assists" : "assist"}</b>`;
   if (r.rc) s += ` &middot; 🟥`; else if (r.yc) s += ` &middot; 🟨`;
   s += ` &middot; ${res} ${r.sf}–${r.sa} ${r.ha === "H" ? "v" : "at"} ${h(r.opp.trim())}`;
-  return (long ? `${fmtShort(r.d)} &middot; ` : "") + s + (long ? ` <span style="color:var(--ink3)">(${h(r.lg)})</span>` : "");
+  return `${fmtShort(r.d)} &middot; ` + s + (long ? ` <span style="color:var(--ink3)">(${h(r.lg)})</span>` : "");
 }
 const formScore = p => p.rec.reduce((n, r) => n + (r.g || 0) * 3 + (r.a || 0) * 2 + (r.st === "S" ? 1 : r.st === "I" ? .5 : 0), 0);
 function playerRow(p, hasExtra) {
-    const r = p.rec[0], open = S.open[p.id];
+    const r = p.rec[0], open = S.open[p.id], cn = p.club && p.club.name;
     const dots = p.rec.slice().reverse().map(x => `<span class="dot ${cls(x.st)}" title="${h(ST[x.st])}"></span>`).join("");
+    const known = p.rec.filter(x => x.st !== "?"), played = known.filter(x => x.st === "S" || x.st === "I").length;
+    const caps = p.caps != null ? `<span class="caps">${p.caps} cap${p.caps === 1 ? "" : "s"}${p.goals ? " · " + p.goals + " goal" + (p.goals === 1 ? "" : "s") : ""}</span>` : "";
+    /* National-team status, in words: retired / injured / when last called. */
+    const status = p.flag === "RET" ? "retired from international play" : p.flag === "INJ" ? "injured" : p.inj ? "injured"
+      : hasExtra && !p.cur ? (p.latest ? "last called up: " + p.latest : "not in this squad") : "";
     return `<div class="p" onclick="togglePlayer('${h(p.id)}')">
-      ${img(p.club && p.club.logo, p.club && p.club.name)}
-      <div><div class="pn">${h(p.name)}${hasExtra && !p.cur ? `<span class="tag">not in this squad</span>` : ""}${p.inj ? `<span class="tag">injured</span>` : ""}</div>
-        <div class="pc">${h(p.club ? p.club.name : "Club unknown")}${p.age ? " · " + p.age : ""}</div>
-        ${r && !open ? `<div class="pl">${recLine(r, false)}</div>` : ""}</div>
+      ${img(p.club && p.club.logo, cn)}
+      <div><div class="pn">${h(p.name)}${caps}</div>
+        ${status ? `<div class="pstat">${h(status)}</div>` : ""}
+        <div class="pc">${h(cn || "Club unknown")}${p.age ? " · age " + p.age : ""}${known.length ? ` · played ${played} of last ${known.length} for club` : ""}</div>
+        ${r && !open ? `<div class="pl">${recLine(r, false, cn)}</div>` : !p.rec.length ? `<div class="pl" style="color:var(--ink3)">No club match data for this player.</div>` : ""}</div>
       <div class="dots" aria-hidden="true">${dots}</div>
-      ${open ? `<div class="more">${p.rec.length ? p.rec.map(x => `<div class="pl">${recLine(x, true)}</div>`).join("") : "No recent club matches found."}</div>` : ""}
+      ${open ? `<div class="more">${p.rec.map(x => `<div class="pl">${recLine(x, true, cn)}</div>`).join("")}</div>` : ""}
     </div>`;
-  }
+}
 function renderPool() {
   const d = S.data[S.team], el = $("pool"); if (!d) { el.innerHTML = ""; return; }
   const all = d.pool, hasExtra = all.some(p => !p.cur) && all.some(p => p.cur);
@@ -750,20 +829,23 @@ function renderPool() {
   let list = all.filter(p => S.pos === "all" || (S.pos === "cur" ? p.cur : p.pos === S.pos));
   const row = p => playerRow(p, hasExtra);
   let body;
+  const G = [["G", "Goalkeepers"], ["D", "Defenders"], ["M", "Midfielders"], ["F", "Forwards"]];
+  const byPos = ps => G.map(([k, name]) => { const x = ps.filter(p => p.pos === k); return x.length ? `<div class="grp">${name}</div>` + x.map(row).join("") : ""; }).join("");
   if (S.sort === "form") body = list.slice().sort((a, b) => formScore(b) - formScore(a)).map(row).join("");
-  else {
-    const G = [["G", "Goalkeepers"], ["D", "Defenders"], ["M", "Midfielders"], ["F", "Forwards"]];
-    body = G.map(([k, name]) => { const ps = list.filter(p => p.pos === k); return ps.length ? `<div class="grp">${name}</div>` + ps.map(row).join("") : ""; }).join("");
-  }
+  else if (hasExtra && S.pos !== "cur") {
+    const inn = list.filter(p => p.cur), out = list.filter(p => !p.cur);
+    body = (inn.length ? `<div class="blk">In the squad (${inn.length})</div>` + byPos(inn) : "") +
+      (out.length ? `<div class="blk">Recent call-ups, not in this squad (${out.length})</div>` + byPos(out) : "");
+  } else body = byPos(list);
   const fb = (k, label) => `<button class="fb ${S.pos === k ? "on" : ""}" onclick="setPos('${k}')">${label}</button>`;
   el.innerHTML = `<div class="card">
     <div class="ctitle">${NAME[S.team]} — player pool &amp; club form</div>
-    <div class="cnote">What everyone in the picture did in their club's last three matches. Tap a player for the detail.</div>
+    <div class="cnote">${d.squadNote ? h(d.squadNote.replace(/^The following /, "The squad: ")) + " " : ""}${d.capsAsOf ? "Caps (international appearances) and goals as of " + h(d.capsAsOf) + ". " : ""}Under each player: what they did in their club's last three matches. Tap for the detail.</div>
     ${sum ? `<div class="sumline">${sum}</div>` : ""}
-    <div class="filters">${fb("all", "All")}${hasExtra ? fb("cur", "Current squad") : ""}${fb("G", "GK")}${fb("D", "DEF")}${fb("M", "MID")}${fb("F", "FWD")}
+    <div class="filters">${fb("all", "All")}${hasExtra ? fb("cur", "In the squad") : ""}${fb("G", "GK")}${fb("D", "DEF")}${fb("M", "MID")}${fb("F", "FWD")}
       <button class="fb ${S.sort === "form" ? "on" : ""}" onclick="toggleSort()" style="margin-left:auto">Sort: ${S.sort === "form" ? "in form" : "position"}</button></div>
     ${body || `<div class="empty">No players match that filter.</div>`}
-    <div class="legend"><span><i class="dot S"></i>Started</span><span><i class="dot I"></i>Came on</span><span><i class="dot B"></i>Unused sub</span><span><i class="dot X"></i>Not in squad</span><span>oldest → newest</span></div>
+    <div class="legend"><span>Club's last three, oldest → newest:</span><span><i class="dot S"></i>Started</span><span><i class="dot I"></i>Came on</span><span><i class="dot B"></i>On the bench</span><span><i class="dot X"></i>Left out by club</span></div>
   </div>`;
 }
 function togglePlayer(id) { S.open[id] = !S.open[id]; renderPool(); renderOppo(); }

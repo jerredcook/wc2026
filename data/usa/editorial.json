@@ -1,12 +1,12 @@
 {
- "_note": "Hand-written context per match, keyed by ESPN event id. The build script never touches this file. 'stakes' is shown on the next-match card.",
+ "_note": "Hand-written 'at stake' line per match, keyed by ESPN event id. The build script never touches this file. Keep each to one or two plain sentences.",
  "401929710": {
-  "stakes": "Two legs, one ticket. Win the tie and the USA goes to the Nations League Finals in March and books a place at the 2027 Gold Cup. Lose it, and the road to the Gold Cup runs through the qualifying prelims."
+  "stakes": "The winner over the two matches goes to the Nations League finals in March and qualifies for next summer's Gold Cup. The loser has to win a playoff in March to reach the Gold Cup."
  },
  "401929766": {
-  "stakes": "The decider. The aggregate winner goes to the Nations League Finals in March and straight into the 2027 Gold Cup. The loser has to qualify through the prelims."
+  "stakes": "The winner over the two matches goes to the Nations League finals in March and qualifies for next summer's Gold Cup. The loser has to win a playoff in March to reach the Gold Cup."
  },
  "401870040": {
-  "stakes": "Knockout football at the Concacaf W Championship, the tournament that decides the region's places at the 2027 Women's World Cup in Brazil."
+  "stakes": "Win, and the USA qualifies for the 2027 Women's World Cup and plays a semifinal on December 1. Lose, and it drops into a play-in match for a second chance to qualify."
  }
 }

@@ -8,7 +8,7 @@ name: USA hub data (fixtures, results, player-pool club form)
 
 on:
   schedule:
-    - cron: "20 */6 * * *"   # four times a day
+    - cron: "20 * * * *"   # hourly; the script keeps the file byte-identical when nothing changed, so idle runs commit nothing
   workflow_dispatch: {}
 
 permissions:
