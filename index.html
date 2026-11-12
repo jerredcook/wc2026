@@ -673,7 +673,7 @@ function venueHtml(m) {
   return `<details ${S.open.venue ? "open" : ""} ontoggle="S.open.venue=this.open"><summary>The stadium — ${h(v.title)}</summary>
     <div class="venue">${v.img ? `<img src="${h(v.img)}" alt="${h(v.title)}" loading="lazy" onerror="this.remove()">` : ""}
     <div>${facts.length ? `<div class="vf">${facts.join(" &middot; ")}</div>` : ""}<div class="vb">${h(v.blurb)}</div>
-    ${v.url ? `<a href="${h(v.url)}" target="_blank" rel="noopener" style="font-size:12px">More on Wikipedia</a>` : ""}</div></div></details>`;
+    ${/^https:\/\//.test(v.url || "") ? `<a href="${h(v.url)}" target="_blank" rel="noopener" style="font-size:12px">More on Wikipedia</a>` : ""}</div></div></details>`;
 }
 
 /* ── Storylines: written from the data, only when true ── */
@@ -849,7 +849,7 @@ async function loadNews(team) {
   try {
     const r = await fetch(`${API}/${team === "men" ? "fifa.friendly" : "fifa.friendly.w"}/news?team=${TEAM[team].id}&limit=10`);
     const j = r.ok ? await r.json() : {};
-    S.news[team] = (j.articles || []).map(a => ({ t: a.headline, d: a.published, v: a.type === "Media", u: a.links && a.links.web && a.links.web.href })).filter(a => a.t && a.u).slice(0, 6);
+    S.news[team] = (j.articles || []).map(a => ({ t: a.headline, d: a.published, v: a.type === "Media", u: a.links && a.links.web && a.links.web.href })).filter(a => a.t && /^https:\/\//.test(a.u || "")).slice(0, 6);   // feed links must be plain https
   } catch (e) {}
   if (S.team === team) renderNews();
 }
