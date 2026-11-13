@@ -554,6 +554,23 @@ test("challenge: your own link, another match's link, and a link arriving while 
   assert.equal(p.location.hash, "#men");
 });
 
+test("challenge: your own call, opened on a device before it knew your name, stops being a friend's once it does", async () => {
+  /* The laptop's link opened on the phone: the phone has a locked call but no name yet. */
+  const p = await boot({ hash: "#men&c=401929710~Jerred:2-0~Pat:1-1", storage: LOCKED(1), share: true });
+  assert.match(p.text("hero"), /Jerred Haiti 0–2 USA/, "until the phone knows who you are, it is just another call");
+  p.run(`openDuel("${MATCH}")`);
+  p.el("duelInput").value = "jerred";
+  p.run("saveName()");
+  const t = p.text("hero");
+  assert.ok(!/Jerred Haiti 0–2 USA/i.test(t), "your own earlier call is no longer listed beside You");
+  assert.match(t, /You Haiti 0–1 USA/);
+  assert.match(t, /Pat Haiti 1–1 USA/, "real friends stay");
+  p.run("sendChallenge()");
+  const sent = core.parseChallenge(p.shared[0].url.split("&c=")[1]);
+  assert.deepEqual(sent.calls.map(c => c.n), ["jerred", "Pat"], "and the link you send carries you once, with this device's call");
+  assert.deepEqual([sent.calls[0].us, sent.calls[0].them], [1, 0]);
+});
+
 test("challenge: a long chain still fits a QR code, and at most eight friends are kept", async () => {
   const names = ["Bartholomew-Jean", "Zoë Müller-Lüden", "Çağla Öztürkoğlu", "Władysław Żółć", "Ñandú Peñalosa", "Þórður Æsgeirs", "Élodie Lefèvre", "Søren Kjærgård", "Ninth Person"];
   const hash = "#men&c=401929710" + names.map((n, i) => "~" + encodeURIComponent(n) + ":" + (i % 4) + "-" + (i % 3)).join("");

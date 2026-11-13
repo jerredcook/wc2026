@@ -613,7 +613,9 @@ function shareCall(id) {
    "#", which browsers never send to a server: not to this site's host, not to
    the visit counter. There is no shared scoreboard: a link only knows the calls
    made before it was sent. */
-const rivalsOf = m => S.rivals[m.id] || [];
+/* Friends' calls for a match. A call under your own name is yours, sent from another
+   device or opened here before this device knew your name: it is not a friend's. */
+const rivalsOf = m => { const me = S.name.toLowerCase(); return (S.rivals[m.id] || []).filter(c => String(c.n).toLowerCase() !== me); };
 function saveRivals() { try { localStorage.setItem(KEY + ".rivals", JSON.stringify(S.rivals)); } catch (e) {} }
 /* Read a challenge out of the address (#men&c=…), keep it, and tidy the address. */
 function takeChallenge() {
@@ -650,7 +652,7 @@ function saveName() {
   const n = cleanName($("duelInput").value);
   if (!n) return;
   S.name = n; try { localStorage.setItem(KEY + ".name", n); } catch (e) {}
-  showDuel();
+  showDuel(); renderHero();
 }
 function editName() { $("duelInput").value = S.name; S.name = ""; showDuel(); }
 function sendChallenge() {
