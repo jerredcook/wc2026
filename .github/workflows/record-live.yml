@@ -5,9 +5,14 @@ name: Record a live match
 # what the live-mode tests are built from.
 #
 # Start it by hand around kickoff (Actions tab → Record a live match → Run
-# workflow), or let one of the timed starts below catch it. GitHub's scheduler
-# often runs late, so each match has several starts; a start that finds no match
-# in progress or about to begin simply exits.
+# workflow), or hours ahead with a start time: the run then waits on GitHub
+# until that time and records from there, with no computer of yours involved.
+#
+#   gh workflow run record-live.yml -f start_at=2026-11-14T20:45Z
+#
+# The wait can be at most 5 h 45 min (one job may run for six hours). The timed
+# starts below are a weak backup: GitHub's scheduler ran them five hours late
+# on Nov 13. A start that finds no match in progress or about to begin exits.
 
 on:
   schedule:
@@ -21,6 +26,9 @@ on:
       matches:
         description: "Matches to consider, as league:event, separated by spaces"
         default: "concacaf.nations.league:401929776 concacaf.nations.league:401929711 concacaf.nations.league:401929710"
+      start_at:
+        description: "Wait until this time (UTC, like 2026-11-14T20:45Z) before recording. Aim for 45 minutes before kickoff. Empty: record now"
+        default: ""
 
 permissions:
   contents: read
@@ -30,7 +38,26 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # Sits out the time until start_at. Its own job, so the six hours a job may
+  # run are not shared between the waiting and the recording.
+  wait:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - name: Wait for the start time
+        env:
+          START_AT: ${{ inputs.start_at }}
+        run: |
+          if [ -z "$START_AT" ]; then echo "No start time given: recording now."; exit 0; fi
+          at=$(date -u -d "$START_AT" +%s) || { echo "::error::Could not read '$START_AT' as a time. Write it like 2026-11-14T20:45Z."; exit 1; }
+          secs=$((at - $(date -u +%s)))
+          if [ "$secs" -le 0 ]; then echo "$START_AT has passed: recording now."; exit 0; fi
+          if [ "$secs" -gt 20700 ]; then echo "::error::$START_AT is more than 5 h 45 min away, longer than one job may wait. Start this closer to the match."; exit 1; fi
+          echo "Waiting $((secs / 60)) minutes, until $START_AT."
+          sleep "$secs"
+
   record:
+    needs: wait
     runs-on: ubuntu-latest
     timeout-minutes: 300
     steps:
