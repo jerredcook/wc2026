@@ -1,0 +1,119 @@
+name: Start a workflow later
+
+# Starts another workflow at a time you give, up to 34 hours ahead.
+#
+#   gh workflow run later.yml -f workflow=record-live.yml -f at=2026-11-14T20:45Z \
+#     -f fields="matches=concacaf.nations.league:401929710"
+#
+# Why this exists: GitHub's own scheduler runs timed workflows hours late (five
+# hours, on Nov 13 2026), which is no use for a match. This run starts at once
+# and waits on GitHub's machines instead. One job may run for six hours, so the
+# wait is a chain of jobs (scripts/wait-until.mjs): each waits up to 5 h 45 min
+# and the last ends at the time asked for. Nothing of yours has to stay on.
+#
+# To call it off, cancel the run on the Actions tab.
+
+on:
+  workflow_dispatch:
+    inputs:
+      workflow:
+        description: "Which workflow to start"
+        type: choice
+        options:
+          - record-live.yml
+          - usa-hub.yml
+          - canary.yml
+      at:
+        description: "When to start it (UTC, like 2026-11-14T20:45Z)"
+        required: true
+      fields:
+        description: "Inputs for that workflow, as name=value separated by spaces (optional)"
+        default: ""
+
+run-name: "Start ${{ inputs.workflow }} at ${{ inputs.at }}"
+
+permissions:
+  contents: read
+  actions: write     # to start the other workflow
+
+jobs:
+  wait1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Wait
+        env:
+          AT: ${{ inputs.at }}
+        run: node scripts/wait-until.mjs "$AT"
+
+  wait2:
+    needs: wait1
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Wait
+        env:
+          AT: ${{ inputs.at }}
+        run: node scripts/wait-until.mjs "$AT"
+
+  wait3:
+    needs: wait2
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Wait
+        env:
+          AT: ${{ inputs.at }}
+        run: node scripts/wait-until.mjs "$AT"
+
+  wait4:
+    needs: wait3
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Wait
+        env:
+          AT: ${{ inputs.at }}
+        run: node scripts/wait-until.mjs "$AT"
+
+  wait5:
+    needs: wait4
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Wait
+        env:
+          AT: ${{ inputs.at }}
+        run: node scripts/wait-until.mjs "$AT"
+
+  wait6:
+    needs: wait5
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+      - name: Wait
+        env:
+          AT: ${{ inputs.at }}
+        run: node scripts/wait-until.mjs "$AT"
+
+  start:
+    needs: wait6
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Start it
+        env:
+          GH_TOKEN: ${{ github.token }}
+          WORKFLOW: ${{ inputs.workflow }}
+          FIELDS: ${{ inputs.fields }}
+        run: |
+          args=()
+          for kv in $FIELDS; do args+=(-f "$kv"); done
+          gh workflow run "$WORKFLOW" --repo "$GITHUB_REPOSITORY" --ref main "${args[@]}"
+          echo "Started $WORKFLOW ${FIELDS:+with $FIELDS}"
