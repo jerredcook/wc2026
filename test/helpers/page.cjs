@@ -109,8 +109,8 @@ async function boot(opts = {}) {
   sandbox.window = sandbox;
   const ctx = vm.createContext(sandbox);
   const now = Date.parse(opts.now || DEFAULT_NOW);
-  vm.runInContext(`{ const Real = Date; const NOW = ${now};
-    globalThis.Date = class extends Real { constructor(...a) { if (a.length) super(...a); else super(NOW); } static now() { return NOW; } }; }`, ctx);
+  vm.runInContext(`{ const Real = Date; globalThis.__now = ${now};
+    globalThis.Date = class extends Real { constructor(...a) { if (a.length) super(...a); else super(globalThis.__now); } static now() { return globalThis.__now; } }; }`, ctx);
   vm.runInContext(coreScript, ctx, { filename: "js/core.js" });
   vm.runInContext(qrScript, ctx, { filename: "js/qr.js" });
   vm.runInContext(appScript, ctx, { filename: "index.html <script>" });
@@ -126,6 +126,8 @@ async function boot(opts = {}) {
     text: id => (els[id] ? els[id].innerHTML : "").replace(/<[^>]+>/g, " ").replace(/&middot;/g, "·").replace(/&amp;/g, "&").replace(/&rarr;/g, "→").replace(/&#39;/g, "'").replace(/&quot;/g, '"').replace(/\s+/g, " ").trim(),
     setSummary: s => { page.summary = s; },
     setBuild: b => { page.build = b; },
+    /* Move the page's clock (it does not run on its own). */
+    setNow: iso => { sandbox.__now = Date.parse(iso); },
     setHang: re => { page.hang = re; },
     setData: (team, d) => { data[team] = d; },
     /* Run the timers the page has set that match, as if their time had come. */
@@ -136,6 +138,14 @@ async function boot(opts = {}) {
   };
 }
 
+/* A match recorded as it was played (scripts/make-replay.mjs): the feed's
+   answers at chosen moments, each rebuilt in full. Parts that did not change
+   from one moment to the next are stored once and carried forward here. */
+function replay(name) {
+  const R = fixture(name), carried = {};
+  return { ...R, frames: R.frames.map(f => { Object.assign(carried, f.summary); return { at: f.at, note: f.note, summary: clone(carried) }; }) };
+}
+
 /* A recorded finished match (USA 1–0 Canada), with its status rewritten. */
 function summaryAs(state, clock) {
   const G = fixture("summary-finished-usa-canada.json");
@@ -143,4 +153,4 @@ function summaryAs(state, clock) {
   return G;
 }
 
-module.exports = { boot, fixture, clone, summaryAs, ROOT };
+module.exports = { boot, fixture, clone, summaryAs, replay, ROOT };

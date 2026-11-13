@@ -4,7 +4,8 @@
 process.env.TZ = "America/New_York";   // kickoff times in the assertions are Eastern
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { boot, fixture, clone, summaryAs } = require("./helpers/page.cjs");
+const { boot, fixture, clone, summaryAs, replay } = require("./helpers/page.cjs");
+const core = require("../js/core.js");
 
 const SECTIONS = ["nextup", "hero", "stories", "pool", "oppo", "fixtures", "results", "poll"];
 const NOTICE = "couldn't be shown";
@@ -565,4 +566,114 @@ test("challenge: a long chain still fits a QR code, and at most eight friends ar
   assert.ok(qrMatrix(url), "the link fits in a QR code");
   assert.equal(sent.calls[0].n, "Maximilian-Josef", "your own call always goes");
   assert.ok(sent.calls.length >= 2 && sent.calls.length <= 9, `it carries as many friends as fit (${sent.calls.length - 1})`);
+});
+
+/* ── A real match, replayed ──
+   Curaçao 0–0 Panama, recorded from the live feed on Nov 12 2026 and played
+   back here in test mode (Curaçao, at home, stands in for the USA). Unlike the
+   finished match relabelled as live above, this is what the feed sent while
+   the match was going on. */
+const NIGHT = replay("replay-curacao-panama.json");
+async function replayNight() {
+  const home = NIGHT.frames[0].summary.header.competitions[0].competitors.find(x => x.homeAway === "home").id;
+  let cur = NIGHT.frames[0];
+  const p = await boot({ search: `?test=${NIGHT.league}:${NIGHT.event}`, summary: () => cur.summary, now: cur.at });
+  const polls = () => p.timers.filter(t => /refreshLive/.test(t.fn.name));
+  return {
+    p, polls,
+    /* Jump to the first moment the feed's answer matches, with the clock at the time it was recorded. */
+    async to(match, what) {
+      const f = NIGHT.frames.find(x => match(core.parseSummary(x.summary, home)));
+      assert.ok(f, "the recording has a moment where " + what);
+      cur = f; p.setNow(f.at); await p.refresh();
+      return p.text("hero");
+    },
+    async at(iso) { p.setNow(iso); await p.refresh(); return p.text("hero"); },
+  };
+}
+
+test("replay: the hours before kickoff, lineups arriving, and the wait for the feed to say it has started", async () => {
+  const r = await replayNight();
+  let t = r.p.text("hero");
+  assert.match(t, /TEST MODE/);
+  assert.match(t, /Next match · Concacaf Nations League · Quarterfinals · 1st Leg Curaçao vs Panama/);
+  assert.match(t, /07 hrs 48 min/);
+  assert.match(t, /Stadion Ergilio Hato · Willemstad/);
+  assert.match(t, /Lineups appear here about an hour before kickoff/);
+  assert.match(t, /Series PAN leads series 2-0-1/);
+  assert.equal(r.polls().pop().ms, 6 * 36e5, "hours out, it looks again in six hours at most");
+
+  t = await r.to(L => L.state === "pre" && L.xi.length === 2, "the lineups are in");
+  assert.match(t, /00 hrs 47 min/);
+  assert.match(t, /Lineups Curaçao 4-2-3-1 1 Eloy Room/);
+  assert.match(t, /Panama 5-4-1/);
+  assert.ok(!/Lineups appear here/.test(t));
+  assert.equal(r.polls().pop().ms, 60e3, "inside the last hour it looks every minute");
+
+  /* Kickoff was listed for 00:30Z; the feed first said "live" at 00:32:48Z. */
+  assert.ok(Date.parse(NIGHT.wentLive) - Date.parse(NIGHT.scheduled) > 2 * 60e3, "the recording has a gap between the listed kickoff and the feed going live");
+  t = await r.at("2026-11-13T00:31:30Z");
+  assert.match(t, /Curaçao vs Panama/);
+  assert.match(t, /Kicking off…/);
+  assert.ok(!/LIVE|Full time|-\d+ (hrs|min|sec)/.test(t), "no score, no badge and no negative countdown while waiting");
+  assert.equal(r.polls().pop().ms, 60e3);
+});
+
+test("replay: kickoff, cards as they come, half time, and a card the feed takes back", async () => {
+  const r = await replayNight();
+  let t = await r.to(L => L.state === "in", "the match has started");
+  assert.match(t, /Live now · Concacaf Nations League · Quarterfinals · 1st Leg Curaçao 0 : 0 LIVE 1' Panama/);
+  assert.match(r.p.html("hero"), /class="card hero live/);
+  assert.ok(!/Possession|Shots/.test(t), "the feed's numbers are all zero in the first minute: no table of zeros");
+  assert.ok(!/Call the score|hrs|Kicking off/.test(t), "pre-match items are gone");
+  assert.equal(r.polls().pop().ms, 30e3);
+
+  t = await r.to(L => L.state === "in" && L.stats && parseFloat(L.stats.us.possessionPct) > 0, "the numbers have started");
+  assert.match(t, /36% Possession 64%/);
+
+  t = await r.to(L => L.events.length === 1, "the first card is shown");
+  assert.match(t, /LIVE 21' Panama .* 19' 🟨 Tahith Chong/);
+
+  t = await r.to(L => L.clock === "Half time", "it is half time");
+  assert.match(t, /Curaçao 0 : 0 LIVE Half time Panama/);
+  assert.ok(!t.includes("45'"), "not the minute the half ended on, which the feed's clock sticks at");
+  assert.equal(r.polls().pop().ms, 30e3, "still looking every 30 seconds through the break");
+
+  t = await r.to(L => L.clock === "46'", "the second half is under way");
+  assert.match(t, /LIVE 46' Panama/);
+
+  t = await r.to(L => L.events.length === 4, "four cards are listed");
+  assert.match(t, /19' 🟨 Tahith Chong 22' 🟨 Édgar Yoel Bárcenas 58' 🟨 Jorge Gutiérrez 83' 🟨 Livano Comenencia/);
+
+  /* Around the 90th minute the feed withdrew the 19th-minute card, then booked the same player. */
+  t = await r.to(L => L.clock === "90'+1'", "the feed has taken a card back");
+  assert.ok(!t.includes("19' 🟨"), "a card the feed withdraws leaves the list");
+  assert.match(t, /22' 🟨 Édgar Yoel Bárcenas 58' 🟨 Jorge Gutiérrez 83' 🟨 Livano Comenencia 89' 🟨 Victor Griffith/);
+  t = await r.to(L => L.clock === "90'+2'", "he is booked again");
+  assert.match(t, /90' 🟨 Tahith Chong/);
+});
+
+test("replay: the last minutes, full time, and nothing flashing in a match without a goal", async () => {
+  const r = await replayNight();
+  const home = "11678";
+  let flashed = 0;
+  for (const f of NIGHT.frames) {
+    const L = core.parseSummary(f.summary, home);
+    const t = await r.to(x => JSON.stringify(x) === JSON.stringify(L), "this frame is found");
+    if (/class="card hero live flash/.test(r.p.html("hero"))) flashed++;
+    assert.ok(!/undefined|NaN|null/.test(t), `nothing unfilled on the card at ${f.at}`);
+    for (const id of SECTIONS) assert.ok(!r.p.html(id).includes(NOTICE), `${id} drew without an error at ${f.at}`);
+  }
+  assert.equal(flashed, 0, "the card flashes for goals only");
+
+  const r2 = await replayNight();
+  /* The feed's last answer before full time had no running clock at all. */
+  let t = await r2.to(L => L.clock === "90'+5'", "stoppage time is nearly up");
+  assert.match(t, /Curaçao 0 : 0 LIVE 90'\+5' Panama/);
+  const before = r2.polls().length;
+  t = await r2.to(L => L.state === "post", "the match is over");
+  assert.match(t, /Full time · Concacaf Nations League · Quarterfinals · 1st Leg Curaçao 0 : 0 Full time Panama/);
+  assert.ok(!/LIVE|Watch on/.test(t));
+  assert.match(t, /39% Possession 61% 6 Shots 17/);
+  assert.equal(r2.polls().length, before, "it stops asking once the match is over");
 });

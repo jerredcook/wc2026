@@ -112,6 +112,16 @@ test("parseSummary, before kickoff: no score or events, but the series and recen
   assert.ok(L.tv.includes("TBS"));
 });
 
+test("parseSummary: during a break the clock says so, not the minute play stopped", () => {
+  const withStatus = status => { const G = JSON.parse(JSON.stringify(finished)); G.header.competitions[0].status = status; return core.parseSummary(G, USA).clock; };
+  /* The feed's own answers during Curaçao v Panama, Nov 12 2026. */
+  assert.equal(withStatus({ displayClock: "45'+3'", period: 1, type: { name: "STATUS_HALFTIME", state: "in", shortDetail: "HT" } }), "Half time");
+  assert.equal(withStatus({ displayClock: "45'+1'", period: 1, type: { name: "STATUS_FIRST_HALF", state: "in", shortDetail: "45'+1'" } }), "45'+1'");
+  assert.equal(withStatus({ type: { name: "STATUS_SECOND_HALF", state: "in", shortDetail: "90'+5'" } }), "90'+5'", "no running clock in the answer: fall back to the status");
+  assert.equal(withStatus({ displayClock: "120'", type: { state: "in", shortDetail: "Pens" } }), "Pens", "any other break is named as the feed names it");
+  assert.equal(withStatus({ type: { state: "post", shortDetail: "FT" } }), "FT");
+});
+
 test("parseSummary: a broken or empty payload returns null instead of throwing", () => {
   assert.equal(core.parseSummary({}, USA), null);
   assert.equal(core.parseSummary({ header: {} }, USA), null);

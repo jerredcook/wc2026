@@ -126,9 +126,13 @@ function parseSummary(G, teamId) {
   const us = c.competitors.find(x => x.id === teamId), them = c.competitors.find(x => x.id !== teamId);
   const st = c.status || {}, ty = st.type || {};
   const num = v => v == null || v === "" ? null : Number(v);
+  /* While play is stopped the feed's running clock freezes on the last minute
+     played ("45'+3'" all through half time) and only its status says what is
+     happening ("HT"). A status with no minute in it is a break: show that. */
+  const brk = ty.state === "in" && ty.shortDetail && !/\d/.test(ty.shortDetail) ? ty.shortDetail : "";
   const out = {
     state: ty.state || "pre",
-    clock: ty.state === "in" ? (st.displayClock || ty.shortDetail || "") : (ty.shortDetail || ""),
+    clock: ty.state === "in" ? (brk ? (brk === "HT" ? "Half time" : brk) : st.displayClock || ty.shortDetail || "") : (ty.shortDetail || ""),
     us: us ? num(us.score) : null, them: them ? num(them.score) : null,
     pen: us && them && us.shootoutScore != null && them.shootoutScore != null ? [num(us.shootoutScore), num(them.shootoutScore)] : null,
     events: [], xi: [], series: "", meetings: [], last5: [], stats: null,
