@@ -18,6 +18,7 @@ const html = fs.readFileSync(path.join(ROOT, "index.html"), "utf8");
 const appScript = [...html.matchAll(/<script>([\s\S]*?)<\/script>/g)].map(m => m[1]).find(s => s.includes("const API ="));
 const coreScript = fs.readFileSync(path.join(ROOT, "js", "core.js"), "utf8");
 const qrScript = fs.readFileSync(path.join(ROOT, "js", "qr.js"), "utf8");
+const factsScript = fs.readFileSync(path.join(ROOT, "js", "facts.js"), "utf8");
 if (!appScript) throw new Error("could not find the app script in index.html");
 
 /* Elements that start hidden in the real page. */
@@ -113,6 +114,7 @@ async function boot(opts = {}) {
     globalThis.Date = class extends Real { constructor(...a) { if (a.length) super(...a); else super(globalThis.__now); } static now() { return globalThis.__now; } }; }`, ctx);
   vm.runInContext(coreScript, ctx, { filename: "js/core.js" });
   vm.runInContext(qrScript, ctx, { filename: "js/qr.js" });
+  if (!opts.noFacts) vm.runInContext(factsScript, ctx, { filename: "js/facts.js" });
   vm.runInContext(appScript, ctx, { filename: "index.html <script>" });
 
   const settle = async () => { for (let i = 0; i < 40; i++) await new Promise(r => setImmediate(r)); };

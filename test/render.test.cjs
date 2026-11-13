@@ -7,7 +7,7 @@ const assert = require("node:assert/strict");
 const { boot, fixture, clone, summaryAs, replay } = require("./helpers/page.cjs");
 const core = require("../js/core.js");
 
-const SECTIONS = ["nextup", "hero", "stories", "pool", "oppo", "fixtures", "results", "poll"];
+const SECTIONS = ["nextup", "hero", "stories", "facts", "pool", "oppo", "fixtures", "results", "poll"];
 const NOTICE = "couldn't be shown";
 const before = (text, a, b) => { const i = text.indexOf(a), j = text.indexOf(b); assert.ok(i >= 0, `"${a}" is missing`); assert.ok(j >= 0, `"${b}" is missing`); assert.ok(i < j, `"${a}" should come before "${b}"`); };
 

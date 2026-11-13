@@ -163,6 +163,12 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,summary:focus-v
 .ah:last-child{border-bottom:0}
 .ah small{display:block;color:var(--ink3);font-size:12px;margin-top:1px}
 .pollq{font-size:15px;font-weight:700;margin-bottom:8px}
+.fact .kicker{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.fact .lv{font-size:10px;background:var(--chip);color:var(--ink2);border-radius:8px;padding:2px 8px}
+.facth{font-size:17px;font-weight:800;line-height:1.25;margin:8px 0 5px}
+.factt{font-size:14px;line-height:1.5;color:var(--ink2)}
+.factn{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;font-size:11.5px;color:var(--ink3)}
+.factn .fb{min-height:32px;padding:6px 14px}
 .iostip[hidden]{display:none}
 .notice[hidden]{display:none}
 .notice{display:flex;gap:10px;align-items:center;justify-content:space-between;font-size:13px;line-height:1.4;padding:12px 14px}
@@ -296,6 +302,7 @@ dialog input{display:block;width:100%;margin:8px 0 12px;padding:10px;border:1px 
 
   <div id="hero"></div>
   <div id="stories"></div>
+  <div id="facts"></div>
   <div id="news"></div>
   <div id="pool"></div>
   <div id="oppo"></div>
@@ -352,6 +359,7 @@ dialog input{display:block;width:100%;margin:8px 0 12px;padding:10px;border:1px 
 </dialog>
 
 <script src="js/core.js"></script>
+<script src="js/facts.js"></script>
 <script src="js/qr.js"></script>
 <script>
 "use strict";
@@ -360,7 +368,7 @@ const TEAM = { women: { id: "2765" }, men: { id: "660" } };
 const USA_LOGO = "https://a.espncdn.com/i/teamlogos/countries/500/usa.png";
 const KEY = "wc2026.usa.v1";
 
-const S = { team: "men", data: {}, ranks: {}, live: {}, sums: {}, open: {}, pos: "all", sort: "pos", ed: null, calls: {}, flash: false, news: {}, ahead: null, liveOk: 0, failed: {}, rivals: {}, name: "", jump: null };
+const S = { team: "men", data: {}, ranks: {}, live: {}, sums: {}, open: {}, pos: "all", sort: "pos", ed: null, calls: {}, flash: false, news: {}, ahead: null, liveOk: 0, failed: {}, rivals: {}, name: "", jump: null, fact: 0 };
 try { S.calls = JSON.parse(localStorage.getItem(KEY + ".calls") || "{}") || {}; } catch (e) {}
 try { S.rivals = JSON.parse(localStorage.getItem(KEY + ".rivals") || "{}") || {}; } catch (e) {}
 try { S.name = cleanName(localStorage.getItem(KEY + ".name") || ""); } catch (e) {}
@@ -913,6 +921,23 @@ function renderOppo() {
     `</details></div>`;
 }
 
+/* ── Did you know? One fact at a time (js/facts.js), in the order factOrder gives ── */
+function factList() {
+  if (typeof FACTS === "undefined") return [];
+  const m = focus(), now = new Date(Date.now()), local = new Date(now.getTime() - now.getTimezoneOffset() * 6e4);
+  return factOrder(FACTS, { opp: m && m.opp && m.opp.name, leg: !!(m && m.leg), day: Math.floor(local.getTime() / 864e5), today: local.toISOString().slice(0, 10) });
+}
+function renderFacts() {
+  const el = $("facts"), list = S.data[S.team] ? factList() : [];     // wait for the schedule: it decides which fact comes first
+  if (!list.length) { el.innerHTML = ""; return; }
+  const i = S.fact % list.length, f = list[i], m = focus();
+  const about = m && m.opp && (f.opp || []).some(x => norm(x) === norm(m.opp.name));
+  el.innerHTML = `<div class="card fact"><div class="kicker">Did you know?<span class="lv">${about ? "About " + h(m.opp.name) : f.lv === "new" ? "The basics" : "Deep cut"}</span></div>
+    <div class="facth">${h(f.h)}</div><div class="factt">${h(f.t)}</div>
+    <div class="factn"><button class="fb" onclick="nextFact()">Another one &rarr;</button><span>${i + 1} of ${list.length}</span></div></div>`;
+}
+function nextFact() { S.fact++; track("fact-next"); renderFacts(); }
+
 function addCal(id) {
   track("calendar-single");
   const m = S.data[S.team].fixtures.find(x => x.id === id); if (!m) return;
@@ -1107,7 +1132,7 @@ function render() {
   const when = iso => D(iso).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
   $("stamp").textContent = d ? (d.checked ? "Schedule, squads and club form checked " + when(d.checked) : "Club form updated " + when(d.updated)) : "";
   renderStale();
-  renderHero(); renderStories(); renderNews(); renderPool(); renderOppo(); renderFixtures(); renderResults();
+  renderHero(); renderStories(); renderFacts(); renderNews(); renderPool(); renderOppo(); renderFixtures(); renderResults();
 }
 /* ── Fail-safe sections ──
    Each section draws inside a guard: if one throws (a surprise in the feed, a
@@ -1130,6 +1155,7 @@ function guard(fn, id, where) {
 }
 renderHero = guard(renderHero, "hero", "match-card");
 renderStories = guard(renderStories, "stories", "storylines");
+renderFacts = guard(renderFacts, "facts", "facts");
 renderNews = guard(renderNews, "news", "news");
 renderPool = guard(renderPool, "pool", "players");
 renderOppo = guard(renderOppo, "oppo", "opponent");

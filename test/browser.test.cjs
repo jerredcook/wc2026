@@ -62,7 +62,7 @@ test("the app boots in a real browser and every section fills in", opts, async (
   assert.ok(!dom.includes("couldn't be shown"), "a section failed to draw");
   assert.equal((dom.match(/class="nu ?(on)?"/g) || []).length, 2, "both team tiles are drawn");
   assert.ok(dom.indexOf("Women &middot; next") < dom.indexOf("Men &middot; next") || dom.indexOf("Women · next") < dom.indexOf("Men · next"), "women first");
-  for (const [id, mark] of [["hero", "What is this match?"], ["fixtures", "every upcoming match"], ["pool", "player pool"], ["results", "results"], ["poll", "Cap Day"]]) {
+  for (const [id, mark] of [["hero", "What is this match?"], ["facts", "Did you know?"], ["facts", "Another one"], ["fixtures", "every upcoming match"], ["pool", "player pool"], ["results", "results"], ["poll", "Cap Day"]]) {
     assert.ok(section(dom, id).includes(mark), `#${id} does not contain "${mark}"`);
   }
   assert.match(section(dom, "hero"), /class="cd"|LIVE|Full time/, "the match card shows a countdown, a live badge or a final score");
@@ -105,6 +105,10 @@ function checkLayout(r) {
 for (const w of [320, 360, 390, 768]) {
   test(`layout holds at ${w}px wide`, opts, async () => checkLayout(await probe("url=/&w=" + w)));
 }
+test("the Did you know? card stays a card, not a page, on a small phone", opts, async () => {
+  const r = await probe("url=/&w=320");
+  assert.ok(r.sections.facts > 120 && r.sections.facts < 340, `the card is ${r.sections.facts}px tall at 320px wide`);
+});
 test("layout holds for the women's view", opts, async () => checkLayout(await probe("url=/%23women&w=360")));
 /* The World Cup page keeps most of its sections collapsed: measure it as it opens, and again with everything opened. */
 const WC_OPEN = "rs-body,bk-body,sy-body,sc-body,sg-body,nw-body", WC_ALL = WC_OPEN + ",st-body,rk-body,hx-body,th-body,fr-body,sd-body,cd-body";

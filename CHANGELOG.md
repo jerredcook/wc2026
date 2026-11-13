@@ -23,6 +23,7 @@ The first numbered version of Cap Day: when the U.S. women's and men's national 
 - **Players:** who is called up, their caps and goals for the USA, and what each did in their club's last three matches. The next opponent's squad gets the same treatment.
 - **Calendar:** every fixture tagged by what it is for (friendly, Nations League, qualifier and so on), dates further ahead, and a subscription that adds all matches to your phone's calendar.
 - **News** for each team, recent results, stadium details, and FIFA rankings with a win chance worked out from them.
+- **Did you know?** One short fact about international soccer at a time: some explain how it works for people new to it, some are deep cuts for people who follow it. Facts about the next opponent come first.
 - **Installable** on Android from the browser, with a tip for iPhone. Works offline with the last copy it loaded.
 - **The World Cup section:** the complete 2026 tournament, men's and women's world rankings, and every World Cup since 1930. This was the whole app before Cap Day.
 - **Honest about its own state:** it says so when its schedule information is more than a day or so old, when it cannot load, and when a newer version is ready to refresh to.

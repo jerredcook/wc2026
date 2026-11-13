@@ -187,6 +187,27 @@ function parseSummary(G, teamId) {
 }
 
 
+/* ── Did you know? ──
+   The order the facts (js/facts.js) are shown in. Facts about the next opponent
+   come first, then, before a two-leg tie, the one that explains legs. The rest
+   are mixed afresh each day and take turns between the ones for newcomers and
+   the deep cuts, so neither kind of reader waits long. A fact past its "until"
+   date is left out until someone has checked it. */
+function factOrder(facts, o) {
+  o = o || {};
+  const opp = norm(o.opp || ""), today = o.today || "";
+  const mix = (facts || []).filter(f => !f.until || !today || today <= f.until);
+  let s = (((o.day || 0) + 1) * 2654435761) >>> 0 || 1;
+  const rnd = () => { s ^= s << 13; s >>>= 0; s ^= s >>> 17; s ^= s << 5; s >>>= 0; return s / 4294967296; };
+  for (let i = mix.length - 1; i > 0; i--) { const j = Math.floor(rnd() * (i + 1)); [mix[i], mix[j]] = [mix[j], mix[i]]; }
+  const about = f => !!opp && (f.opp || []).some(x => norm(x) === opp);
+  const first = mix.filter(about), second = mix.filter(f => o.leg && f.leg && !about(f));
+  const rest = mix.filter(f => !first.includes(f) && !second.includes(f));
+  const a = rest.filter(f => f.lv === "new"), b = rest.filter(f => f.lv !== "new"), out = [...first, ...second];
+  while (a.length || b.length) { if (a.length) out.push(a.shift()); if (b.length) out.push(b.shift()); }
+  return out;
+}
+
 if (typeof module === "object" && module.exports) {
-  module.exports = { VERSION, outcome, norm, winExpectancy, COMPS, compInfo, matchLine, callVerdict, formScore, parseSummary, cleanName, packChallenge, parseChallenge, mergeRivals, callDistance, rankCalls, MAX_RIVALS, MAX_NAME };
+  module.exports = { VERSION, outcome, norm, winExpectancy, COMPS, compInfo, matchLine, callVerdict, formScore, parseSummary, cleanName, packChallenge, parseChallenge, mergeRivals, callDistance, rankCalls, MAX_RIVALS, MAX_NAME, factOrder };
 }

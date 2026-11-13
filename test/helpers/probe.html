@@ -43,7 +43,7 @@ async function measure() {
   r.offScreen = [...d.querySelectorAll("body *")].filter(visible).filter(e => { const b = e.getBoundingClientRect(); return (b.right > w + 1 || b.left < -1) && !clipped(e); }).slice(0, 6).map(desc);
   r.hiddenButShown = [...d.querySelectorAll("[hidden]")].filter(e => win.getComputedStyle(e).display !== "none").map(desc);
   r.sections = {};
-  for (const id of (q.get("sections") || "nextup,hero,stories,pool,fixtures,results,poll").split(",")) { const e = d.getElementById(id); r.sections[id] = e ? Math.round(e.getBoundingClientRect().height) : -1; }
+  for (const id of (q.get("sections") || "nextup,hero,stories,facts,pool,fixtures,results,poll").split(",")) { const e = d.getElementById(id); r.sections[id] = e ? Math.round(e.getBoundingClientRect().height) : -1; }
   r.smallTargets = [...d.querySelectorAll("button, a.btn, a.subopt, [role=button]")].filter(visible).filter(e => { const b = e.getBoundingClientRect(); return b.height < minTap || b.width < minTap; }).slice(0, +q.get("cap") || 40).map(e => desc(e) + " " + Math.round(e.getBoundingClientRect().width) + "x" + Math.round(e.getBoundingClientRect().height));
   r.brokenLocalImages = [...d.images].filter(i => i.src.startsWith(location.origin) && i.complete && i.naturalWidth === 0).map(i => i.getAttribute("src"));
   r.unlabelledImages = [...d.images].filter(i => !i.hasAttribute("alt")).length;
