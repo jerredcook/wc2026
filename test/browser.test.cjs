@@ -153,3 +153,15 @@ test("layout holds with a live match on a small phone (timeline, stats, lineups 
   assert.match(r.state, /^Live now/);
   checkLayout(r);
 });
+
+test("the AO Matchday concept page boots in a real browser with both of its cards", opts, async () => {
+  const dom = await open("/ao.html");
+  assert.ok(!dom.includes("couldn't be shown"), "a section failed to draw");
+  assert.ok(dom.includes("AO Matchday") && dom.includes("not an official American Outlaws product"), "the concept notice is on the page");
+  assert.ok(dom.includes("Add AO Matchday to your iPhone") && !dom.includes("Add Cap Day"), "the install tip names this page, not Cap Day");
+  assert.ok(section(dom, "aoWatch").includes("Watch with American Outlaws"), "the watch party card is drawn");
+  const ch = section(dom, "aoChapters");
+  assert.ok(ch.includes("Find your crew") && ch.includes("AO Central New Jersey"), "the chapter finder is drawn, starting from the default chapter");
+  assert.ok(dom.indexOf('id="aoWatch"') < dom.indexOf('id="hero"') && dom.indexOf('id="hero"') < dom.indexOf('id="aoChapters"'), "watch parties above the match card, chapters below it");
+  for (const [id, mark] of [["hero", "What is this match?"], ["facts", "Did you know?"], ["fixtures", "every upcoming match"], ["results", "results"]]) assert.ok(section(dom, id).includes(mark), `#${id} does not contain "${mark}"`);
+});

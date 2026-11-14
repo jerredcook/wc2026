@@ -320,11 +320,11 @@ a.btn{display:inline-block;text-decoration:none;color:var(--ink)}
     </div>
   </div>
   <div class="card iostip" id="iosTip" hidden>
-    <span><b>Add Cap Day to your iPhone.</b> Tap the Share button <span aria-hidden="true">(the square with an arrow)</span>, then <b>Add to Home Screen</b>.</span>
+    <span><b>Add AO Matchday to your iPhone.</b> Tap the Share button <span aria-hidden="true">(the square with an arrow)</span>, then <b>Add to Home Screen</b>.</span>
     <button class="btn" aria-label="Dismiss">Got it</button>
   </div>
   <div class="card notice" id="update" role="status" hidden>
-    <span><b>A newer version of Cap Day is ready.</b></span>
+    <span><b>A newer version of AO Matchday is ready.</b></span>
     <button class="btn" onclick="applyUpdate()">Refresh</button>
   </div>
   <div class="card notice warn" id="stale" role="status" hidden></div>
@@ -389,7 +389,7 @@ a.btn{display:inline-block;text-decoration:none;color:var(--ink)}
   <button class="plain" onclick="this.closest('dialog').close()">Close</button>
 </dialog>
 
-<dialog id="qr" aria-label="QR code for Cap Day">
+<dialog id="qr" aria-label="QR code for AO Matchday">
   <img src="ao-qr.svg" alt="QR code for this page" width="240" height="240">
   <p>Scan to open AO Matchday<br>jerredcook.github.io/wc2026/ao.html</p>
   <button onclick="this.closest('dialog').close()">Close</button>
@@ -648,7 +648,7 @@ function shareCall(id) {
   const url = location.origin + location.pathname + "#" + S.team;
   const text = `My call: ${callText(m, callOf(id))}. What's yours?`;
   track("call-shared");
-  if (navigator.share) navigator.share({ title: "Cap Day", text, url }).catch(() => {});
+  if (navigator.share) navigator.share({ title: "AO Matchday", text, url }).catch(() => {});
   else if (navigator.clipboard) navigator.clipboard.writeText(text + " " + url).then(() => { const b = $("shareCall"); if (b) { b.textContent = "Copied"; setTimeout(renderHero, 1500); } });
 }
 
@@ -704,7 +704,7 @@ function sendChallenge() {
   const m = duelMatch(); if (!m || !S.name) return;
   const url = challengeUrl(m), text = `${S.name} says ${callText(m, callOf(m.id))}. What's your call?`;
   track("challenge-sent");
-  if (navigator.share) navigator.share({ title: "Cap Day", text, url }).catch(() => {});
+  if (navigator.share) navigator.share({ title: "AO Matchday", text, url }).catch(() => {});
   else if (navigator.clipboard) navigator.clipboard.writeText(text + " " + url).then(() => { $("duelSend").textContent = "Link copied"; });
 }
 /* Everyone's call for this match, ranked once there is a score to rank against. */
@@ -1116,7 +1116,7 @@ function renderPoll() {
   if (st.want) { el.innerHTML = `<div class="card"><div class="pollq">Thanks — that helps.</div><div class="cnote" style="margin:0">Your answers are counted anonymously.</div></div>`; return; }
   const btn = (k, label, fn) => `<button class="fb" onclick="${fn}('${k}')">${label}</button>`;
   el.innerHTML = !st.useful
-    ? `<div class="card"><div class="pollq">Would you use Cap Day to follow the national teams?</div><div class="filters">${btn("yes", "Yes", "pollUseful")}${btn("maybe", "Maybe", "pollUseful")}${btn("no", "Not really", "pollUseful")}</div><div class="cnote" style="margin:4px 0 0">One tap, counted anonymously.</div></div>`
+    ? `<div class="card"><div class="pollq">Would you use AO Matchday to follow the national teams?</div><div class="filters">${btn("yes", "Yes", "pollUseful")}${btn("maybe", "Maybe", "pollUseful")}${btn("no", "Not really", "pollUseful")}</div><div class="cnote" style="margin:4px 0 0">One tap, counted anonymously.</div></div>`
     : `<div class="card"><div class="pollq">What would make it better?</div><div class="filters">${POLL.map(([k, l]) => btn(k, l, "pollWant")).join("")}</div></div>`;
 }
 function pollSave(k, v) { let st = {}; try { st = JSON.parse(localStorage.getItem(KEY + ".poll") || "{}"); st[k] = v; localStorage.setItem(KEY + ".poll", JSON.stringify(st)); } catch (e) {} }

@@ -74,6 +74,12 @@ swap(`<img src="qr.svg" alt="QR code for this page"`, `<img src="ao-qr.svg" alt=
 swap(`Unofficial and fan-made — not affiliated with or endorsed by U.S. Soccer, Concacaf or FIFA.`,
   `Concept build. Not an official American Outlaws app, and not affiliated with or endorsed by U.S. Soccer, Concacaf or FIFA. American Outlaws chapter and watch party listings are copied from theamericanoutlaws.com.`);
 swapRe(/(<script data-goatcounter[^>]*><\/script>)/, `$1\n<script src="js/ao.js"></script>`);
+/* Wording a visitor sees or shares: the page's own name, not Cap Day's. */
+swap(`<b>Add Cap Day to your iPhone.</b>`, `<b>Add AO Matchday to your iPhone.</b>`);
+swap(`<b>A newer version of Cap Day is ready.</b>`, `<b>A newer version of AO Matchday is ready.</b>`);
+swap(`<dialog id="qr" aria-label="QR code for Cap Day">`, `<dialog id="qr" aria-label="QR code for AO Matchday">`);
+swap(`navigator.share({ title: "Cap Day", text, url })`, `navigator.share({ title: "AO Matchday", text, url })`);
+swap(`Would you use Cap Day to follow the national teams?`, `Would you use AO Matchday to follow the national teams?`);
 swap(`$("ver").textContent = "Cap Day v" + VERSION;`, `$("ver").textContent = "AO Matchday concept, built on Cap Day v" + VERSION;`);
 
 const out = "<!-- Generated from index.html by scripts/build-ao.mjs. Do not edit by hand. -->\n" + html;
