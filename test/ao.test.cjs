@@ -30,3 +30,8 @@ test("ao: the concept page loads its script after the hub and stays out of searc
   assert.match(html, /id="aoWatch"/); assert.match(html, /id="aoChapters"/);
   for (const m of html.matchAll(/(?:src|href)="([^"#?:]+\.(?:js|png|svg|webmanifest|json))"/g)) assert.ok(fs.existsSync(path.join(root, m[1])), "missing file: " + m[1]);
 });
+
+test("ao: the concept page is up to date with the front page it is generated from", () => {
+  const r = require("node:child_process").spawnSync(process.execPath, [path.join(root, "scripts/build-ao.mjs"), "--check"], { encoding: "utf8" });
+  assert.strictEqual(r.status, 0, r.stderr || "build-ao --check failed");
+});

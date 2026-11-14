@@ -26,7 +26,7 @@ The schedule, squads and club form are built by [`scripts/build-usa.mjs`](script
 
 - **Core logic is separate and tested.** [`js/core.js`](js/core.js) holds the pure match logic (feed parsing, competition and match explanations, prediction grading, win expectancy). The page loads it as a plain script; the tests load it with `require()`.
 - **The "Did you know?" facts are a plain list.** [`js/facts.js`](js/facts.js) holds them, each marked as one for newcomers or a deep cut, with the rules for adding one at the top of the file. A fact that a future result could change carries an `until` date and drops out of the app after it, until someone checks it and moves the date. `factOrder` in `js/core.js` decides the order: the next opponent's facts first, then a fresh mix each day.
-- **Tests:** `node --test` (174 tests, no dependencies, about ten seconds).
+- **Tests:** `node --test` (175 tests, no dependencies, about ten seconds).
   - [`test/core.test.cjs`](test/core.test.cjs): the logic against real recorded feed data in `test/fixtures/`.
   - [`test/render.test.cjs`](test/render.test.cjs): what each section puts on screen in every state — before kickoff, live, connection lost, full time, second leg, friendly, no match scheduled, women's view, test mode — plus the prediction flow, the feedback poll, escaping of feed text, and one section failing without taking the others down. The page's own code runs in a sandbox with a stand-in document, a fixed clock and recorded data ([`test/helpers/page.cjs`](test/helpers/page.cjs)).
   - [`test/browser.test.cjs`](test/browser.test.cjs): the whole app in headless Chrome, served locally — it boots, every section fills in, old links redirect. Skipped where no Chrome is installed.

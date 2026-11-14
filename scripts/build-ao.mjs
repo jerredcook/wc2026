@@ -2,6 +2,7 @@
 // The concept is the Cap Day hub with AO naming plus two cards from js/ao.js:
 // "Watch with American Outlaws" and "Find your crew". Rerun after changing index.html:
 //   node scripts/build-ao.mjs
+// The tests fail until you do (they run it with --check).
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -76,5 +77,12 @@ swapRe(/(<script data-goatcounter[^>]*><\/script>)/, `$1\n<script src="js/ao.js"
 swap(`$("ver").textContent = "Cap Day v" + VERSION;`, `$("ver").textContent = "AO Matchday concept, built on Cap Day v" + VERSION;`);
 
 const out = "<!-- Generated from index.html by scripts/build-ao.mjs. Do not edit by hand. -->\n" + html;
-fs.writeFileSync(path.join(root, "ao.html"), out);
-console.log("wrote ao.html");
+/* --check writes nothing: it fails when ao.html is behind index.html (the tests run it). */
+if (process.argv.includes("--check")) {
+  let have = "";
+  try { have = fs.readFileSync(path.join(root, "ao.html"), "utf8"); } catch (e) {}
+  if (have !== out) { console.error("ao.html is behind index.html: run node scripts/build-ao.mjs"); process.exit(1); }
+} else {
+  fs.writeFileSync(path.join(root, "ao.html"), out);
+  console.log("wrote ao.html");
+}
