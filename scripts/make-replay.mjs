@@ -8,7 +8,7 @@
    clock. A moment is kept when one of these changed since the last one kept:
    the state (before, live, finished), a break in play (half time), the score,
    the goals and cards listed, whether lineups or a running clock are present,
-   and whether the match numbers are still all zero. Within a kept moment, a
+   and whether the match numbers are real yet. Within a kept moment, a
    part of the feed that is the same as in the moment before is left out; the
    test helper (replay in test/helpers/page.cjs) carries it forward. */
 import { readFileSync, readdirSync } from "node:fs";
@@ -58,7 +58,9 @@ export function trim(G) {
 export function shape(G) {
   const c = (G.header && G.header.competitions && G.header.competitions[0]) || {}, st = c.status || {}, ty = st.type || {};
   const shown = (G.keyEvents || []).filter(k => k.scoringPlay || /card/.test((k.type && k.type.type) || "")).map(k => k.id);
-  const counted = ((G.boxscore && G.boxscore.teams) || []).some(t => (t.statistics || []).some(q => parseFloat(q.displayValue) > 0));
+  /* The same test the app uses before it shows the match numbers (statsReady in js/core.js). */
+  const teams = (G.boxscore && G.boxscore.teams) || [], stat = (t, k) => parseFloat(((t.statistics || []).find(q => q.name === k) || {}).displayValue) || 0;
+  const counted = teams.length > 1 && (teams.every(t => stat(t, "possessionPct") > 0) || teams.some(t => ["totalShots", "shotsOnTarget", "wonCorners", "foulsCommitted"].some(k => stat(t, k) > 0)));
   return JSON.stringify([
     ty.state, ty.state === "in" && !/\d/.test(ty.shortDetail || "") ? ty.shortDetail : "", (c.competitors || []).map(x => [x.score, x.shootoutScore]),
     shown, (G.rosters || []).filter(r => (r.roster || []).length).length, ty.state === "in" ? !!st.displayClock : null, counted,

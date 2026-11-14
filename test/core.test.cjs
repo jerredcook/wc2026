@@ -112,6 +112,17 @@ test("parseSummary, before kickoff: no score or events, but the series and recen
   assert.ok(L.tv.includes("TBS"));
 });
 
+test("statsReady: the match numbers wait until they mean something", () => {
+  const s = (us, them) => ({ us, them });
+  assert.equal(core.statsReady(null), false);
+  assert.equal(core.statsReady(s({ possessionPct: "0", totalShots: "0" }, { possessionPct: "0", totalShots: "0" })), false, "all zero at kickoff");
+  assert.equal(core.statsReady(s({ possessionPct: "0", totalPasses: "0" }, { possessionPct: "100", totalPasses: "1" })), false, "one pass: 0% against 100%");
+  assert.equal(core.statsReady(s({ possessionPct: "46.9" }, { possessionPct: "53.1" })), true, "both sides have had the ball");
+  assert.equal(core.statsReady(s({ possessionPct: "0", foulsCommitted: "1" }, { possessionPct: "100" })), true, "something has been counted");
+  assert.equal(core.statsReady(s({ totalShots: "3" }, { totalShots: "0" })), true, "a feed with no possession figure at all");
+  assert.equal(core.statsReady(s({}, {})), false);
+});
+
 test("parseSummary: during a break the clock says so, not the minute play stopped", () => {
   const withStatus = status => { const G = JSON.parse(JSON.stringify(finished)); G.header.competitions[0].status = status; return core.parseSummary(G, USA).clock; };
   /* The feed's own answers during Curaçao v Panama, Nov 12 2026. */

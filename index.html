@@ -771,9 +771,8 @@ function renderHero() {
       <div class="wenote"><span>${h(home ? "USA" : m.opp.name)}</span><span>Win expectancy · FIFA ratings</span><span>${h(home ? m.opp.name : "USA")}</span></div></div>`;
   }
   let statsHtml = "";
-  /* The feed sends every number as zero for the first minutes of a match: wait for a real one. */
-  const counted = o => Object.keys(o).some(k => parseFloat(o[k]) > 0);
-  if (st !== "pre" && L.stats && (counted(L.stats.us) || counted(L.stats.them))) {
+  /* The feed's numbers mean nothing for the first minute or so of a match: wait for real ones (statsReady in js/core.js). */
+  if (st !== "pre" && statsReady(L.stats)) {
     const A = home ? L.stats.us : L.stats.them, B = home ? L.stats.them : L.stats.us;
     const rowsS = [["possessionPct", "Possession", "%"], ["totalShots", "Shots", ""], ["shotsOnTarget", "On target", ""], ["wonCorners", "Corners", ""], ["foulsCommitted", "Fouls", ""]]
       .filter(([k]) => A[k] != null && B[k] != null).map(([k, label, unit]) => {

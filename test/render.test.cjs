@@ -591,20 +591,22 @@ test("challenge: a long chain still fits a QR code, and at most eight friends ar
    finished match relabelled as live above, this is what the feed sent while
    the match was going on. */
 const NIGHT = replay("replay-curacao-panama.json");
-async function replayNight() {
-  const home = NIGHT.frames[0].summary.header.competitions[0].competitors.find(x => x.homeAway === "home").id;
-  let cur = NIGHT.frames[0];
-  const p = await boot({ search: `?test=${NIGHT.league}:${NIGHT.event}`, summary: () => cur.summary, now: cur.at });
+async function replayNight(R = NIGHT) {
+  const home = R.frames[0].summary.header.competitions[0].competitors.find(x => x.homeAway === "home").id;
+  let cur = R.frames[0];
+  const p = await boot({ search: `?test=${R.league}:${R.event}`, summary: () => cur.summary, now: cur.at });
   const polls = () => p.timers.filter(t => /refreshLive/.test(t.fn.name));
   return {
     p, polls,
     /* Jump to the first moment the feed's answer matches, with the clock at the time it was recorded. */
     async to(match, what) {
-      const f = NIGHT.frames.find(x => match(core.parseSummary(x.summary, home)));
+      const f = R.frames.find(x => match(core.parseSummary(x.summary, home)));
       assert.ok(f, "the recording has a moment where " + what);
       cur = f; p.setNow(f.at); await p.refresh();
       return p.text("hero");
     },
+    /* Show one recorded moment, with the clock at the time it was recorded. */
+    async show(f) { cur = f; p.setNow(f.at); await p.refresh(); return p.text("hero"); },
     async at(iso) { p.setNow(iso); await p.refresh(); return p.text("hero"); },
   };
 }
@@ -693,4 +695,93 @@ test("replay: the last minutes, full time, and nothing flashing in a match witho
   assert.ok(!/LIVE|Watch on/.test(t));
   assert.match(t, /39% Possession 61% 6 Shots 17/);
   assert.equal(r2.polls().length, before, "it stops asking once the match is over");
+});
+
+/* ── A recorded match with goals: Guatemala 2–3 Canada, Nov 13 2026 ──
+   Five goals, one of them an own goal, recorded live (scripts/record-live.mjs).
+   In test mode the home side, Guatemala, stands where the USA would. */
+const GOALS = replay("replay-guatemala-canada.json");
+const GUA = "2652";
+
+test("replay with goals: the card flashes once for each goal, for either side, and at no other moment", async () => {
+  const r = await replayNight(GOALS);
+  const flashes = [];
+  let prev = null;
+  for (const f of GOALS.frames) {
+    await r.p.fire(t => t.ms === 4000);                       // the flash from the moment before has run its four seconds
+    const L = core.parseSummary(f.summary, GUA), t = await r.show(f);
+    const flash = /class="card hero live flash/.test(r.p.html("hero"));
+    const scored = !!prev && prev.state === "in" && L.state === "in" && (L.us !== prev.us || L.them !== prev.them);
+    assert.equal(flash, scored, `at ${f.at} (${L.us}–${L.them}, ${L.clock})`);
+    if (flash) flashes.push(`${L.us}-${L.them}`);
+    assert.ok(!/undefined|NaN|null/.test(t), `nothing unfilled on the card at ${f.at}`);
+    for (const id of SECTIONS) assert.ok(!r.p.html(id).includes(NOTICE), `${id} drew without an error at ${f.at}`);
+    prev = L;
+  }
+  assert.deepEqual(flashes, ["0-1", "0-2", "0-3", "1-3", "2-3"]);
+
+  /* If the app misses the looks in between, a late goal and full time arrive together: the card shows the final score, without the flash. */
+  const r2 = await replayNight(GOALS);
+  await r2.to(L => L.clock === "83'", "it is 1–3 late on");
+  await r2.p.fire(t => t.ms === 4000);
+  const t = await r2.to(L => L.state === "post", "the match is over");
+  assert.match(t, /Guatemala 2 : 3 Full time Canada/);
+  assert.ok(!/class="card hero[^"]*flash/.test(r2.p.html("hero")), "full time is not flashed as a goal");
+  assert.deepEqual(r.p.tracked.filter(x => /error/.test(x)), []);
+});
+
+test("replay with goals: the score, the scorer and whose goal it was, as each one arrives", async () => {
+  const r = await replayNight(GOALS);
+  const side = who => { const m = new RegExp(`<li class="(us|them)"><span class="min">[^<]*</span><span>[^<]*${who}`).exec(r.p.html("hero")); return m && m[1]; };
+
+  let t = await r.to(L => L.them === 1, "Canada have scored");
+  assert.match(t, /Guatemala 0 : 1 LIVE 19' Canada/);
+  assert.match(t, /18' ⚽ Tani Oluwaseyi/);
+  assert.equal(side("Tani Oluwaseyi"), "them");
+
+  t = await r.to(L => L.them === 2, "Canada have a second");
+  assert.match(t, /Guatemala 0 : 2 LIVE 29' Canada/);
+  assert.match(t, /18' ⚽ Tani Oluwaseyi \(assist Jonathan David\) 28' ⚽ Liam Millar/, "the assist on the first goal arrived later and is added");
+
+  /* The feed named the third scorer one look before it changed the score. */
+  await r.p.fire(t => t.ms === 4000);                         // the second goal's flash has run its four seconds
+  t = await r.to(L => L.them === 2 && L.events.filter(e => e.icon === "⚽").length === 3, "the third goal is listed before the score moves");
+  assert.match(t, /Guatemala 0 : 2 LIVE 45'\+2' Canada/);
+  assert.match(t, /45'\+2' ⚽ Jonathan David/);
+  assert.ok(!/hero live flash/.test(r.p.html("hero")), "no flash until the score itself changes");
+  t = await r.to(L => L.them === 3, "the score catches up");
+  assert.match(t, /Guatemala 0 : 3 LIVE 45'\+2' Canada/);
+  assert.match(r.p.html("hero"), /hero live flash/);
+
+  t = await r.to(L => L.clock === "Half time", "it is half time");
+  assert.match(t, /Guatemala 0 : 3 LIVE Half time Canada/);
+
+  t = await r.to(L => L.us === 1, "Guatemala pull one back");
+  assert.match(t, /Guatemala 1 : 3 LIVE 55' Canada/);
+  assert.match(t, /54' ⚽ Óscar Santis \(assist Matthew Evans\)/, "a headed goal is a goal like any other");
+  assert.equal(side("Óscar Santis"), "us");
+
+  t = await r.to(L => L.us === 2, "an own goal makes it 2–3");
+  assert.match(t, /Guatemala 2 : 3 LIVE 90'\+5' Canada/);
+  assert.match(t, /90'\+4' ⚽ Luc de Fougerolles \(own goal\)/);
+  assert.equal(side("Luc de Fougerolles"), "us", "an own goal is listed on the side it counted for, marked as an own goal");
+
+  const before = r.polls().length;
+  t = await r.to(L => L.state === "post", "the match is over");
+  assert.match(t, /Full time · Concacaf Nations League · Quarterfinals · 1st Leg Guatemala 2 : 3 Full time Canada/);
+  assert.match(t, /18' ⚽ Tani Oluwaseyi .* 28' ⚽ Liam Millar .* 45'\+2' ⚽ Jonathan David .* 54' ⚽ Óscar Santis .* 90'\+4' ⚽ Luc de Fougerolles \(own goal\) 90'\+5' 🟨 Matthew Evans/);
+  assert.match(t, /42% Possession 58% 9 Shots 17/);
+  assert.ok(!/hero live flash|LIVE/.test(r.p.html("hero")), "full time is not a goal");
+  assert.equal(r.polls().length, before, "it stops asking once the match is over");
+});
+
+test("replay with goals: no numbers until both sides have had the ball", async () => {
+  const r = await replayNight(GOALS);
+  /* For the first five minutes the feed said Guatemala 0% possession, Canada 100%, and nothing else. */
+  let t = await r.to(L => L.state === "in", "the match has started");
+  assert.match(t, /Guatemala 0 : 0 LIVE 1' Canada/);
+  assert.ok(!/Possession|Shots/.test(t), "0% against 100% is not a number worth showing");
+  t = await r.to(L => L.state === "in" && core.statsReady(L.stats), "the numbers are real");
+  assert.match(t, /LIVE 6' Canada/);
+  assert.match(t, /47% Possession 53% 0 Shots 0 0 On target 0 0 Corners 1 1 Fouls 0/);
 });

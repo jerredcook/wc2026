@@ -82,3 +82,37 @@ test("the recorded match in the fixtures: complete, in order, and each moment re
   }
   assert.ok(readFileSync(path.join(ROOT, "test", "fixtures", "replay-curacao-panama.json")).length < 120e3, "the fixture stays small");
 });
+
+test("shape: one side's first pass (0% possession against 100%) is not yet 'the numbers have started'", () => {
+  const live = { displayClock: "1'", type: { state: "in", shortDetail: "1'" } };
+  const withStats = (a, b) => { const G = as(finished, live, ["0", "0"]); G.boxscore.teams.forEach((t, i) => { t.statistics = Object.entries(i ? b : a).map(([name, displayValue]) => ({ name, displayValue })); }); return G; };
+  const zeros = withStats({ possessionPct: "0", totalShots: "0" }, { possessionPct: "0", totalShots: "0" });
+  const onePass = withStats({ possessionPct: "0", totalPasses: "0" }, { possessionPct: "100", totalPasses: "1" });
+  const real = withStats({ possessionPct: "46.9", totalPasses: "12" }, { possessionPct: "53.1", totalPasses: "15" });
+  assert.equal(shape(zeros), shape(onePass));
+  assert.notEqual(shape(onePass), shape(real));
+  /* The cutter and the app must agree on when the numbers are real. */
+  for (const G of [zeros, onePass, real]) assert.equal(JSON.parse(shape(G)).pop(), core.statsReady(core.parseSummary(G, G.header.competitions[0].competitors[0].id).stats));
+});
+
+test("the recorded match with goals: complete, in order, and the score only ever goes up", () => {
+  const R = replay("replay-guatemala-canada.json");
+  assert.equal(R.match, "Guatemala v Canada");
+  assert.ok(R.frames.length >= 15 && R.looks > 300);
+  assert.deepEqual(R.frames.map(f => f.at), R.frames.map(f => f.at).slice().sort(), "frames are in the order recorded");
+  const Ls = R.frames.map(f => core.parseSummary(f.summary, "2652"));
+  assert.equal(Ls[0].state, "pre"); assert.equal(Ls[Ls.length - 1].state, "post");
+  assert.deepEqual([Ls[Ls.length - 1].us, Ls[Ls.length - 1].them], [2, 3]);
+  let last = [0, 0];
+  for (const [i, L] of Ls.entries()) {
+    assert.ok(L && L.series && L.last5.length === 2, `the parts stored once are carried into ${R.frames[i].at}`);
+    if (L.state === "pre") continue;
+    assert.ok(L.us >= last[0] && L.them >= last[1] && L.us + L.them <= last[0] + last[1] + 1, `one goal at a time at ${R.frames[i].at}`);
+    last = [L.us, L.them];
+  }
+  const goals = Ls[Ls.length - 1].events.filter(e => e.icon === "⚽");
+  assert.equal(goals.length, 5);
+  assert.deepEqual(goals.map(g => g.us), [false, false, false, true, true]);
+  assert.equal(goals[4].note, "own goal");
+  assert.ok(readFileSync(path.join(ROOT, "test", "fixtures", "replay-guatemala-canada.json")).length < 130e3, "the fixture stays small");
+});

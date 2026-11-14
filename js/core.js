@@ -187,6 +187,16 @@ function parseSummary(G, teamId) {
 }
 
 
+/* Whether the match numbers are worth showing yet. In the first minute the feed
+   sends all zeros, or one side's first pass as "0% possession against 100%":
+   wait until both sides have had the ball, or until something has been counted. */
+const SHOWN_STATS = ["totalShots", "shotsOnTarget", "wonCorners", "foulsCommitted"];
+function statsReady(s) {
+  if (!s || !s.us || !s.them) return false;
+  const n = (o, k) => parseFloat(o[k]) || 0;
+  return (n(s.us, "possessionPct") > 0 && n(s.them, "possessionPct") > 0) || SHOWN_STATS.some(k => n(s.us, k) > 0 || n(s.them, k) > 0);
+}
+
 /* ── Did you know? ──
    The order the facts (js/facts.js) are shown in. Facts about the next opponent
    come first, then, before a two-leg tie, the one that explains legs. The rest
@@ -209,5 +219,5 @@ function factOrder(facts, o) {
 }
 
 if (typeof module === "object" && module.exports) {
-  module.exports = { VERSION, outcome, norm, winExpectancy, COMPS, compInfo, matchLine, callVerdict, formScore, parseSummary, cleanName, packChallenge, parseChallenge, mergeRivals, callDistance, rankCalls, MAX_RIVALS, MAX_NAME, factOrder };
+  module.exports = { VERSION, outcome, norm, winExpectancy, COMPS, compInfo, matchLine, callVerdict, formScore, parseSummary, cleanName, packChallenge, parseChallenge, mergeRivals, callDistance, rankCalls, MAX_RIVALS, MAX_NAME, factOrder, statsReady };
 }
