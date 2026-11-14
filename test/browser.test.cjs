@@ -110,6 +110,25 @@ test("the Did you know? card stays a card, not a page, on a small phone", opts, 
   assert.ok(r.sections.facts > 120 && r.sections.facts < 340, `the card is ${r.sections.facts}px tall at 320px wide`);
 });
 test("layout holds for the women's view", opts, async () => checkLayout(await probe("url=/%23women&w=360")));
+for (const w of [320, 412]) {
+  test(`layout holds at ${w}px wide with every folding section opened`, opts, async () => {
+    const r = await probe("url=/%23men&open=1&w=" + w);
+    checkLayout(r);
+    assert.ok(r.sections.pool > 1500 && r.sections.results > 300, "the sections were really opened: " + JSON.stringify(r.sections));
+  });
+}
+test("the page as it opens is short: sections folded, a few screens in all", opts, async () => {
+  const r = await probe("url=/%23men&w=360");
+  for (const id of ["stories", "pool", "fixtures", "results"]) assert.ok(r.sections[id] >= 44 && r.sections[id] < 90, `#${id} is one line when folded (${r.sections[id]}px)`);
+});
+const AO_IDS = "nextup,aoWatch,hero,aoChapters,stories,facts,pool,fixtures,results,poll";
+test("AO Matchday: layout holds on a small phone, folded and with everything opened", opts, async () => {
+  const shut = await probe("url=/ao.html%23men&w=320&sections=" + AO_IDS);
+  checkLayout(shut);
+  assert.ok(shut.sections.aoWatch < 420, "the watch party card stays compact above the match card (" + shut.sections.aoWatch + "px)");
+  assert.ok(shut.sections.aoChapters < 90, "the chapter finder is one line when folded");
+  checkLayout(await probe("url=/ao.html%23men&open=1&w=320&sections=" + AO_IDS));
+});
 /* The World Cup page keeps most of its sections collapsed: measure it as it opens, and again with everything opened. */
 const WC_OPEN = "rs-body,bk-body,sy-body,sc-body,sg-body,nw-body", WC_ALL = WC_OPEN + ",st-body,rk-body,hx-body,th-body,fr-body,sd-body,cd-body";
 test("World Cup page: layout holds as it opens on a small phone", opts, async () => checkLayout(await probe("url=/worldcup.html&w=360&sections=" + WC_OPEN)));

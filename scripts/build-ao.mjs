@@ -36,7 +36,10 @@ swap(`</style>`, `
 .aoband .t{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#ffb3bd;margin-top:3px}
 .aoband p{font-size:12px;line-height:1.45;color:#d3daea;margin-top:8px}
 .aocard{border-top:4px solid var(--red)}
-.aohome{display:flex;gap:12px;align-items:flex-start;background:var(--chip);border-radius:12px;padding:12px;margin-top:6px}
+.aohome{display:flex;gap:12px;align-items:flex-start;background:var(--chip);border-radius:12px;padding:12px;margin-top:10px;flex-wrap:wrap}
+.aohome .aogo{background:var(--card);flex:1 0 100%;text-align:center;padding:9px 14px}
+.aocard>details>summary{min-height:32px;display:flex;align-items:center}
+.aocard>details>summary::before{margin-right:5px}
 .aor{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
 .aor:last-of-type{border-bottom:0}
 .crest{flex:0 0 40px;width:40px;height:40px;object-fit:contain;border-radius:8px}
@@ -68,7 +71,9 @@ swap(`<div class="nextup" id="nextup"></div>`, `<div class="aoband">
     <p>A concept for an AO app, built by Jerred Cook of AO Central New Jersey on top of his Cap Day app. It is not an official American Outlaws product.</p>
   </div>
   <div class="nextup" id="nextup"></div>`);
-swap(`<div id="hero"></div>`, `<div id="aoWatch"></div>\n  <div id="hero"></div>\n  <div id="aoChapters"></div>`);
+/* The watch party sits inside the match zone, above the match card: picking a team scrolls to the top of that zone. */
+swap(`<div id="match"><div id="hero"></div></div>`, `<div id="match"><div id="aoWatch"></div><div id="hero"></div></div>\n  <div id="aoChapters"></div>`);
+swap(`<span class="appname">Cap Day</span>`, `<span class="appname">AO Matchday</span>`);
 swap(`<p>Scan to open Cap Day<br>jerredcook.github.io/wc2026</p>`, `<p>Scan to open AO Matchday<br>jerredcook.github.io/wc2026/ao.html</p>`);
 swap(`<img src="qr.svg" alt="QR code for this page"`, `<img src="ao-qr.svg" alt="QR code for this page"`);
 swap(`Unofficial and fan-made — not affiliated with or endorsed by U.S. Soccer, Concacaf or FIFA.`,

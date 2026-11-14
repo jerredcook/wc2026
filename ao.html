@@ -266,6 +266,19 @@ button:focus-visible,a:focus-visible,[role=button]:focus-visible,summary:focus-v
 .story b{color:var(--ink)}
 .story .ic{flex:0 0 22px;font-size:16px}
 details.fold>summary{margin-top:0;font-size:15px;font-weight:700;color:var(--ink)}
+/* A section that folds to one line: its title, and a preview of what is inside. */
+.sec{padding:0}
+.sec>details>summary{display:flex;align-items:center;gap:10px;margin:0;padding:12px 16px;min-height:56px;color:var(--ink)}
+.sec>details>summary::before{content:none}
+.sec>details>summary::after{content:"";flex:0 0 auto;width:8px;height:8px;margin:0 4px 3px 0;border-right:2px solid var(--ink3);border-bottom:2px solid var(--ink3);transform:rotate(45deg);transition:transform .15s}
+.sec>details[open]>summary::after{transform:rotate(-135deg);margin-bottom:-3px}
+.sec .sh{flex:1;min-width:0}
+.sec .st{display:block;font-size:15px;font-weight:700}
+.sec .st .lv{float:right;margin-top:2px;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;background:var(--chip);color:var(--ink2);border-radius:8px;padding:2px 8px}
+.sec .ss{display:block;font-size:12px;font-weight:500;color:var(--ink3);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sec>details[open]>summary .ss{display:none}
+.sec .sb{padding:0 16px 16px}
+.sec .sb>.cnote:first-child{margin-top:-4px}
 .hbtns{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 dialog{border:0;border-radius:16px;padding:22px;text-align:center;background:#fff;color:#1a1a1a;max-width:min(320px,90vw);margin:auto}
 dialog::backdrop{background:rgba(0,0,0,.6)}
@@ -283,7 +296,10 @@ dialog input{display:block;width:100%;margin:8px 0 12px;padding:10px;border:1px 
 .aoband .t{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#ffb3bd;margin-top:3px}
 .aoband p{font-size:12px;line-height:1.45;color:#d3daea;margin-top:8px}
 .aocard{border-top:4px solid var(--red)}
-.aohome{display:flex;gap:12px;align-items:flex-start;background:var(--chip);border-radius:12px;padding:12px;margin-top:6px}
+.aohome{display:flex;gap:12px;align-items:flex-start;background:var(--chip);border-radius:12px;padding:12px;margin-top:10px;flex-wrap:wrap}
+.aohome .aogo{background:var(--card);flex:1 0 100%;text-align:center;padding:9px 14px}
+.aocard>details>summary{min-height:32px;display:flex;align-items:center}
+.aocard>details>summary::before{margin-right:5px}
 .aor{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
 .aor:last-of-type{border-bottom:0}
 .crest{flex:0 0 40px;width:40px;height:40px;object-fit:contain;border-radius:8px}
@@ -335,8 +351,7 @@ a.btn{display:inline-block;text-decoration:none;color:var(--ink)}
   </div>
   <div class="nextup" id="nextup"></div>
 
-  <div id="aoWatch"></div>
-  <div id="hero"></div>
+  <div id="match"><div id="aoWatch"></div><div id="hero"></div></div>
   <div id="aoChapters"></div>
   <div id="stories"></div>
   <div id="facts"></div>
@@ -389,6 +404,14 @@ a.btn{display:inline-block;text-decoration:none;color:var(--ink)}
   <button class="plain" onclick="this.closest('dialog').close()">Close</button>
 </dialog>
 
+<dialog id="how" aria-label="How to install">
+  <h3 style="font-size:17px;margin-bottom:8px">Install <span class="appname">AO Matchday</span></h3>
+  <p style="word-break:normal;text-align:left">1. Open this page in Chrome itself: <b id="howUrl"></b><br>2. Tap <b>⋮</b> at the top right.<br>3. Tap <b>Add to Home screen</b>, then <b>Install</b>.</p>
+  <p style="font-size:11.5px;margin-top:10px;word-break:normal">If this page opened inside another app, step 1 is the one that matters: the menu is only in Chrome.</p>
+  <button onclick="copyHow()" id="howCopy">Copy the address</button>
+  <button class="plain" onclick="this.closest('dialog').close()">Close</button>
+</dialog>
+
 <dialog id="qr" aria-label="QR code for AO Matchday">
   <img src="ao-qr.svg" alt="QR code for this page" width="240" height="240">
   <p>Scan to open AO Matchday<br>jerredcook.github.io/wc2026/ao.html</p>
@@ -409,6 +432,9 @@ const S = { team: "men", data: {}, ranks: {}, live: {}, sums: {}, open: {}, pos:
 try { S.calls = JSON.parse(localStorage.getItem(KEY + ".calls") || "{}") || {}; } catch (e) {}
 try { S.rivals = JSON.parse(localStorage.getItem(KEY + ".rivals") || "{}") || {}; } catch (e) {}
 try { S.name = cleanName(localStorage.getItem(KEY + ".name") || ""); } catch (e) {}
+/* Which sections the visitor has opened or closed (remembered on this device). */
+const SEC_DEF = {};
+try { const o = JSON.parse(localStorage.getItem(KEY + ".open") || "{}") || {}; for (const k of Object.keys(o)) if (/^s\.[a-z]+$/.test(k)) S.open[k] = !!o[k]; } catch (e) {}
 const hashTeam = location.hash.replace("#", "").split("&")[0];
 const pinned = !!TEAM[hashTeam];
 S.team = pinned ? hashTeam : "women";
@@ -526,7 +552,7 @@ function pickTeam(t) {
   if (!TEAM[t]) return;
   chose = true;
   if (t !== S.team) { track("team-" + t); S.team = t; S.pos = "all"; history.replaceState(null, "", "#" + t); render(); loadTeam(t); }
-  const el = $("hero"); if (el && el.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  const el = $("match") || $("hero"); if (el && el.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 function renderNextUp() {
   $("nextup").innerHTML = ORDER.map(t => {
@@ -634,6 +660,19 @@ function cdTiles(iso) {
 setInterval(() => { const el = $("cd"); if (el && el.dataset.iso) el.innerHTML = cdTiles(el.dataset.iso); }, 1000);
 
 /* Count a named action in GoatCounter (shows up as an event, e.g. "call-locked"). */
+/* A folding section: one line when closed (title and a preview), the body when open. */
+function sec(key, title, preview, body, open) {
+  key = "s." + key; SEC_DEF[key] = !!open;
+  const on = S.open[key] != null ? S.open[key] : !!open;
+  return `<div class="card sec"><details ${on ? "open" : ""} ontoggle="setOpen('${key}',this.open)"><summary><span class="sh"><span class="st">${title}</span>${preview ? `<span class="ss">${preview}</span>` : ""}</span></summary><div class="sb">${body}</div></details></div>`;
+}
+function setOpen(key, on) {
+  const was = S.open[key] != null ? S.open[key] : !!SEC_DEF[key];
+  if (was === on) return;
+  S.open[key] = on; if (on) track("open-" + key.slice(2));
+  try { const o = {}; for (const k of Object.keys(S.open)) if (/^s\.[a-z]+$/.test(k)) o[k] = S.open[k]; localStorage.setItem(KEY + ".open", JSON.stringify(o)); } catch (e) {}
+}
+const plain = html => String(html).replace(/<[^>]+>/g, "");
 function track(name) { name = "capday: " + name; try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: name, title: name, event: true }); } catch (e) {} }
 
 /* ── Call the score ── */
@@ -942,19 +981,17 @@ function storylines() {
 }
 function renderStories() {
   const el = $("stories"), list = storylines();
-  el.innerHTML = list.length ? `<div class="card"><div class="ctitle">Storylines</div>
-    <div class="cnote">Written from the match and club data, so they change as results come in.</div>` +
-    list.map(([ic, html]) => `<div class="story"><span class="ic">${ic}</span><span>${html}</span></div>`).join("") + `</div>` : "";
+  el.innerHTML = list.length ? sec("stories", "Storylines", list[0][0] + " " + plain(list[0][1]),
+    `<div class="cnote">Written from the match and club data, so they change as results come in.</div>` +
+    list.map(([ic, html]) => `<div class="story"><span class="ic">${ic}</span><span>${html}</span></div>`).join("")) : "";
 }
 function renderOppo() {
   const d = S.data[S.team], el = $("oppo"), m = focus();
   if (!d || !d.opp || !m || d.opp.match !== m.id) { el.innerHTML = ""; return; }
   const G = [["G", "Goalkeepers"], ["D", "Defenders"], ["M", "Midfielders"], ["F", "Forwards"]];
-  el.innerHTML = `<div class="card"><details class="fold" ${S.open.oppo ? "open" : ""} ontoggle="S.open.oppo=this.open">
-    <summary>Know the opponent — ${h(d.opp.name)}</summary>
-    <div class="cnote" style="margin-top:4px">${d.opp.pool.length} players in their squad list, and what each did in their club's last three matches.</div>` +
-    G.map(([k, name]) => { const ps = d.opp.pool.filter(p => p.pos === k); return ps.length ? `<div class="grp">${name}</div>` + ps.map(p => playerRow(p, false)).join("") : ""; }).join("") +
-    `</details></div>`;
+  el.innerHTML = sec("oppo", "Know the opponent — " + h(d.opp.name), d.opp.pool.length + " players, and what each did for their club",
+    `<div class="cnote">${d.opp.pool.length} players in their squad list, and what each did in their club's last three matches.</div>` +
+    G.map(([k, name]) => { const ps = d.opp.pool.filter(p => p.pos === k); return ps.length ? `<div class="grp">${name}</div>` + ps.map(p => playerRow(p, false)).join("") : ""; }).join(""));
 }
 
 /* ── Did you know? One fact at a time (js/facts.js), in the order factOrder gives ── */
@@ -968,9 +1005,9 @@ function renderFacts() {
   if (!list.length) { el.innerHTML = ""; return; }
   const i = S.fact % list.length, f = list[i], m = focus();
   const about = m && m.opp && (f.opp || []).some(x => norm(x) === norm(m.opp.name));
-  el.innerHTML = `<div class="card fact"><div class="kicker">Did you know?<span class="lv">${about ? "About " + h(m.opp.name) : f.lv === "new" ? "The basics" : "Deep cut"}</span></div>
-    <div class="facth">${h(f.h)}</div><div class="factt">${h(f.t)}</div>
-    <div class="factn"><button class="fb" onclick="nextFact()">Another one &rarr;</button><span>${i + 1} of ${list.length}</span></div></div>`;
+  el.innerHTML = sec("facts", `Did you know?<span class="lv">${about ? "About " + h(m.opp.name) : f.lv === "new" ? "The basics" : "Deep cut"}</span>`, "",
+    `<div class="fact"><div class="facth">${h(f.h)}</div><div class="factt">${h(f.t)}</div>
+    <div class="factn"><button class="fb" onclick="nextFact()">Another one &rarr;</button><span>${i + 1} of ${list.length}</span></div></div>`, true);
 }
 function nextFact() { S.fact++; track("fact-next"); renderFacts(); }
 
@@ -1051,15 +1088,13 @@ function renderPool() {
       (out.length ? `<div class="blk">Recent call-ups, not in this squad (${out.length})</div>` + byPos(out) : "");
   } else body = byPos(list);
   const fb = (k, label) => `<button class="fb ${S.pos === k ? "on" : ""}" onclick="setPos('${k}')">${label}</button>`;
-  el.innerHTML = `<div class="card">
-    <div class="ctitle">${NAME[S.team]} — player pool &amp; club form</div>
+  el.innerHTML = sec("pool", NAME[S.team] + " — player pool &amp; club form", all.length + " players" + (recent.length ? " · " + started + " started for their club last time out" : ""), `
     <div class="cnote">${d.squadNote ? h(d.squadNote.replace(/^The following /, "The squad: ")) + " " : ""}${d.capsAsOf ? "Caps (international appearances) and goals as of " + h(d.capsAsOf) + ". " : ""}Under each player: what they did in their club's last three matches. Tap for the detail.</div>
     ${sum ? `<div class="sumline">${sum}</div>` : ""}
     <div class="filters">${fb("all", "All")}${hasExtra ? fb("cur", "In the squad") : ""}${fb("G", "GK")}${fb("D", "DEF")}${fb("M", "MID")}${fb("F", "FWD")}
       <button class="fb ${S.sort === "form" ? "on" : ""}" onclick="toggleSort()" style="margin-left:auto">Sort: ${S.sort === "form" ? "in form" : "position"}</button></div>
     ${body || `<div class="empty">No players match that filter.</div>`}
-    <div class="legend"><span>Club's last three, oldest → newest:</span><span><i class="dot S"></i>Started</span><span><i class="dot I"></i>Came on</span><span><i class="dot B"></i>On the bench</span><span><i class="dot X"></i>Left out by club</span></div>
-  </div>`;
+    <div class="legend"><span>Club's last three, oldest → newest:</span><span><i class="dot S"></i>Started</span><span><i class="dot I"></i>Came on</span><span><i class="dot B"></i>On the bench</span><span><i class="dot X"></i>Left out by club</span></div>`);
 }
 function togglePlayer(id) { S.open[id] = !S.open[id]; renderPool(); renderOppo(); }
 function setPos(k) { S.pos = k; renderPool(); }
@@ -1072,13 +1107,14 @@ function renderFixtures() {
   for (const t of ORDER) for (const m of (S.data[t] ? S.data[t].fixtures : [])) all.push({ t, m });
   all.sort((x, y) => x.m.date.localeCompare(y.m.date) || ORDER.indexOf(x.t) - ORDER.indexOf(y.t));
   if (!all.length) { el.innerHTML = ""; return; }
-  el.innerHTML = `<div class="card"><div class="ctitle">Calendar — every upcoming match</div>
-    <div class="cnote">Women and men together, in your local time. Tap a match to open it.</div>` + all.map(({ t, m }) =>
+  const nx = all[0];
+  el.innerHTML = sec("fixtures", "Calendar — every upcoming match", `${all.length} match${all.length === 1 ? "" : "es"} · next ${fmtShort(nx.m.date)}, ${nx.m.ha === "H" ? "vs" : "at"} ${h(nx.m.opp.name)}`,
+    `<div class="cnote">Women and men together, in your local time. Tap a match to open it.</div>` + all.map(({ t, m }) =>
     `<div class="m tap" role="button" tabindex="0" onclick="pickTeam('${t}')"><div class="md">${fmtShort(m.date)}<small>${fmtTime(m.date)}</small></div>
       <div><div class="mt"><span class="wm" title="${NAME[t]}">${NAME[t][0]}</span>${img(m.opp.logo, "")}${m.ha === "H" ? "vs" : "at"} ${h(m.opp.name)}</div>
       <div class="ms">${ctag(m)} ${h([compLine(m), m.city].filter(Boolean).join(" · "))}</div>
       ${m.tv.length ? `<div class="chips" style="margin-top:5px">${m.tv.map(x => `<span class="chip">${h(x)}</span>`).join("")}</div>` : ""}</div><span></span></div>`).join("") +
-    `<div class="acts"><button class="btn" onclick="openSub()">📅 Add all matches to my calendar</button></div>` + aheadHtml() + `</div>`;
+    `<div class="acts"><button class="btn" onclick="openSub()">📅 Add all matches to my calendar</button></div>` + aheadHtml());
 }
 /* Dates further out than the fixture feed knows (hand-written, data/usa/ahead.json). */
 function aheadHtml() {
@@ -1104,8 +1140,8 @@ async function loadNews(team) {
 }
 function renderNews() {
   const list = S.news[S.team] || [];
-  $("news").innerHTML = list.length ? `<div class="card"><div class="ctitle">${NAME[S.team]} — news</div><div class="cnote">Latest headlines from ESPN. Links open ESPN.</div>` +
-    list.map(a => `<a class="nw" href="${h(a.u)}" target="_blank" rel="noopener" onclick="track('news-click')">${a.v ? "▶ " : ""}${h(a.t)}<small>${fmtShort(a.d)}</small></a>`).join("") + `</div>` : "";
+  $("news").innerHTML = list.length ? sec("news", NAME[S.team] + " — news", h(list[0].t), `<div class="cnote">Latest headlines from ESPN. Links open ESPN.</div>` +
+    list.map(a => `<a class="nw" href="${h(a.u)}" target="_blank" rel="noopener" onclick="track('news-click')">${a.v ? "▶ " : ""}${h(a.t)}<small>${fmtShort(a.d)}</small></a>`).join("")) : "";
 }
 
 /* ── One-tap feedback, counted as anonymous events ── */
@@ -1133,7 +1169,8 @@ function renderResults() {
   const list = d.results.slice(0, 12);
   if (!list.length) { el.innerHTML = ""; return; }
   const pill = m => { const o = outcome(m.us, m.them, m.pen); return `<span class="pill ${o}">${o}</span>`; };
-  el.innerHTML = `<div class="card"><div class="ctitle">${NAME[S.team]} — results</div>
+  const l0 = list[0];
+  el.innerHTML = sec("results", NAME[S.team] + " — results", `Last: ${outcome(l0.us, l0.them, l0.pen)} ${l0.us}–${l0.them} ${l0.ha === "H" ? "vs" : "at"} ${h(l0.opp.name)}`, `
     <div class="cnote">Tap a match for its goals and cards.</div>
     <div class="form" aria-label="Last five results">${list.slice(0, 5).reverse().map(pill).join("")}</div>` + list.map(m => {
     const sm = S.sums[m.id];
@@ -1148,7 +1185,7 @@ function renderResults() {
       <div><div class="mt">${img(m.opp.logo, "")}${m.ha === "H" ? "vs" : "at"} ${h(m.opp.name)}</div>
       <div class="ms">${ctag(m)} ${h(compLine(m))}</div></div>
       <div class="res">${m.us}–${m.them}${m.pen ? ` <small style="font-weight:600;color:var(--ink3)">(${m.pen[0]}–${m.pen[1]} p)</small>` : ""} ${pill(m)}</div>${extra}</div>`;
-  }).join("") + `</div>`;
+  }).join(""));
 }
 async function toggleMatch(id) {
   const k = "m" + id; S.open[k] = !S.open[k]; renderResults();
@@ -1214,7 +1251,13 @@ $("ver").textContent = "AO Matchday concept, built on Cap Day v" + VERSION;
 let installEvt = null;
 window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; $("installBtn").hidden = false; });
 window.addEventListener("appinstalled", () => track("installed"));
-$("installBtn").addEventListener("click", () => { if (installEvt) { installEvt.prompt(); installEvt = null; $("installBtn").hidden = true; } });
+$("installBtn").addEventListener("click", () => { if (installEvt) { installEvt.prompt(); installEvt = null; $("installBtn").hidden = true; } else { track("install-how"); $("howUrl").textContent = installUrl(); $("how").showModal(); } });
+/* Chrome offers its install prompt only sometimes (never when another app from this site is already installed).
+   On Android, when it has not offered one after a moment, the button shows the steps to do it by hand. */
+const installUrl = () => (location.host + location.pathname).replace(/index\.html$/, "").replace(/\/$/, "");
+function inOwnApp() { try { return matchMedia("(display-mode: standalone)").matches; } catch (e) { return false; } }
+function copyHow() { try { navigator.clipboard.writeText("https://" + installUrl()).then(() => { $("howCopy").textContent = "Copied"; }); } catch (e) {} }
+setTimeout(() => { if (!installEvt && /Android/.test(navigator.userAgent) && !inOwnApp()) $("installBtn").hidden = false; }, 3000);
 if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
 /* Test mode (?test=<league>:<event id>): point the match card at any match in the
    feed, with the home side standing in for the USA, to rehearse live updates. */

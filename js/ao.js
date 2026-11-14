@@ -3,7 +3,7 @@
    (S, $, h, D, fmtDay, fmtTime, NAME, render, track). The chapter and watch
    party listings are a snapshot of theamericanoutlaws.com (data/ao/chapters.json). */
 "use strict";
-const AO = { data: null, home: "middlesex-county", here: null, q: "", all: false, geo: "" };
+const AO = { data: null, home: "middlesex-county", here: null, q: "", all: false, geo: "", more: false };
 try { AO.home = localStorage.getItem("ao.home") || AO.home; } catch (e) {}
 
 /* Visits on the concept page are counted apart from Cap Day's. */
@@ -51,21 +51,18 @@ function renderWatch() {
   const row = x => `<div class="aor">${aoCrest(x.c)}<div class="aot"><div class="aon">${h(aoName(x.c))}</div>${venue(x)}</div>
       <div class="aod">${h(aoMi(x.c))}${x.p.address ? `<a href="${h(aoMaps(x.p.address))}" target="_blank" rel="noopener">Map</a>` : ""}</div></div>`;
   const shown = AO.all ? rest : rest.slice(0, 5);
+  /* Closed, the card is the one thing a member needs: where their own chapter is watching. The other parties fold away. */
   el.innerHTML = `<div class="card aocard">
     <div class="kicker">Watch with American Outlaws</div>
-    <div class="ctitle" style="margin-top:4px">${h(title)}</div>
-    <div class="cnote">${h(fmtDay(m.date))} · ${h(fmtTime(m.date))} · ${all.length} AO chapter${all.length === 1 ? "" : "s"} posting a watch party</div>
-    ${home ? `<div class="aohome">${aoCrest(home.c)}<div class="aot"><div class="kicker" style="color:var(--red)">Your chapter</div>
-        <div class="aon big">${h(aoName(home.c))}</div>${venue(home)}
-        <div class="chips" style="margin-top:6px">${home.p.official ? `<span class="chip">✓ Official watch party</span>` : ""}<span class="chip">${h(m.tv && m.tv[0] ? "On " + m.tv[0] : "Kickoff " + fmtTime(m.date))}</span></div>
-        <div class="acts" style="margin-top:10px">${home.p.address ? `<a class="btn" href="${h(aoMaps(home.p.address))}" target="_blank" rel="noopener">📍 Directions</a>` : ""}
-        ${home.c.ig ? `<a class="btn" href="${h(home.c.ig)}" target="_blank" rel="noopener">Instagram</a>` : ""}
-        <a class="btn" href="${h(aoPage(home.c))}" target="_blank" rel="noopener">Chapter page</a></div></div></div>`
-      : hc ? `<div class="empty" style="margin:8px 0">${h(aoName(hc))} hasn't posted a watch party for this match yet.</div>` : ""}
-    ${shown.length ? `<div class="blk" style="margin-top:14px">Other watch parties${AO.here ? " near you" : " nearby"}</div>` + shown.map(row).join("") : ""}
-    <div class="acts">${rest.length > 5 ? `<button class="btn" onclick="AO.all=!AO.all;renderWatch()">${AO.all ? "Show fewer" : "Show all " + rest.length}</button>` : ""}
+    <div class="cnote" style="margin:2px 0 0">${h(title)} · ${h(fmtDay(m.date))} · ${h(fmtTime(m.date))}</div>
+    ${home ? `<div class="aohome">${aoCrest(home.c)}<div class="aot"><div class="kicker" style="color:var(--red)">Your chapter${home.p.official ? " · official watch party" : ""}</div>
+        <div class="aon big">${h(aoName(home.c))}</div>${venue(home)}</div>
+        ${home.p.address ? `<a class="btn aogo" href="${h(aoMaps(home.p.address))}" target="_blank" rel="noopener" onclick="track('directions')">📍 Directions</a>` : ""}</div>`
+      : hc ? `<div class="empty" style="margin:8px 0 0">${h(aoName(hc))} hasn't posted a watch party for this match yet.</div>` : ""}
+    ${rest.length ? `<details ${AO.more ? "open" : ""} ontoggle="AO.more=this.open"><summary>${rest.length} more watch part${rest.length === 1 ? "y" : "ies"}${AO.here ? " near you" : " nearby"}</summary>` + shown.map(row).join("") +
+      `<div class="acts">${rest.length > 5 ? `<button class="btn" onclick="AO.all=!AO.all;renderWatch()">${AO.all ? "Show fewer" : "Show all " + rest.length}</button>` : ""}
       <button class="btn" onclick="aoLocate()">${AO.here ? "📍 Using your location" : "📍 Sort by my location"}</button></div>
-    ${AO.geo ? `<div class="cnote" style="margin:8px 0 0">${h(AO.geo)}</div>` : ""}
+      ${AO.geo ? `<div class="cnote" style="margin:8px 0 0">${h(AO.geo)}</div>` : ""}</details>` : ""}
   </div>`;
 }
 
@@ -78,7 +75,7 @@ function aoLocate() {
 }
 function aoSetHome(slug) {
   AO.home = slug; try { localStorage.setItem("ao.home", slug); } catch (e) {}
-  track("home " + slug); renderAO(); window.scrollTo({ top: 0, behavior: "smooth" });
+  track("home " + slug); renderAO(); const top = $("match"); if (top && top.scrollIntoView) top.scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 function aoList() {
@@ -99,25 +96,28 @@ function renderChapters() {
   const el = $("aoChapters"); if (!el) return;
   if (!AO.data) { el.innerHTML = ""; return; }
   const hc = aoChapter(AO.home), when = D(AO.data.captured).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
-  el.innerHTML = `<div class="card aocard">
-    <div class="kicker">Chapters</div>
-    <div class="ctitle" style="margin-top:4px">Find your crew</div>
-    <div class="cnote">${AO.data.chapters.length} American Outlaws chapters. Search by city, state, or bar.</div>
+  el.innerHTML = sec("chapters", "Find your crew", (hc ? h(aoName(hc)) + " · " : "") + AO.data.chapters.length + " American Outlaws chapters", `
+    <div class="cnote">Search by city, state, or bar.</div>
     ${hc ? `<div class="aohome">${aoCrest(hc)}<div class="aot"><div class="kicker" style="color:var(--red)">Your chapter</div>
       <div class="aon big">${h(aoName(hc))} ${aoStatus(hc)}</div>
       ${hc.bar ? `<b>${h(hc.bar.name)}</b><small>${h(hc.bar.address)}</small>` : `<small>${h(hc.state)}</small>`}
       <div class="acts" style="margin-top:10px"><a class="btn" href="${h(aoPage(hc))}/signup" target="_blank" rel="noopener">Join this chapter</a>
+      <a class="btn" href="${h(aoPage(hc))}" target="_blank" rel="noopener">Chapter page</a>
       ${hc.ig ? `<a class="btn" href="${h(hc.ig)}" target="_blank" rel="noopener">Instagram</a>` : ""}</div></div></div>` : ""}
     <input class="aoq" id="aoQ" type="search" placeholder="Search chapters" value="${h(AO.q)}" autocomplete="off" enterkeyhint="search">
     <div id="aoList">${aoList()}</div>
-    <div class="cnote" style="margin:12px 0 0">Chapter list copied from theamericanoutlaws.com on ${h(when)}. Bars and watch parties are filled in for chapters in New Jersey, New York City, the Hudson Valley, and eastern Pennsylvania.</div>
-  </div>`;
+    <div class="cnote" style="margin:12px 0 0">Chapter list copied from theamericanoutlaws.com on ${h(when)}. Bars and watch parties are filled in for chapters in New Jersey, New York City, the Hudson Valley, and eastern Pennsylvania.</div>`);
   $("aoQ").addEventListener("input", e => { AO.q = e.target.value; $("aoList").innerHTML = aoList(); });
 }
 function renderAO() {
   try { renderWatch(); } catch (e) { $("aoWatch").innerHTML = ""; }
   try { renderChapters(); } catch (e) { $("aoChapters").innerHTML = ""; }
 }
+
+/* The installed AO app starts at ao.html#app (ao.webmanifest). Standing alone without that mark means the page
+   was opened inside Cap Day's own window, where it cannot be installed: the Install button then shows the steps. */
+try { if (location.hash === "#app") sessionStorage.setItem("ao.app", "1"); } catch (e) {}
+inOwnApp = function () { try { return sessionStorage.getItem("ao.app") === "1" && matchMedia("(display-mode: standalone)").matches; } catch (e) { return false; } };
 
 /* Redraw the AO cards whenever the hub redraws (team switch, data arriving). */
 const aoBaseRender = render;

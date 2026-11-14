@@ -15,6 +15,8 @@ Schedules, squads, scores and rankings refresh on their own all day. Those are c
 
 The first numbered version of Cap Day: when the U.S. women's and men's national teams play next, what the match is for, and how to watch.
 
+- **A shorter page.** Everything below the match card (storylines, news, players, the opponent, the calendar, results) now folds to one line with a preview of what is inside. Tap to open; the app remembers what you left open.
+- **Install, when the phone doesn't offer it.** On Android the Install button now always appears and, when Chrome has no prompt to give, shows the three steps to do it by hand.
 - **Next match for both teams** on the front page, women listed first, opening on whichever team plays soonest.
 - **A match card** with a countdown, where to watch, the venue, and three plain lines: what the competition is, what this match is, and what is at stake. A longer section explains how the competition works and how each side got here.
 - **Standings** for the competition the match belongs to: the two-leg tie or the group table.

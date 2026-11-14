@@ -88,7 +88,7 @@ async function boot(opts = {}) {
       setItem: (k, v) => { store[k] = String(v); },
       removeItem: k => { delete store[k]; },
     },
-    location: { hash: opts.hash || "", search: opts.search || "", origin: "http://test.local", pathname: "/wc2026/", protocol: "http:", href: "http://test.local/wc2026/" },
+    location: { hash: opts.hash || "", search: opts.search || "", origin: "http://test.local", host: "test.local", pathname: "/wc2026/", protocol: "http:", href: "http://test.local/wc2026/" },
     navigator: { userAgent: opts.userAgent || "Mozilla/5.0 (Linux; Android 14; Pixel 8)", ...(opts.share ? { share: async data => { shared.push(data); } } : {}) },
     /* Only the part after "#" matters to the app: keep location.hash in step, as a browser would. */
     history: { replaceState(_a, _b, url) { const i = String(url).indexOf("#"); sandbox.location.hash = i < 0 ? "" : String(url).slice(i); } },

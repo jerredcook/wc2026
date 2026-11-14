@@ -5,7 +5,7 @@
  "description": "Concept app for American Outlaws: next match, how to watch, and the nearest AO watch party.",
  "categories": ["sports"],
  "lang": "en",
- "start_url": "./ao.html",
+ "start_url": "./ao.html#app",
  "scope": "./",
  "display": "standalone",
  "orientation": "portrait",
