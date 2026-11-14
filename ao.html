@@ -1,0 +1,1266 @@
+<!-- Generated from index.html by scripts/build-ao.mjs. Do not edit by hand. -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>AO Matchday (concept) — American Outlaws</title>
+<meta name="robots" content="noindex,nofollow">
+<meta name="description" content="Concept app for American Outlaws: next match, how to watch, and the nearest AO watch party.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="AO Matchday">
+<meta property="og:title" content="AO Matchday (concept) — American Outlaws">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta name="twitter:card" content="summary_large_image">
+<meta property="og:description" content="Concept app for American Outlaws.">
+<meta property="og:url" content="https://jerredcook.github.io/wc2026/ao.html">
+<meta property="og:image" content="https://jerredcook.github.io/wc2026/og-image.png">
+<link rel="manifest" href="ao.webmanifest">
+<meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#15161a" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="AO Matchday">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script>
+/* Same theme preference as the World Cup app: saved choice, else the system's. */
+(function(){try{var p=JSON.parse(localStorage.getItem("wc2026.prefs.v1")||"{}");var t=p.theme;
+if(!t&&window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches)t="dark";
+if(t==="dark")document.documentElement.setAttribute("data-theme","dark");}catch(e){}})();
+</script>
+<style>
+:root{
+  --bg:#f5f5f7;--card:#fff;--ink:#1a1a1a;--ink2:#555;--ink3:#8a8a8f;--line:#ececf0;--chip:#f1f2f5;
+  --navy:#0b2a5b;--red:#c8102e;--good:#0d6b52;--goodbg:#e2f5ee;--warn:#b07a00;--warnbg:#fbf1d6;
+  --bad:#b3261e;--badbg:#fbe6e4;--shadow:0 1px 3px rgba(0,0,0,.08);
+}
+html[data-theme="dark"]{
+  --bg:#15161a;--card:#1e2026;--ink:#e9eaed;--ink2:#b4b8c0;--ink3:#80868f;--line:#2a2d35;--chip:#272a32;
+  --navy:#8fb4ff;--red:#ff6b81;--good:#5fd6a8;--goodbg:#16331f;--warn:#e9c767;--warnbg:#3a3320;
+  --bad:#f0a39e;--badbg:#3a1c1a;--shadow:0 1px 3px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--ink);
+  padding:20px 16px calc(32px + env(safe-area-inset-bottom,0px));line-height:1.35}
+.wrap{max-width:760px;margin:0 auto}
+a{color:var(--navy)}
+button{font:inherit;color:inherit}
+h1{font-size:22px;font-weight:700;letter-spacing:-.01em}
+.sub{font-size:13px;color:var(--ink2);margin:2px 0 14px}
+.top{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.seg{display:inline-flex;background:var(--chip);border-radius:18px;padding:3px}
+.seg button{border:0;background:transparent;padding:6px 18px;border-radius:15px;font-size:13px;font-weight:600;color:var(--ink2);cursor:pointer}
+.seg button.on{background:var(--card);color:var(--ink);box-shadow:var(--shadow)}
+.back{font-size:12px;font-weight:600;text-decoration:none;white-space:nowrap}
+
+.card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.ctitle{font-size:15px;font-weight:700;margin-bottom:2px}
+.cnote{font-size:12px;color:var(--ink3);margin-bottom:10px}
+.kicker{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3)}
+
+/* ── Next match / live ── */
+.hero{border-top:4px solid var(--navy)}
+.hero.live{border-top-color:var(--red)}
+.vs{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin:14px 0 10px}
+.side{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;min-width:0}
+.side img{width:54px;height:54px;object-fit:contain}
+.tname{font-size:16px;font-weight:700}
+.rk{font-size:11px;font-weight:600;color:var(--ink3)}
+.mid{text-align:center;min-width:96px}
+.score{font-size:38px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em;line-height:1}
+.vsword{font-size:20px;font-weight:700;color:var(--ink3)}
+.clock{font-size:12px;font-weight:700;margin-top:4px;color:var(--ink2)}
+.livebadge{display:inline-block;font-size:10px;font-weight:800;color:#fff;background:#d6322c;border-radius:4px;padding:2px 7px;letter-spacing:.05em;animation:pulse 1.3s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+@media (prefers-reduced-motion:reduce){.livebadge{animation:none}}
+.when{text-align:center;font-size:15px;font-weight:700}
+.count{text-align:center;font-size:13px;color:var(--good);font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+.where{text-align:center;font-size:12px;color:var(--ink2);margin-top:4px}
+.meta{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.mrow{display:flex;gap:10px;align-items:baseline;font-size:13px}
+.mrow .lab{flex:0 0 86px;font-size:11px;font-weight:700;color:var(--ink3);text-transform:uppercase;letter-spacing:.05em}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font-size:12px;font-weight:600;background:var(--chip);border-radius:12px;padding:2px 9px;white-space:nowrap}
+.acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.btn{font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--card);border-radius:16px;padding:6px 14px;cursor:pointer}
+.btn:hover{background:var(--chip)}
+.tl{list-style:none;margin-top:12px;padding-top:12px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:5px}
+.tl li{display:flex;gap:8px;font-size:13px;align-items:baseline}
+.tl li.them{flex-direction:row-reverse;text-align:right}
+.tl .min{flex:0 0 44px;font-weight:700;color:var(--ink3);font-variant-numeric:tabular-nums}
+.tl li.them .min{text-align:right}
+.tl small{color:var(--ink3)}
+.xi{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:10px}
+.xi h4{font-size:12px;font-weight:700;margin-bottom:4px}
+.xi ol{list-style:none;font-size:12.5px;line-height:1.55}
+.xi .n{display:inline-block;width:22px;color:var(--ink3);font-variant-numeric:tabular-nums}
+.xi .bench{font-size:11.5px;color:var(--ink3);margin-top:5px}
+details>summary{cursor:pointer;font-size:13px;font-weight:600;color:var(--navy);margin-top:12px;list-style:none}
+details>summary::-webkit-details-marker{display:none}
+details>summary::before{content:"▸ "}
+details[open]>summary::before{content:"▾ "}
+.l5{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}
+.l5 h4{font-size:12px;font-weight:700;margin-bottom:4px}
+.l5 div.g{font-size:12px;color:var(--ink2);display:flex;gap:6px;align-items:center;padding:2px 0}
+.pill{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:5px;font-size:10px;font-weight:800;flex:0 0 18px}
+.pill.W{background:var(--goodbg);color:var(--good)}
+.pill.D{background:var(--chip);color:var(--ink2)}
+.pill.L{background:var(--badbg);color:var(--bad)}
+
+/* ── Player pool ── */
+.sumline{font-size:13px;color:var(--ink2);margin-bottom:10px}
+.sumline b{color:var(--ink)}
+.filters{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:8px}
+.fb{font-size:12px;font-weight:600;padding:4px 12px;border:1px solid var(--line);border-radius:16px;background:var(--card);cursor:pointer;color:var(--ink2)}
+.fb.on{background:var(--ink);color:var(--card);border-color:var(--ink)}
+.grp{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);margin:12px 0 2px}
+.p{display:grid;grid-template-columns:26px 1fr auto;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line);cursor:pointer}
+.p:last-child{border-bottom:0}
+.p img{width:26px;height:26px;object-fit:contain}
+.pn{font-size:14px;font-weight:600}
+.pn .tag{font-size:10px;font-weight:700;color:var(--ink3);border:1px solid var(--line);border-radius:8px;padding:0 5px;margin-left:5px;vertical-align:1px}
+.pc{font-size:12px;color:var(--ink3)}
+.pl{font-size:12px;color:var(--ink2);margin-top:1px}
+.pl b{font-weight:700;color:var(--ink)}
+.pl .S{color:var(--good);font-weight:700}
+.pl .I{color:var(--warn);font-weight:700}
+.pl .B,.pl .X,.pl .Q{color:var(--ink3);font-weight:700}
+.dots{display:flex;gap:4px}
+.dot{width:11px;height:11px;border-radius:50%;border:2px solid var(--ink3);background:transparent}
+.dot.S{background:var(--good);border-color:var(--good)}
+.dot.I{background:var(--warn);border-color:var(--warn)}
+.dot.B{border-color:var(--ink3)}
+.dot.X{border-color:var(--ink3);border-style:dotted;opacity:.55}
+.dot.Q{border-color:var(--line)}
+.more{grid-column:2 / -1;font-size:12px;color:var(--ink2);display:flex;flex-direction:column;gap:3px;padding-bottom:2px}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:11px;color:var(--ink3);margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+
+/* ── Fixtures & results ── */
+.m{display:grid;grid-template-columns:62px 1fr auto;gap:10px;align-items:center;padding:9px 0;border-bottom:1px solid var(--line)}
+.m:last-child{border-bottom:0}
+.m.tap{cursor:pointer}
+.md{font-size:12px;font-weight:700;color:var(--ink2);line-height:1.2}
+.md small{display:block;font-weight:600;color:var(--ink3);font-size:11px}
+.mt{font-size:14px;font-weight:600}
+.mt img{width:16px;height:16px;object-fit:contain;vertical-align:-3px;margin-right:4px}
+.ms{font-size:11.5px;color:var(--ink3);margin-top:1px}
+.res{font-size:14px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap;display:flex;align-items:center;gap:6px}
+.form{display:flex;gap:4px;margin-bottom:6px}
+.mx{grid-column:1 / -1}
+.empty{font-size:13px;color:var(--ink3);padding:6px 0}
+.foot{font-size:11px;color:var(--ink3);line-height:1.6;margin-top:18px}
+.morecard{display:block;text-decoration:none;color:inherit}
+.btn,.fb{min-height:36px}
+.seg button,.step button,.call .lock,dialog button{min-height:36px}
+button:focus-visible,a:focus-visible,[role=button]:focus-visible,summary:focus-visible{outline:2px solid var(--navy);outline-offset:2px;border-radius:6px}
+.watch{display:flex;flex-wrap:wrap;gap:6px;align-items:center;justify-content:center;margin-top:10px}
+.watch .exl{padding:0;margin-right:2px}
+.nw{display:block;padding:9px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--ink);font-size:14px;font-weight:600;line-height:1.35}
+.nw:last-of-type{border-bottom:0}
+.nw small{display:block;font-weight:500;color:var(--ink3);font-size:11.5px;margin-top:2px}
+.ah{display:grid;grid-template-columns:62px 1fr;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.ah:last-child{border-bottom:0}
+.ah small{display:block;color:var(--ink3);font-size:12px;margin-top:1px}
+.pollq{font-size:15px;font-weight:700;margin-bottom:8px}
+.fact .kicker{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.fact .lv{font-size:10px;background:var(--chip);color:var(--ink2);border-radius:8px;padding:2px 8px}
+.facth{font-size:17px;font-weight:800;line-height:1.25;margin:8px 0 5px}
+.factt{font-size:14px;line-height:1.5;color:var(--ink2)}
+.factn{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;font-size:11.5px;color:var(--ink3)}
+.factn .fb{min-height:32px;padding:6px 14px}
+.iostip[hidden]{display:none}
+.notice[hidden]{display:none}
+.notice{display:flex;gap:10px;align-items:center;justify-content:space-between;font-size:13px;line-height:1.4;padding:12px 14px}
+.notice.warn{border-left:4px solid var(--warn);background:var(--warnbg)}
+.iostip{display:flex;gap:10px;align-items:center;justify-content:space-between;font-size:13px;line-height:1.4;padding:12px 14px}
+.testbar{background:#f0cf70;color:#3a2a00;font-size:12px;font-weight:700;border-radius:8px;padding:6px 10px;margin-bottom:10px}
+.testbar a{color:#3a2a00}
+.explain{margin-top:14px;background:rgba(255,255,255,.08);border-radius:12px;padding:12px}
+.explain .kicker{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.ex{display:grid;grid-template-columns:92px 1fr;gap:10px;padding:6px 0;border-top:1px solid var(--line);font-size:13.5px;line-height:1.4;color:var(--ink2)}
+.ex b{color:var(--ink)}
+.exl{font-size:10.5px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--ink3);padding-top:2px}
+.stand>summary{margin-bottom:6px}
+.tie{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:5px 0;border-top:1px solid var(--line);color:var(--ink2)}
+.tie.me{color:var(--ink);font-weight:700}
+.tie .tr{white-space:nowrap;font-variant-numeric:tabular-nums}
+.tbl{width:100%;border-collapse:collapse;font-size:12.5px;font-variant-numeric:tabular-nums}
+.tbl th{font-size:10px;color:var(--ink3);text-align:right;padding:3px 4px}.tbl td{text-align:right;padding:5px 4px;border-top:1px solid var(--line)}
+.tbl td:first-child{text-align:left}.tbl tr.me td{font-weight:800;color:var(--ink)}
+.venue{display:flex;gap:12px;margin-top:8px;align-items:flex-start}
+.venue img{width:118px;height:84px;object-fit:cover;border-radius:10px;flex:0 0 118px}
+.vf{font-size:13px;margin-bottom:4px}.vb{font-size:12.5px;color:var(--ink2);line-height:1.4;margin-bottom:4px}
+.caps{font-size:11.5px;font-weight:700;color:var(--navy);margin-left:7px;white-space:nowrap}
+.pstat{font-size:11.5px;font-weight:700;color:var(--warn)}
+.blk{font-size:13px;font-weight:800;margin:16px 0 0;padding-top:12px;border-top:2px solid var(--line)}
+.blk:first-of-type{border-top:0;padding-top:0;margin-top:6px}
+.nextup{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.nu{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:2px solid transparent;background:var(--card);border-radius:14px;padding:11px 12px;cursor:pointer;box-shadow:var(--shadow);min-width:0}
+.nu.on{border-color:var(--navy)}
+.nu-k{font-size:10.5px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
+.nu-t{font-size:15px;font-weight:800;line-height:1.2}
+.nu-d{font-size:12px;color:var(--ink2)}
+.nu-c{font-size:12px;font-weight:700;color:var(--good)}
+.nu-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:4px}
+.ctag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;border-radius:9px;padding:1px 7px;white-space:nowrap;vertical-align:1px}
+.ctag.friendly{background:var(--chip);color:var(--ink2)}
+.ctag.competitive{background:var(--warnbg);color:var(--warn)}
+.ctag.tournament{background:var(--badbg);color:var(--bad)}
+.ctag.qualifier{background:var(--goodbg);color:var(--good)}
+.wm{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:6px;font-size:11px;font-weight:800;background:var(--chip);color:var(--ink2);margin-right:6px;vertical-align:1px}
+.subopt{display:block;margin:8px 0;padding:11px;border-radius:12px;background:#eef1f6;color:#0b2a5b;font-weight:800;text-decoration:none;font-size:14px}
+
+/* ── Matchday hero: always the dark navy card, whatever the page theme ── */
+.hero{background:linear-gradient(165deg,#0e3272 0%,#081b3c 55%,#2d0f25 100%);color:#fff;border-top:0;padding:18px 16px;
+  --ink:#fff;--ink2:#d3daea;--ink3:#97a5c4;--line:rgba(255,255,255,.15);--chip:rgba(255,255,255,.13);--card:rgba(255,255,255,.07);
+  --navy:#b3cbff;--good:#6fe0b3;--goodbg:rgba(111,224,179,.2);--bad:#ffa39c;--badbg:rgba(255,120,110,.2);--warn:#f0cf70}
+.hero.flash{animation:goal 1.1s ease-in-out 3}
+@keyframes goal{0%,100%{box-shadow:0 0 0 0 rgba(255,214,90,0)}50%{box-shadow:0 0 0 6px rgba(255,214,90,.85)}}
+.hero .side img{width:64px;height:64px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}
+.hero .tname{font-size:17px}
+.hero .score{font-size:46px}
+.cd{display:flex;justify-content:center;gap:8px;margin:10px 0 4px}
+.cd .t{background:rgba(255,255,255,.1);border-radius:10px;padding:8px 0;width:62px;text-align:center}
+.cd .t b{display:block;font-size:26px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1}
+.cd .t span{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink3)}
+.cd .go{font-size:18px;font-weight:800;color:var(--warn)}
+.we{margin-top:14px}
+.webar{display:flex;height:26px;border-radius:13px;overflow:hidden;font-size:12px;font-weight:800}
+.webar span{display:flex;align-items:center;padding:0 10px;min-width:44px}
+.webar .us{background:#fff;color:#0b2a5b}
+.webar .op{background:rgba(255,255,255,.2);color:#fff}
+.webar span:last-child{justify-content:flex-end}
+.wenote{display:flex;justify-content:space-between;font-size:11px;color:var(--ink3);margin-top:4px}
+.stakes{margin-top:14px;font-size:13.5px;line-height:1.45;color:var(--ink2);border-left:3px solid var(--warn);padding-left:10px}
+.stakes b{color:#fff}
+.call{margin-top:14px;background:rgba(255,255,255,.08);border-radius:12px;padding:12px}
+.call .row{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:4px 0;font-size:15px;font-weight:700}
+.step{display:flex;align-items:center;gap:10px}
+.step button{width:38px;height:38px;border-radius:50%;border:1px solid var(--line);background:rgba(255,255,255,.1);font-size:20px;font-weight:700;cursor:pointer;line-height:1}
+.step b{font-size:24px;min-width:22px;text-align:center;font-variant-numeric:tabular-nums}
+.call .lock{width:100%;margin-top:8px;border:0;border-radius:18px;padding:10px;background:#fff;color:#0b2a5b;font-weight:800;font-size:14px;cursor:pointer}
+.call .mine{font-size:15px;font-weight:700;margin-top:4px}
+.says{font-size:14px;line-height:1.45;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--line)}
+.board{margin-top:10px;border-top:1px solid var(--line);padding-top:8px}
+.rv{display:flex;align-items:baseline;gap:8px;font-size:13.5px;padding:3px 0}
+.rv .rp{flex:0 0 14px;color:var(--ink3);font-weight:700}
+.rv .rn{flex:0 1 auto;font-weight:800;max-width:42%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rv .rc{flex:1;min-width:0;color:var(--ink2)}
+.rv.me .rn{color:var(--good)}
+.lead{font-size:13.5px;font-weight:700;margin-top:8px}
+.call .verdict{font-size:13px;color:var(--ink2);margin-top:3px}
+.stats{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:7px}
+.stat{display:grid;grid-template-columns:44px 1fr 44px;gap:8px;align-items:center;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums}
+.stat .r{text-align:right}
+.stat .mid2{text-align:center;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3)}
+.stat .bar{grid-column:1 / -1;display:flex;height:4px;border-radius:2px;overflow:hidden;background:rgba(255,255,255,.15);margin-top:-3px}
+.stat .bar i{display:block;background:#fff}
+.stat .bar i.o{background:rgba(255,255,255,.35)}
+
+/* ── Storylines, opponent, share ── */
+.story{display:flex;gap:10px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13.5px;line-height:1.4;color:var(--ink2)}
+.story:last-child{border-bottom:0}
+.story b{color:var(--ink)}
+.story .ic{flex:0 0 22px;font-size:16px}
+details.fold>summary{margin-top:0;font-size:15px;font-weight:700;color:var(--ink)}
+.hbtns{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+dialog{border:0;border-radius:16px;padding:22px;text-align:center;background:#fff;color:#1a1a1a;max-width:min(320px,90vw);margin:auto}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+dialog img{width:240px;height:240px;display:block;margin:0 auto 10px}
+dialog p{font-size:13px;color:#555;margin-bottom:12px;word-break:break-all}
+dialog button{border:0;border-radius:16px;padding:8px 22px;background:#0b2a5b;color:#fff;font-weight:700;cursor:pointer}
+dialog button.plain{background:none;color:#555;font-weight:600;text-decoration:underline;padding:8px 10px}
+dialog input{display:block;width:100%;margin:8px 0 12px;padding:10px;border:1px solid #c9ccd3;border-radius:10px;font-size:16px;text-align:center;background:#fff;color:#1a1a1a}
+#duelQr svg{display:block;width:220px;max-width:100%;height:auto;margin:0 auto 10px}
+@media (max-width:420px){.xi,.l5{grid-template-columns:1fr}.mid{min-width:78px}.score{font-size:32px}}
+
+/* ── AO concept ── */
+.aoband{background:#0b2a5b;color:#fff;border-radius:14px;padding:14px 16px;margin-bottom:14px;border-bottom:4px solid #c8102e}
+.aoband .w{font-size:20px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;line-height:1.1}
+.aoband .t{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#ffb3bd;margin-top:3px}
+.aoband p{font-size:12px;line-height:1.45;color:#d3daea;margin-top:8px}
+.aocard{border-top:4px solid var(--red)}
+.aohome{display:flex;gap:12px;align-items:flex-start;background:var(--chip);border-radius:12px;padding:12px;margin-top:6px}
+.aor{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
+.aor:last-of-type{border-bottom:0}
+.crest{flex:0 0 40px;width:40px;height:40px;object-fit:contain;border-radius:8px}
+.aohome .crest{flex-basis:56px;width:56px;height:56px}
+.crest.ph{display:flex;align-items:center;justify-content:center;background:#0b2a5b;color:#fff;font-size:12px;font-weight:900;letter-spacing:.05em}
+.aot{flex:1;min-width:0;font-size:13px;line-height:1.35}
+.aot b{display:block;font-weight:700}
+.aot small{display:block;color:var(--ink3);font-size:12px}
+.aon{font-size:13.5px;font-weight:800;margin-bottom:2px}
+.aon.big{font-size:16px}
+.aod{flex:0 0 auto;text-align:right;font-size:12px;font-weight:700;color:var(--ink2);display:flex;flex-direction:column;gap:4px}
+.aod a,.aol a{font-weight:600;text-decoration:none}
+.aol{display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;font-size:12px}
+.st{display:inline-block;font-size:10.5px;font-weight:800;border-radius:5px;padding:1px 6px;vertical-align:1px;white-space:nowrap}
+.st.ok{background:var(--goodbg);color:var(--good)}
+.st.rb{background:var(--warnbg);color:var(--warn)}
+.st.un{background:var(--chip);color:var(--ink2)}
+a.btn{display:inline-block;text-decoration:none;color:var(--ink)}
+.aohome .chip{background:var(--card)}
+.aoq{display:block;width:100%;margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:16px;background:var(--card);color:var(--ink)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>AO Matchday</h1>
+      <p class="sub" style="margin-bottom:0">American Outlaws &middot; U.S. women's &amp; men's national teams</p>
+    </div>
+    <div class="hbtns">
+      <button class="btn" id="installBtn" hidden>⬇ Install</button>
+      <button class="btn" onclick="document.getElementById('qr').showModal();track('qr-opened')">▦ QR code</button>
+      <a class="back" href="worldcup.html">World Cup &rarr;</a>
+    </div>
+  </div>
+  <div class="card iostip" id="iosTip" hidden>
+    <span><b>Add Cap Day to your iPhone.</b> Tap the Share button <span aria-hidden="true">(the square with an arrow)</span>, then <b>Add to Home Screen</b>.</span>
+    <button class="btn" aria-label="Dismiss">Got it</button>
+  </div>
+  <div class="card notice" id="update" role="status" hidden>
+    <span><b>A newer version of Cap Day is ready.</b></span>
+    <button class="btn" onclick="applyUpdate()">Refresh</button>
+  </div>
+  <div class="card notice warn" id="stale" role="status" hidden></div>
+  <div class="aoband">
+    <div class="w">American Outlaws</div>
+    <div class="t">Unite &amp; Strengthen</div>
+    <p>A concept for an AO app, built by Jerred Cook of AO Central New Jersey on top of his Cap Day app. It is not an official American Outlaws product.</p>
+  </div>
+  <div class="nextup" id="nextup"></div>
+
+  <div id="aoWatch"></div>
+  <div id="hero"></div>
+  <div id="aoChapters"></div>
+  <div id="stories"></div>
+  <div id="facts"></div>
+  <div id="news"></div>
+  <div id="pool"></div>
+  <div id="oppo"></div>
+  <div id="fixtures"></div>
+  <p class="cnote" id="stamp" style="margin:-6px 2px 14px"></p>
+  <div id="results"></div>
+
+  <div id="poll"></div>
+
+  <a class="card morecard" href="worldcup.html">
+    <div class="kicker">More in the app</div>
+    <div class="ctitle" style="margin-top:4px">🏆 World Cup</div>
+    <div class="cnote" style="margin:2px 0 0">The complete 2026 tournament, preserved match by match &middot; men's &amp; women's FIFA world rankings &middot; every World Cup since 1930 &rarr;</div>
+  </a>
+
+  <p class="foot">
+    <a id="ver" href="https://github.com/jerredcook/wc2026/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Cap Day</a> &middot; <a href="privacy.html">Privacy</a> &middot; Concept build. Not an official American Outlaws app, and not affiliated with or endorsed by U.S. Soccer, Concacaf or FIFA. American Outlaws chapter and watch party listings are copied from theamericanoutlaws.com.
+    Match and squad data from ESPN's public feed; rankings from FIFA. Club form covers each player's last three club matches and refreshes a few times a day.
+    Kickoff times are shown in your local time zone. Visits are counted anonymously, without cookies. "Cap" is the football word for an international appearance: in 1886 England began giving each player a white silk cap for every international match.
+  </p>
+</div>
+
+<dialog id="sub" aria-label="Add matches to your calendar">
+  <h3 style="font-size:17px;margin-bottom:6px">Never miss a match</h3>
+  <p style="word-break:normal">Add every USA women's and men's match to your phone's calendar. New fixtures and kickoff changes arrive automatically.</p>
+  <a class="subopt" id="subGoogle" target="_blank" rel="noopener">Google Calendar</a>
+  <a class="subopt" id="subApple">Apple Calendar / Outlook</a>
+  <p style="font-size:11.5px;margin-top:10px;word-break:normal">Google refreshes subscribed calendars about once a day.</p>
+  <button onclick="this.closest('dialog').close()">Close</button>
+</dialog>
+
+<dialog id="duel" aria-label="Challenge a friend">
+  <h3 style="font-size:17px;margin-bottom:8px">Challenge a friend</h3>
+  <div id="duelName">
+    <label for="duelInput" style="font-size:13px;color:#555">Your first name, so friends know whose call it is</label>
+    <input id="duelInput" maxlength="16" autocomplete="given-name" autocapitalize="words" enterkeyhint="done" onkeydown="if(event.key==='Enter')saveName()">
+    <button onclick="saveName()">Continue</button>
+    <p style="font-size:11.5px;margin-top:10px;word-break:normal">Your name and your call travel inside the link you share. They are not sent to Cap Day or stored anywhere else.</p>
+  </div>
+  <div id="duelBody" hidden>
+    <p id="duelText" style="font-size:15px;font-weight:800;color:#1a1a1a;word-break:normal;margin-bottom:10px"></p>
+    <div id="duelQr"></div>
+    <p style="word-break:normal">A friend scans this, or you send them the link. They see your call and make their own.</p>
+    <button id="duelSend" onclick="sendChallenge()">↗ Send the link</button>
+    <button class="plain" id="duelWho" onclick="editName()">Change name</button>
+  </div>
+  <button class="plain" onclick="this.closest('dialog').close()">Close</button>
+</dialog>
+
+<dialog id="qr" aria-label="QR code for Cap Day">
+  <img src="ao-qr.svg" alt="QR code for this page" width="240" height="240">
+  <p>Scan to open AO Matchday<br>jerredcook.github.io/wc2026/ao.html</p>
+  <button onclick="this.closest('dialog').close()">Close</button>
+</dialog>
+
+<script src="js/core.js"></script>
+<script src="js/facts.js"></script>
+<script src="js/qr.js"></script>
+<script>
+"use strict";
+const API = "https://site.api.espn.com/apis/site/v2/sports/soccer";
+const TEAM = { women: { id: "2765" }, men: { id: "660" } };
+const USA_LOGO = "https://a.espncdn.com/i/teamlogos/countries/500/usa.png";
+const KEY = "wc2026.usa.v1";
+
+const S = { team: "men", data: {}, ranks: {}, live: {}, sums: {}, open: {}, pos: "all", sort: "pos", ed: null, calls: {}, flash: false, news: {}, ahead: null, liveOk: 0, failed: {}, rivals: {}, name: "", jump: null, fact: 0 };
+try { S.calls = JSON.parse(localStorage.getItem(KEY + ".calls") || "{}") || {}; } catch (e) {}
+try { S.rivals = JSON.parse(localStorage.getItem(KEY + ".rivals") || "{}") || {}; } catch (e) {}
+try { S.name = cleanName(localStorage.getItem(KEY + ".name") || ""); } catch (e) {}
+const hashTeam = location.hash.replace("#", "").split("&")[0];
+const pinned = !!TEAM[hashTeam];
+S.team = pinned ? hashTeam : "women";
+
+const $ = id => document.getElementById(id);
+const h = s => String(s == null ? "" : s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const img = (src, alt) => src ? `<img src="${h(src)}" alt="${h(alt || "")}" loading="lazy" onerror="this.style.visibility='hidden'">` : "<span></span>";
+const D = iso => new Date(iso);
+const fmtDay = iso => D(iso).toLocaleDateString([], { weekday: "short", month: "short", day: "numeric" });
+const fmtTime = iso => D(iso).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+const fmtZone = iso => { try { return D(iso).toLocaleTimeString([], { timeZoneName: "short" }).split(" ").pop(); } catch (e) { return ""; } };
+const fmtShort = iso => D(iso).toLocaleDateString([], { month: "short", day: "numeric" });
+const yearOf = iso => D(iso).getFullYear();
+
+/* ── FIFA ranks (same files the World Cup app keeps current) ── */
+const ALIAS = { unitedstates: "usa", korearepublic: "southkorea", ivorycoast: "ivorycoast" };
+function rankOf(name) {
+  const R = S.ranks[S.team]; if (!R) return null;
+  let k = norm(name); k = ALIAS[k] || k;
+  if (R.ranks) return R.ranks[k] ? R.ranks[k].r : null;
+  const row = (R.rows || []).find(r => { const n = norm(r.n); return (ALIAS[n] || n) === k; });
+  return row ? row.r : null;
+}
+const rankChip = name => { const r = rankOf(name); return r ? `<span class="rk">FIFA #${r}</span>` : ""; };
+function ptsOf(name) {
+  const R = S.ranks[S.team]; if (!R) return null;
+  let k = norm(name); k = ALIAS[k] || k;
+  if (R.ranks) return R.ranks[k] ? R.ranks[k].p : null;
+  const row = (R.rows || []).find(r => { const n = norm(r.n); return (ALIAS[n] || n) === k; });
+  return row ? row.p : null;
+}
+/* FIFA's own win-expectancy formula on current rating points (a draw counts half). */
+function winExp(oppName) {
+  const a = ptsOf(S.test ? S.test.usName : "United States"), b = ptsOf(oppName);
+  return winExpectancy(a, b);
+}
+
+/* ── What a match is for ──
+   Every fixture gets a kind (the coloured tag) and a one-line plain-English
+   explainer, matched on the competition's name. */
+const ctag = m => { const c = compInfo(m); return `<span class="ctag ${c.kind}">${c.label}</span>`; };
+const compLine = m => [compInfo(m).kind === "friendly" ? "" : m.comp, m.round, m.leg].filter(Boolean).join(" · ");
+function relDay(iso) {
+  const a = new Date(), b = D(iso);
+  const days = Math.round((new Date(b.getFullYear(), b.getMonth(), b.getDate()) - new Date(a.getFullYear(), a.getMonth(), a.getDate())) / 864e5);
+  return days < 0 ? "" : days === 0 ? "Today" : days === 1 ? "Tomorrow" : `In ${days} days`;
+}
+
+/* ── Loading ── */
+const ORDER = ["women", "men"], NAME = { women: "Women", men: "Men" };
+
+/* Every request gives up after a set time. A connection that hangs (rather than
+   failing) would otherwise leave a section loading forever or stall the live
+   score. Returns the parsed answer, null for an error status, and throws when
+   the network fails or the time runs out. */
+const TIMEOUT = 10e3;
+async function getJson(url, opts, ms) {
+  const ac = typeof AbortController === "function" ? new AbortController() : null;
+  const timer = ac ? setTimeout(() => ac.abort(), ms || TIMEOUT) : null;
+  try {
+    const r = await fetch(url, Object.assign({}, opts, ac ? { signal: ac.signal } : null));
+    return r.ok ? await r.json() : null;
+  } finally { clearTimeout(timer); }
+}
+
+/* The schedule and squad files. S.failed marks a team whose file could not be
+   fetched at all, so the page can say so and try again instead of "Loading…". */
+async function fetchData(team) {
+  try {
+    const j = await getJson("data/usa/" + team + ".json", { cache: "no-cache" });
+    if (j && Array.isArray(j.fixtures) && Array.isArray(j.results) && Array.isArray(j.pool)) { S.data[team] = j; S.failed[team] = false; return true; }
+  } catch (e) {}
+  if (!S.data[team]) S.failed[team] = true;
+  return false;
+}
+let retryT = null, retries = 0, chose = pinned;   // chose: the visitor picked a team, so don't switch it for them
+function retryData() {
+  clearTimeout(retryT);
+  if (!ORDER.some(t => S.failed[t])) { retries = 0; return; }
+  retryT = setTimeout(async () => {
+    retries++;
+    await Promise.all(ORDER.filter(t => S.failed[t]).map(fetchData));
+    if (!chose) S.team = soonest();
+    if (S.data[S.team]) loadTeam(S.team); else render();
+    retryData();
+  }, Math.min(5e3 * Math.pow(2, retries), 60e3));
+}
+const LOADING = () => S.failed[S.team] ? "Couldn't load the schedule. Check your connection; trying again…" : "Loading…";
+
+/* How long ago the data job last read the feeds successfully. The job runs on a
+   best-effort schedule, so say so plainly when the information is old. */
+const STALE_AFTER = 30 * 36e5;
+function staleHours() {
+  const d = S.data[S.team];
+  if (!d || !d.checked) return 0;
+  const age = Date.now() - D(d.checked);
+  return age > STALE_AFTER ? Math.round(age / 36e5) : 0;
+}
+function renderStale() {
+  const el = $("stale"), hrs = staleHours();
+  el.hidden = !hrs;
+  if (hrs) el.textContent = `The schedule and squads were last checked ${hrs < 48 ? hrs + " hours" : Math.round(hrs / 24) + " days"} ago and may be out of date. Live scores are not affected.`;
+  if (hrs && !renderStale.sent) { renderStale.sent = true; track("stale-data"); }
+}
+/* The team whose match comes first (women on a tie): the page opens on it. */
+function soonest() {
+  let best = null;
+  for (const t of ORDER) {
+    const m = S.data[t] && S.data[t].fixtures[0];
+    if (m && (!best || m.date < best.date)) best = { t, date: m.date };
+  }
+  return best ? best.t : "women";
+}
+function pickTeam(t) {
+  if (!TEAM[t]) return;
+  chose = true;
+  if (t !== S.team) { track("team-" + t); S.team = t; S.pos = "all"; history.replaceState(null, "", "#" + t); render(); loadTeam(t); }
+  const el = $("hero"); if (el && el.scrollIntoView) el.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+function renderNextUp() {
+  $("nextup").innerHTML = ORDER.map(t => {
+    const d = S.data[t], m = d && d.fixtures[0], L = m && S.live[m.id];
+    let body;
+    if (!d) body = `<span class="nu-d">${S.failed[t] ? "Couldn't load" : "Loading…"}</span>`;
+    else if (!m) body = `<span class="nu-t">No match scheduled</span><span class="nu-d">The next window will show here.</span>`;
+    else body = `<span class="nu-t">${m.ha === "H" ? "vs" : "at"} ${h(m.opp.name)}</span>
+      <span class="nu-d">${fmtDay(m.date)} &middot; ${fmtTime(m.date)}</span>
+      <span class="nu-row">${ctag(m)}<span class="nu-c">${L && L.state === "in" ? `<span class="livebadge">LIVE</span>` : L && L.state === "post" ? "Full time" : relDay(m.date)}</span></span>`;
+    return `<button class="nu ${t === S.team ? "on" : ""}" onclick="pickTeam('${t}')" aria-pressed="${t === S.team}"><span class="nu-k">🇺🇸 ${NAME[t]} &middot; next</span>${body}</button>`;
+  }).join("");
+}
+async function loadTeam(team, force) {
+  if (!S.data[team] || force) await fetchData(team);
+  retryData();
+  if (!S.ranks[team]) {
+    getJson("data/" + (team === "men" ? "rankings.json" : "rankings-women.json"))
+      .then(j => { if (j) { S.ranks[team] = j; if (S.team === team) renderHero(); } }).catch(() => {});
+  }
+  /* The hand-written files: a failed fetch is forgotten so the next load tries again. */
+  if (!S.ed) {
+    S.ed = {};
+    getJson("data/usa/editorial.json", { cache: "no-cache" })
+      .then(j => { if (j) { S.ed = j; renderHero(); } else S.ed = null; }).catch(() => { S.ed = null; });
+  }
+  if (!S.ahead) {
+    S.ahead = {};
+    getJson("data/usa/ahead.json", { cache: "no-cache" })
+      .then(j => { if (j) { S.ahead = j; renderFixtures(); } else S.ahead = null; }).catch(() => { S.ahead = null; });
+  }
+  if (S.team === team) { render(); refreshLive(); loadNews(team); }
+}
+
+/* The match the hero follows: the first one not yet finished. A match that has
+   kicked off stays here (live, then full time) until the data file moves it to
+   the results. */
+function focus() {
+  if (S.test) return S.test.m;
+  const d = S.data[S.team]; if (!d) return null;
+  return d.fixtures.find(m => (S.live[m.id] ? S.live[m.id].state : m.state) !== "post" || Date.now() - D(m.date) < 6 * 36e5) || d.fixtures[0] || null;
+}
+
+let pollT = null;
+async function refreshLive() {
+  clearTimeout(pollT);
+  const team = S.team, m = focus(); if (!m) return;
+  try {
+    const G = await getJson(`${API}/${m.lg}/summary?event=${m.id}`, { cache: "no-store" });
+    if (G) {
+      const L = parseSummary(G, S.test ? S.test.usId : TEAM[team].id), old = S.live[m.id];
+      if (L) {
+        /* A goal since the last look (either side): flash the card. */
+        if (old && L.state === "in" && old.us != null && (L.us !== old.us || L.them !== old.them)) {
+          S.flash = true; setTimeout(() => { S.flash = false; }, 4000);
+          if (navigator.vibrate) { try { navigator.vibrate([120, 60, 120]); } catch (e) {} }
+        }
+        S.live[m.id] = L; S.liveOk = Date.now();
+      }
+    }
+  } catch (e) { /* offline or the feed is down: keep what we have and try again */ }
+  if (S.team !== team) return;
+  renderHero(); renderStories(); renderNextUp();
+  const L = S.live[m.id], st = L ? L.state : m.state, ms = D(m.date) - Date.now();
+  let wait = null;
+  if (st === "in") wait = 30e3;
+  else if (st === "pre") wait = ms < 60 * 6e4 ? 60e3 : Math.min(ms - 59 * 6e4, 6 * 36e5);
+  if (wait != null) pollT = setTimeout(refreshLive, Math.max(wait, 15e3));
+}
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) return;
+  const d = S.data[S.team];
+  if (!d || Date.now() - lastLoad > 30 * 6e4) { lastLoad = Date.now(); loadTeam(S.team, true); } else refreshLive();
+  checkBuild();
+});
+let lastLoad = Date.now();
+
+/* ── A newer build ──
+   An installed app can stay open for days and keep running old code. Each
+   deploy publishes build.json (a fingerprint of the app's code, written by the
+   deploy workflow); if it changes while the page is open, offer a refresh. */
+let buildId = null, buildChecked = 0;
+async function checkBuild() {
+  if (Date.now() - buildChecked < 5 * 6e4) return;
+  buildChecked = Date.now();
+  try {
+    const b = await getJson("build.json", { cache: "no-store" });
+    if (!b || typeof b.code !== "string") return;
+    if (!buildId) buildId = b.code;
+    else if (b.code !== buildId && $("update").hidden) { $("update").hidden = false; track("update-offered"); }
+  } catch (e) {}
+}
+function applyUpdate() { track("update-applied"); location.reload(); }
+
+/* ── Hero ── */
+function cdTiles(iso) {
+  let s = Math.floor((D(iso) - Date.now()) / 1000);
+  if (s <= 0) return `<span class="go">Kicking off…</span>`;
+  const d = Math.floor(s / 86400); s -= d * 86400;
+  const hh = Math.floor(s / 3600); s -= hh * 3600;
+  const mm = Math.floor(s / 60), ss = s - mm * 60;
+  const t = (n, l) => `<div class="t"><b>${String(n).padStart(2, "0")}</b><span>${l}</span></div>`;
+  return (d ? t(d, d === 1 ? "day" : "days") : "") + t(hh, "hrs") + t(mm, "min") + t(ss, "sec");
+}
+setInterval(() => { const el = $("cd"); if (el && el.dataset.iso) el.innerHTML = cdTiles(el.dataset.iso); }, 1000);
+
+/* Count a named action in GoatCounter (shows up as an event, e.g. "call-locked"). */
+function track(name) { name = "capday: " + name; try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: name, title: name, event: true }); } catch (e) {} }
+
+/* ── Call the score ── */
+function saveCalls() { try { localStorage.setItem(KEY + ".calls", JSON.stringify(S.calls)); } catch (e) {} }
+function callOf(id) { return S.calls[id] || (S.calls[id] = { us: 2, them: 0, locked: false }); }
+function bump(id, side, n) { const c = callOf(id); c[side] = Math.max(0, Math.min(15, c[side] + n)); renderHero(); }
+function lockCall(id, on) { callOf(id).locked = on; saveCalls(); renderHero(); if (on) track("call-locked"); }
+const usShort = () => S.test ? S.test.usName : "USA";
+function callText(m, c) { return m.ha === "H" ? `${usShort()} ${c.us}–${c.them} ${m.opp.name}` : `${m.opp.name} ${c.them}–${c.us} ${usShort()}`; }
+function shareCall(id) {
+  const d = S.data[S.team], m = d && d.fixtures.concat(d.results).find(x => x.id === id); if (!m) return;
+  const url = location.origin + location.pathname + "#" + S.team;
+  const text = `My call: ${callText(m, callOf(id))}. What's yours?`;
+  track("call-shared");
+  if (navigator.share) navigator.share({ title: "Cap Day", text, url }).catch(() => {});
+  else if (navigator.clipboard) navigator.clipboard.writeText(text + " " + url).then(() => { const b = $("shareCall"); if (b) { b.textContent = "Copied"; setTimeout(renderHero, 1500); } });
+}
+
+/* ── Challenge a friend ──
+   A challenge is a link that carries your name and your call (plus any calls
+   you were sent) for one match. It rides in the link's fragment, the part after
+   "#", which browsers never send to a server: not to this site's host, not to
+   the visit counter. There is no shared scoreboard: a link only knows the calls
+   made before it was sent. */
+/* Friends' calls for a match. A call under your own name is yours, sent from another
+   device or opened here before this device knew your name: it is not a friend's. */
+const rivalsOf = m => { const me = S.name.toLowerCase(); return (S.rivals[m.id] || []).filter(c => String(c.n).toLowerCase() !== me); };
+function saveRivals() { try { localStorage.setItem(KEY + ".rivals", JSON.stringify(S.rivals)); } catch (e) {} }
+/* Read a challenge out of the address (#men&c=…), keep it, and tidy the address. */
+function takeChallenge() {
+  const parts = location.hash.replace("#", "").split("&"), raw = parts.find(x => x.indexOf("c=") === 0);
+  if (raw == null) return false;
+  try { history.replaceState(null, "", location.pathname + location.search + (TEAM[parts[0]] ? "#" + parts[0] : "")); } catch (e) {}
+  const ch = parseChallenge(raw.slice(2));
+  if (!ch) return false;
+  const merged = mergeRivals(S.rivals[ch.id], ch.calls, S.name);
+  if (!merged.length) return false;                       // your own link, opened by you
+  S.rivals[ch.id] = merged; saveRivals(); S.jump = ch.id; track("challenge-opened");
+  return true;
+}
+/* The link for your challenge. Other people's calls ride along while the link
+   still fits in a QR code; the oldest are dropped first if it would not. */
+function challengeUrl(m) {
+  const c = callOf(m.id), me = { n: S.name, us: c.us, them: c.them }, others = rivalsOf(m);
+  const make = n => location.origin + location.pathname + (S.test ? "?test=" + encodeURIComponent(testSpec) : "") + "#" + S.team + "&c=" + packChallenge(m.id, [me, ...others.slice(0, n)]);
+  for (let n = others.length; n > 0; n--) if (qrMatrix(make(n))) return make(n);
+  return make(0);
+}
+let duelId = null;
+const duelMatch = () => { const m = focus(); return m && m.id === duelId ? m : null; };
+function openDuel(id) { duelId = id; track("challenge-started"); $("duelInput").value = S.name || ""; showDuel(); $("duel").showModal(); }
+function showDuel() {
+  const m = duelMatch(), named = !!S.name && !!m;
+  $("duelName").hidden = named; $("duelBody").hidden = !named;
+  if (!named) return;
+  $("duelText").textContent = `${S.name} says ${callText(m, callOf(m.id))}`;
+  $("duelQr").innerHTML = qrSvg(challengeUrl(m), { label: "QR code for your challenge" });
+  $("duelSend").textContent = "↗ Send the link";
+}
+function saveName() {
+  const n = cleanName($("duelInput").value);
+  if (!n) return;
+  S.name = n; try { localStorage.setItem(KEY + ".name", n); } catch (e) {}
+  showDuel(); renderHero();
+}
+function editName() { $("duelInput").value = S.name; S.name = ""; showDuel(); }
+function sendChallenge() {
+  const m = duelMatch(); if (!m || !S.name) return;
+  const url = challengeUrl(m), text = `${S.name} says ${callText(m, callOf(m.id))}. What's your call?`;
+  track("challenge-sent");
+  if (navigator.share) navigator.share({ title: "Cap Day", text, url }).catch(() => {});
+  else if (navigator.clipboard) navigator.clipboard.writeText(text + " " + url).then(() => { $("duelSend").textContent = "Link copied"; });
+}
+/* Everyone's call for this match, ranked once there is a score to rank against. */
+function boardHtml(m, mine, rivals, st, us, them) {
+  if (!rivals.length) return "";
+  const all = [...(mine ? [{ n: "You", you: true, us: mine.us, them: mine.them }] : []), ...rivals];
+  const live = st !== "pre" && us != null && them != null;
+  const list = live ? rankCalls(all, us, them) : all;
+  const row = c => `<div class="rv${c.you ? " me" : ""}"><span class="rp">${live ? c.place : ""}</span><span class="rn">${h(c.n)}</span><span class="rc">${h(callText(m, c))}${live ? (c.exact ? " 🎯" : c.right ? " ✓" : "") : ""}</span></div>`;
+  let lead = "";
+  if (live) {
+    const top = list.filter(c => c.place === 1).map(c => c.n), names = top.length > 1 ? top.slice(0, -1).join(", ") + " and " + top[top.length - 1] : top[0];
+    if (top.length === list.length && list.length > 1) lead = st === "post" ? "All level: nobody called it better." : "All level right now.";
+    else if (st === "post") lead = top.length > 1 ? `🏆 ${h(names)} called it best.` : `🏆 ${h(names)} called it best${top[0] === "You" ? " — that's you" : ""}.`;
+    else lead = `Closest right now: ${h(names)}.`;
+  }
+  return `<div class="board"><div class="kicker">The challenge</div>${list.map(row).join("")}${lead ? `<div class="lead">${lead}</div>` : ""}</div>`;
+}
+function callHtml(m, st, us, them) {
+  const c = S.calls[m.id], mine = c && c.locked ? c : null, rivals = rivalsOf(m), home = m.ha === "H";
+  if (st === "pre" && !mine) {
+    const cc = callOf(m.id);
+    const row = (label, side) => `<div class="row"><span>${h(label)}</span><span class="step">
+      <button aria-label="${h(label)} fewer" onclick="bump('${h(m.id)}','${side}',-1)">−</button><b>${cc[side]}</b>
+      <button aria-label="${h(label)} more" onclick="bump('${h(m.id)}','${side}',1)">+</button></span></div>`;
+    const rows = [row(usShort(), "us"), row(m.opp.name, "them")];
+    const says = rivals.length ? `<div class="says">${rivals.map(r => `<b>${h(r.n)}</b> says ${h(callText(m, r))}`).join(" · ")}. What's your call?</div>` : "";
+    return `<div class="call" id="callBox">${says}<div class="kicker">Call the score</div>${home ? rows.join("") : rows.reverse().join("")}
+      <button class="lock" onclick="lockCall('${h(m.id)}',true)">Lock in my call</button></div>`;
+  }
+  if (!mine && !rivals.length) return "";
+  const verdict = mine ? callVerdict(mine, us, them, st) : "";
+  return `<div class="call" id="callBox">${mine ? `<div class="kicker">Your call</div><div class="mine">${h(callText(m, mine))}</div>
+    ${verdict ? `<div class="verdict">${verdict}</div>` : ""}` : ""}
+    ${boardHtml(m, mine, rivals, st, us, them)}
+    ${mine ? `<div class="acts" style="margin-top:10px">
+      ${st === "pre" ? `<button class="btn" onclick="openDuel('${h(m.id)}')">🆚 Challenge a friend</button><button class="btn" onclick="lockCall('${h(m.id)}',false)">Change</button>`
+        : `<button class="btn" id="shareCall" onclick="shareCall('${h(m.id)}')">↗ Share my call</button>`}
+    </div>` : ""}</div>`;
+}
+
+function sideHtml(name, logo) {
+  return `<div class="side">${img(logo, name)}<div class="tname">${h(name)}</div>${rankChip(name)}</div>`;
+}
+function renderHero() {
+  const d = S.data[S.team], m = focus(), el = $("hero");
+  if (!d) { el.innerHTML = `<div class="card"><div class="empty">${LOADING()}</div></div>`; return; }
+  if (!m) { el.innerHTML = `<div class="card hero"><div class="kicker">Next match</div><div class="empty" style="margin-top:8px">No match on the schedule yet — the next international window will show here.</div></div>`; return; }
+  const L = S.live[m.id] || {}, st = L.state || m.state;
+  const us = L.us != null ? L.us : m.us, them = L.them != null ? L.them : m.them;
+  const usSide = S.test ? sideHtml(S.test.usName, S.test.usLogo) : sideHtml("United States", USA_LOGO), oppSide = sideHtml(m.opp.name, m.opp.logo);
+  const home = m.ha === "H";
+  const label = [m.comp, m.round, m.leg].filter(Boolean).join(" · ");
+  let mid;
+  if (st === "pre") mid = `<div class="vsword">vs</div>`;
+  else {
+    const a = home ? us : them, b = home ? them : us;
+    const pen = L.pen || m.pen;
+    mid = `<div class="score">${a == null ? "–" : a}<span style="opacity:.35"> : </span>${b == null ? "–" : b}</div>` +
+      (pen ? `<div class="clock">${home ? pen[0] : pen[1]}–${home ? pen[1] : pen[0]} on penalties</div>` : "") +
+      `<div class="clock">${st === "in" ? `<span class="livebadge">LIVE</span> ${h(L.clock || "")}` : "Full time"}</div>` +
+      (st === "in" && S.liveOk && Date.now() - S.liveOk > 100e3 ? `<div class="clock" style="color:var(--warn)">Connection lost. Retrying…</div>` : "");
+  }
+  const tv = (L.tv && L.tv.length ? L.tv : m.tv) || [];
+  const first = /2nd/i.test(m.leg) && d.results.find(r => r.opp.id === m.opp.id && r.lg === m.lg && D(m.date) - D(r.date) < 12 * 864e5);
+  const rows = [], ci = compInfo(m);
+  const watchHtml = st === "post" ? "" : `<div class="watch"><span class="exl">Watch on</span>${tv.length ? tv.map(t => `<span class="chip">${h(t)}</span>`).join("") : `<span style="color:var(--ink3);font-size:13px">to be announced</span>`}</div>`;
+  if (first) rows.push(`<div class="mrow"><span class="lab">First leg</span><span>USA ${first.us}–${first.them} ${h(m.opp.name)} &middot; ${fmtShort(first.date)}</span></div>`);
+  if (L.series) rows.push(`<div class="mrow"><span class="lab">Series</span><span>${h(L.series)}</span></div>`);
+
+  let tl = "";
+  if (L.events && L.events.length) {
+    tl = `<ul class="tl">` + L.events.map(e => `<li class="${e.us ? "us" : "them"}"><span class="min">${h(e.min)}</span><span>${e.icon} ${h(e.who)}${e.note ? ` <small>(${h(e.note)})</small>` : ""}</span></li>`).join("") + `</ul>`;
+  }
+  let xi = "";
+  if (L.xi && L.xi.length) {
+    const ord = L.xi.slice().sort((a, b) => (a.us === home ? -1 : 1) - (b.us === home ? -1 : 1));
+    xi = `<details ${(S.open.xi != null ? S.open.xi : st !== "post") ? "open" : ""} ontoggle="S.open.xi=this.open"><summary>Lineups</summary><div class="xi">` + ord.map(t =>
+      `<div><h4>${h(t.name)}${t.formation ? ` <span style="color:var(--ink3);font-weight:600">${h(t.formation)}</span>` : ""}</h4><ol>` +
+      t.start.map(p => `<li><span class="n">${h(p.n)}</span>${h(p.name)}</li>`).join("") + `</ol>` +
+      (t.bench.length ? `<div class="bench">Bench: ${t.bench.map(h).join(", ")}</div>` : "") + `</div>`).join("") + `</div></details>`;
+  } else if (st === "pre") {
+    xi = `<div class="cnote" style="margin:12px 0 0">Lineups appear here about an hour before kickoff.</div>`;
+  }
+  let l5 = "";
+  if (L.last5 && L.last5.length) {
+    const ord = L.last5.slice().sort((a, b) => (a.us ? -1 : 1) - (b.us ? -1 : 1));
+    l5 = `<details ${S.open.l5 ? "open" : ""} ontoggle="S.open.l5=this.open"><summary>Recent form &amp; past meetings</summary><div class="l5">` + ord.map(t =>
+      `<div><h4>${h(t.name)} — last ${t.games.length}</h4>` + t.games.map(g =>
+        `<div class="g"><span class="pill ${h(g.res)}">${h(g.res)}</span>${h(g.score)} ${g.at} ${h(g.opp)}</div>`).join("") + `</div>`).join("") + `</div>` +
+      (L.meetings.length ? `<div class="l5" style="grid-template-columns:1fr"><div><h4>Past meetings</h4>` + L.meetings.map(x =>
+        `<div class="g"><span class="pill ${outcome(x.us, x.them)}">${outcome(x.us, x.them)}</span>USA ${x.us}–${x.them} &middot; ${yearOf(x.date)} ${h(x.comp.replace(/^\d{4}(-\d{2})? /, ""))}</div>`).join("") + `</div></div>` : "") +
+      `</details>`;
+  }
+  const ed = (S.ed && S.ed[m.id]) || {};
+  let weHtml = "";
+  const we = st === "pre" ? winExp(m.opp.name) : null;
+  if (we != null) {
+    const usPct = Math.max(1, Math.min(99, Math.round(we * 100))), l = home ? usPct : 100 - usPct;
+    weHtml = `<div class="we"><div class="webar"><span class="${home ? "us" : "op"}" style="width:${l}%">${l}%</span><span class="${home ? "op" : "us"}" style="width:${100 - l}%">${100 - l}%</span></div>
+      <div class="wenote"><span>${h(home ? "USA" : m.opp.name)}</span><span>Win expectancy · FIFA ratings</span><span>${h(home ? m.opp.name : "USA")}</span></div></div>`;
+  }
+  let statsHtml = "";
+  /* The feed sends every number as zero for the first minutes of a match: wait for a real one. */
+  const counted = o => Object.keys(o).some(k => parseFloat(o[k]) > 0);
+  if (st !== "pre" && L.stats && (counted(L.stats.us) || counted(L.stats.them))) {
+    const A = home ? L.stats.us : L.stats.them, B = home ? L.stats.them : L.stats.us;
+    const rowsS = [["possessionPct", "Possession", "%"], ["totalShots", "Shots", ""], ["shotsOnTarget", "On target", ""], ["wonCorners", "Corners", ""], ["foulsCommitted", "Fouls", ""]]
+      .filter(([k]) => A[k] != null && B[k] != null).map(([k, label, unit]) => {
+        const x = parseFloat(A[k]) || 0, y = parseFloat(B[k]) || 0, tot = x + y || 1;
+        const fmt = v => (unit ? Math.round(parseFloat(v)) : v) + unit;
+        return `<div class="stat"><span>${h(fmt(A[k]))}</span><span class="mid2">${label}</span><span class="r">${h(fmt(B[k]))}</span>
+          <span class="bar"><i class="${home ? "" : "o"}" style="width:${x / tot * 100}%"></i><i class="${home ? "o" : ""}" style="width:${y / tot * 100}%"></i></span></div>`;
+      });
+    if (rowsS.length) statsHtml = `<div class="stats">${rowsS.join("")}</div>`;
+  }
+  el.innerHTML = `<div class="card hero ${st === "in" ? "live" : ""} ${S.flash ? "flash" : ""}">
+    ${S.test ? `<div class="testbar">TEST MODE: following another match to check live updates. <a href="./">Exit</a></div>` : ""}
+    <div class="kicker">${st === "in" ? "Live now" : st === "post" ? "Full time" : "Next match"} &middot; ${h(label)}</div>
+    <div class="vs">${home ? usSide : oppSide}<div class="mid">${mid}</div>${home ? oppSide : usSide}</div>
+    ${st === "pre" ? `<div class="when">${fmtDay(m.date)} &middot; ${fmtTime(m.date)} <span style="font-weight:600;color:var(--ink3)">${h(fmtZone(m.date))}</span></div>
+      <div class="cd" id="cd" data-iso="${h(m.date)}">${cdTiles(m.date)}</div>` : ""}
+    <div class="where">${h([m.venue, m.city].filter(Boolean).join(" · "))}</div>
+    ${watchHtml}
+    ${tl}
+    ${statsHtml}
+    ${explainHtml(m, ed, first)}
+    ${weHtml}
+    ${callHtml(m, st, us, them)}
+    ${standHtml(m)}
+    ${rows.length ? `<div class="meta">${rows.join("")}</div>` : ""}
+    ${xi}${l5}${venueHtml(m)}
+    <div class="acts">
+      ${st === "pre" ? `<button class="btn" onclick="addCal('${h(m.id)}')">📅 Add to calendar</button>` : ""}
+      <button class="btn" onclick="share()">↗ Share</button>
+    </div>
+  </div>`;
+  if (S.jump === m.id) { S.jump = null; const box = $("callBox"); if (box && box.scrollIntoView) box.scrollIntoView({ block: "center" }); }
+}
+
+function explainHtml(m, ed, first) {
+  const ci = compInfo(m), line = matchLine(m, first), ex = [];
+  if (ci.kind !== "friendly" && ci.name) ex.push(["Competition", `<b>${h(ci.name)}.</b> ${h(ci.what)}`]);
+  if (line) ex.push(["This match", h(line)]);
+  if (ed.stakes) ex.push(["At stake", h(ed.stakes)]);
+  else if (ci.kind === "friendly") ex.push(["At stake", "Nothing but form, places in the squad and FIFA ranking points."]);
+  return ex.length ? `<div class="explain"><div class="kicker">What is this match? ${ctag(m)}</div>` +
+    ex.map(([l, t]) => `<div class="ex"><span class="exl">${l}</span><span>${t}</span></div>`).join("") + moreHtml(m, ci) + `</div>` : "";
+}
+/* The deeper story: how the competition works, its history, how each side got
+   here, and what comes next. Hand-written parts come from editorial.json. */
+function roadList(list) {
+  return list.map(r => { const o = outcome(r.f, r.a, r.pen); return `<div class="g"><span class="pill ${o}">${o}</span>${r.f}–${r.a} ${r.ha === "H" ? "v" : "at"} ${h(r.opp)}${r.pen ? ` (${r.pen[0]}–${r.pen[1]} pens)` : ""} <span style="color:var(--ink3)">&middot; ${fmtShort(r.date)}${r.round ? ", " + h(r.round) : ""}</span></div>`; }).join("");
+}
+function moreHtml(m, ci) {
+  const c = (S.ed && S.ed.comps && S.ed.comps[m.lg]) || {}, rd = m.road || { us: [], opp: [] }, parts = [];
+  if (c.how) parts.push(["How it works", h(c.how)]);
+  if (c.history) parts.push(["History", h(c.history)]);
+  if (rd.us.length || c.usRoad) parts.push(["How the USA got here", (rd.us.length ? `<div class="l5" style="grid-template-columns:1fr;margin-top:0"><div>${roadList(rd.us)}</div></div>` : "") + (rd.us.length ? "" : h(c.usRoad))]);
+  if (rd.opp.length) {
+    const t = rd.oppTable, i = t ? t.rows.findIndex(r => r.me) : -1;
+    const place = i >= 0 ? `${h(m.opp.name)} finished ${["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"][i] || (i + 1) + "th"} of ${t.rows.length} in ${h(t.title)} (${h(t.rows[i].w)} won, ${h(t.rows[i].d)} drawn, ${h(t.rows[i].l)} lost).` : "";
+    parts.push([`How ${h(m.opp.name)} got here`, (place ? `<div style="margin-bottom:6px">${place}</div>` : "") + `<div class="l5" style="grid-template-columns:1fr;margin-top:0"><div>${roadList(rd.opp)}</div></div>`]);
+  }
+  if (c.next) parts.push(["What comes next", h(c.next)]);
+  if (!parts.length) return "";
+  return `<details ${S.open.more ? "open" : ""} ontoggle="S.open.more=this.open" style="border-top:1px solid var(--line)"><summary style="margin-top:8px">More about the ${h(ci.name || "competition")}: how it works and how we got here</summary>` +
+    parts.map(([l, t]) => `<div class="ex" style="grid-template-columns:1fr;gap:3px"><span class="exl">${l}</span><span>${t}</span></div>`).join("") + `</details>`;
+}
+function standHtml(m) {
+  const sd = m.stand; if (!sd) return "";
+  let body = "";
+  if (sd.kind === "table") {
+    body = `<table class="tbl"><tr><th></th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr>` + sd.rows.map(r =>
+      `<tr class="${r.us ? "me" : ""}"><td>${h(r.name)}</td><td>${h(r.p)}</td><td>${h(r.w)}</td><td>${h(r.d)}</td><td>${h(r.l)}</td><td>${h(r.gd)}</td><td><b>${h(r.pts)}</b></td></tr>`).join("") + `</table>`;
+  } else {
+    body = sd.ties.map(t => {
+      const first = t.legs[0], a = t.teams[first.home], b = t.teams[first.away];
+      const L = t.legs.map(g => {   // each leg as "home–away" from the first leg's point of view
+        const live = S.live[g.id], hs = g.hs, as = g.as;
+        if (live && live.state !== "pre" && t.us) { /* the hero carries the live score; keep the table simple */ }
+        if (hs == null) return fmtShort(g.date);
+        return g.home === first.home ? `${hs}–${as}` : `${as}–${hs}`;
+      });
+      const played = t.legs.filter(g => g.hs != null);
+      let agg = "";
+      if (t.legs.length > 1 && played.length) {
+        const A = played.reduce((n, g) => n + (g.home === first.home ? g.hs : g.as), 0), B = played.reduce((n, g) => n + (g.home === first.home ? g.as : g.hs), 0);
+        agg = ` <b>(${A}–${B} overall)</b>`;
+      }
+      return `<div class="tie ${t.us ? "me" : ""}"><span>${h(a.name)} v ${h(b.name)}</span><span class="tr">${L.join(" · ")}${agg}</span></div>`;
+    }).join("");
+  }
+  return `<details class="stand" ${S.open.stand !== false ? "open" : ""} ontoggle="S.open.stand=this.open"><summary>${h(sd.title)} — where it stands</summary>${body}
+    ${sd.kind === "ties" && sd.ties.some(t => t.legs.length > 1) ? `<div class="cnote" style="margin:6px 0 0">Scores read home team first for the opening match. A date means that match hasn't been played.</div>` : ""}</details>`;
+}
+function venueHtml(m) {
+  const v = m.vinfo; if (!v) return "";
+  const facts = [v.capacity ? `<b>${v.capacity.toLocaleString()}</b> seats` : "", v.opened ? `opened <b>${v.opened}</b>` : "", v.tenants && v.tenants.length ? `home of <b>${v.tenants.map(h).join(", ")}</b>` : ""].filter(Boolean);
+  return `<details ${S.open.venue ? "open" : ""} ontoggle="S.open.venue=this.open"><summary>The stadium — ${h(v.title)}</summary>
+    <div class="venue">${v.img ? `<img src="${h(v.img)}" alt="${h(v.title)}" loading="lazy" onerror="this.remove()">` : ""}
+    <div>${facts.length ? `<div class="vf">${facts.join(" &middot; ")}</div>` : ""}<div class="vb">${h(v.blurb)}</div>
+    ${/^https:\/\//.test(v.url || "") ? `<a href="${h(v.url)}" target="_blank" rel="noopener" style="font-size:12px">More on Wikipedia</a>` : ""}</div></div></details>`;
+}
+
+/* ── Storylines: written from the data, only when true ── */
+function storylines() {
+  const d = S.data[S.team]; if (!d) return [];
+  const out = [], m = focus(), L = (m && S.live[m.id]) || {};
+  const plural = (n, w) => n + " " + w + (n === 1 ? "" : "s");
+  const tally = p => p.rec.reduce((o, r) => { o.g += r.g || 0; o.a += r.a || 0; return o; }, { g: 0, a: 0 });
+  const feat = x => [x.g ? plural(x.g, "goal") : "", x.a ? plural(x.a, "assist") : ""].filter(Boolean).join(" and ");
+  const res = d.results, oc = r => outcome(r.us, r.them, r.pen);
+  let w = 0; while (w < res.length && oc(res[w]) === "W") w++;
+  let u = 0; while (u < res.length && oc(res[u]) !== "L") u++;
+  if (w >= 2) {
+    const gf = res.slice(0, w).reduce((n, r) => n + r.us, 0), ga = res.slice(0, w).reduce((n, r) => n + r.them, 0);
+    out.push(["📈", `The USA has <b>won ${w} straight</b>, outscoring opponents ${gf}–${ga}.`]);
+  } else if (u >= 3) out.push(["📈", `The USA is <b>unbeaten in ${u}</b>.`]);
+  if (L.series && L.meetings && L.meetings.length) {
+    const x = L.meetings[0];
+    out.push(["🤝", `<b>${h(L.series)}.</b> Last meeting: USA ${x.us}–${x.them} in the ${yearOf(x.date)} ${h(x.comp.replace(/^\d{4}(-\d{2})? /, ""))}.`]);
+  }
+  const sq = d.pool.some(p => p.cur) ? d.pool.filter(p => p.cur) : d.pool;
+  sq.map(p => ({ p, ...tally(p) })).filter(x => x.g + x.a > 0).sort((x, y) => (y.g * 3 + y.a * 2) - (x.g * 3 + x.a * 2)).slice(0, 3)
+    .forEach(x => out.push(["🔥", `<b>${h(x.p.name)}</b>${x.p.age && x.p.age <= 20 ? ` (${x.p.age})` : ""} arrives in form: ${feat(x)} in recent matches for ${h(x.p.club.name)}.`]));
+  const cold = sq.filter(p => { const k = p.rec.filter(r => r.st !== "?"); return k.length >= 2 && !k.some(r => r.st === "S" || r.st === "I"); });
+  if (cold.length) out.push(["🧊", `Short of club minutes: ${cold.slice(0, 4).map(p => `<b>${h(p.name)}</b>`).join(", ")}${cold.length > 4 ? ` and ${cold.length - 4} more` : ""} ${cold.length === 1 ? "hasn't played in their club's" : "haven't played in their clubs'"} last three matches.`]);
+  const teens = sq.filter(p => p.age && p.age <= 18).sort((a, b) => a.age - b.age);
+  if (teens.length) out.push(["🌱", `${teens.length === 1 ? "One teenager" : plural(teens.length, "teenager")} in the picture: ${teens.slice(0, 4).map(p => `<b>${h(p.name)}</b> (${p.age})`).join(", ")}.`]);
+  if (d.opp && m && d.opp.match === m.id) {
+    d.opp.pool.map(p => ({ p, ...tally(p) })).filter(x => x.g > 0).sort((x, y) => y.g - x.g).slice(0, 2)
+      .forEach(x => out.push(["⚠️", `Watch ${h(d.opp.name)}'s <b>${h(x.p.name)}</b>: ${feat(x)} in recent matches for ${h(x.p.club.name)}.`]));
+  }
+  return out;
+}
+function renderStories() {
+  const el = $("stories"), list = storylines();
+  el.innerHTML = list.length ? `<div class="card"><div class="ctitle">Storylines</div>
+    <div class="cnote">Written from the match and club data, so they change as results come in.</div>` +
+    list.map(([ic, html]) => `<div class="story"><span class="ic">${ic}</span><span>${html}</span></div>`).join("") + `</div>` : "";
+}
+function renderOppo() {
+  const d = S.data[S.team], el = $("oppo"), m = focus();
+  if (!d || !d.opp || !m || d.opp.match !== m.id) { el.innerHTML = ""; return; }
+  const G = [["G", "Goalkeepers"], ["D", "Defenders"], ["M", "Midfielders"], ["F", "Forwards"]];
+  el.innerHTML = `<div class="card"><details class="fold" ${S.open.oppo ? "open" : ""} ontoggle="S.open.oppo=this.open">
+    <summary>Know the opponent — ${h(d.opp.name)}</summary>
+    <div class="cnote" style="margin-top:4px">${d.opp.pool.length} players in their squad list, and what each did in their club's last three matches.</div>` +
+    G.map(([k, name]) => { const ps = d.opp.pool.filter(p => p.pos === k); return ps.length ? `<div class="grp">${name}</div>` + ps.map(p => playerRow(p, false)).join("") : ""; }).join("") +
+    `</details></div>`;
+}
+
+/* ── Did you know? One fact at a time (js/facts.js), in the order factOrder gives ── */
+function factList() {
+  if (typeof FACTS === "undefined") return [];
+  const m = focus(), now = new Date(Date.now()), local = new Date(now.getTime() - now.getTimezoneOffset() * 6e4);
+  return factOrder(FACTS, { opp: m && m.opp && m.opp.name, leg: !!(m && m.leg), day: Math.floor(local.getTime() / 864e5), today: local.toISOString().slice(0, 10) });
+}
+function renderFacts() {
+  const el = $("facts"), list = S.data[S.team] ? factList() : [];     // wait for the schedule: it decides which fact comes first
+  if (!list.length) { el.innerHTML = ""; return; }
+  const i = S.fact % list.length, f = list[i], m = focus();
+  const about = m && m.opp && (f.opp || []).some(x => norm(x) === norm(m.opp.name));
+  el.innerHTML = `<div class="card fact"><div class="kicker">Did you know?<span class="lv">${about ? "About " + h(m.opp.name) : f.lv === "new" ? "The basics" : "Deep cut"}</span></div>
+    <div class="facth">${h(f.h)}</div><div class="factt">${h(f.t)}</div>
+    <div class="factn"><button class="fb" onclick="nextFact()">Another one &rarr;</button><span>${i + 1} of ${list.length}</span></div></div>`;
+}
+function nextFact() { S.fact++; track("fact-next"); renderFacts(); }
+
+function addCal(id) {
+  track("calendar-single");
+  const m = S.data[S.team].fixtures.find(x => x.id === id); if (!m) return;
+  const z = t => new Date(t).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
+  const title = (m.ha === "H" ? "USA vs " + m.opp.name : m.opp.name + " vs USA") + (S.team === "women" ? " (W)" : "");
+  const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Cap Day//EN", "BEGIN:VEVENT",
+    "UID:usa-" + m.id + "@capday", "DTSTAMP:" + z(Date.now()), "DTSTART:" + z(m.date), "DTEND:" + z(D(m.date).getTime() + 2 * 36e5),
+    "SUMMARY:" + title, "LOCATION:" + [m.venue, m.city].filter(Boolean).join(", ").replace(/,/g, "\\,"),
+    "DESCRIPTION:" + [[m.comp, m.round, m.leg].filter(Boolean).join(" · "), m.tv.length ? "Watch: " + m.tv.join(" / ") : ""].filter(Boolean).join("\\n").replace(/,/g, "\\,"),
+    "END:VEVENT", "END:VCALENDAR"].join("\r\n");
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([ics], { type: "text/calendar" }));
+  a.download = "usa-" + norm(m.opp.name) + ".ics";
+  document.body.appendChild(a); a.click(); a.remove();
+}
+function share() {
+  track("share");
+  const url = location.origin + location.pathname + "#" + S.team;
+  if (navigator.share) navigator.share({ title: document.title, url }).catch(() => {});
+  else if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => { const b = event.target; const t = b.textContent; b.textContent = "Link copied"; setTimeout(() => b.textContent = t, 1500); });
+}
+
+/* ── Player pool ── */
+const ST = { S: "Started", I: "Came on", B: "On the bench, didn't play", X: "Not in the matchday squad", "?": "No lineup available" };
+const cls = st => st === "?" ? "Q" : st;
+function recLine(r, long, club) {
+  const res = outcome(r.sf, r.sa);
+  let s = `<span class="${cls(r.st)}">${r.st === "X" && club ? "Left out of " + h(club) + "'s matchday squad" : ST[r.st]}</span>`;
+  if (r.st === "I" && r.on) s += ` ${h(r.on)}`;
+  if (r.st === "S" && r.off) s += `, off ${h(r.off)}`;
+  if (r.g) s += ` &middot; <b>⚽${r.g > 1 ? " ×" + r.g : ""}</b>`;
+  if (r.a) s += ` &middot; <b>${r.a > 1 ? r.a + " assists" : "assist"}</b>`;
+  if (r.rc) s += ` &middot; 🟥`; else if (r.yc) s += ` &middot; 🟨`;
+  s += ` &middot; ${res} ${r.sf}–${r.sa} ${r.ha === "H" ? "v" : "at"} ${h(r.opp.trim())}`;
+  return `${fmtShort(r.d)} &middot; ` + s + (long ? ` <span style="color:var(--ink3)">(${h(r.lg)})</span>` : "");
+}
+function playerRow(p, hasExtra) {
+    const r = p.rec[0], open = S.open[p.id], cn = p.club && p.club.name;
+    const dots = p.rec.slice().reverse().map(x => `<span class="dot ${cls(x.st)}" title="${h(ST[x.st])}"></span>`).join("");
+    const known = p.rec.filter(x => x.st !== "?"), played = known.filter(x => x.st === "S" || x.st === "I").length;
+    const caps = p.caps != null ? `<span class="caps">${p.caps} cap${p.caps === 1 ? "" : "s"}${p.goals ? " · " + p.goals + " goal" + (p.goals === 1 ? "" : "s") : ""}</span>` : "";
+    /* National-team status, in words: retired / injured / when last called. */
+    const status = p.flag === "RET" ? "retired from international play" : p.flag === "INJ" ? "injured" : p.inj ? "injured"
+      : hasExtra && !p.cur ? (p.latest ? "last called up: " + p.latest : "not in this squad") : "";
+    return `<div class="p" role="button" tabindex="0" aria-expanded="${open ? "true" : "false"}" onclick="togglePlayer('${h(p.id)}')">
+      ${img(p.club && p.club.logo, cn)}
+      <div><div class="pn">${h(p.name)}${caps}</div>
+        ${status ? `<div class="pstat">${h(status)}</div>` : ""}
+        <div class="pc">${h(cn || "Club unknown")}${p.age ? " · age " + p.age : ""}${known.length ? ` · played ${played} of last ${known.length} for club` : ""}</div>
+        ${r && !open ? `<div class="pl">${recLine(r, false, cn)}</div>` : !p.rec.length ? `<div class="pl" style="color:var(--ink3)">No club match data for this player.</div>` : ""}</div>
+      <div class="dots" aria-hidden="true">${dots}</div>
+      ${open ? `<div class="more">${p.rec.map(x => `<div class="pl">${recLine(x, true, cn)}</div>`).join("")}</div>` : ""}
+    </div>`;
+}
+function renderPool() {
+  const d = S.data[S.team], el = $("pool"); if (!d) { el.innerHTML = ""; return; }
+  const all = d.pool.filter(p => p.flag !== "RET"), hasExtra = all.some(p => !p.cur) && all.some(p => p.cur);   // retired players stay on Wikipedia's list for a year; they are not part of the pool
+  /* "Last club matchday": each player's most recent club match, if recent. */
+  const recent = all.map(p => ({ p, r: p.rec[0] })).filter(x => x.r && Date.now() - D(x.r.d) < 10 * 864e5);
+  const started = recent.filter(x => x.r.st === "S").length, cameOn = recent.filter(x => x.r.st === "I").length;
+  const scorers = recent.filter(x => x.r.g).map(x => h(x.p.name.split(" ").slice(-1)[0]) + (x.r.g > 1 ? " ×" + x.r.g : ""));
+  const assists = recent.filter(x => x.r.a).map(x => h(x.p.name.split(" ").slice(-1)[0]));
+  const sum = recent.length ? `<b>${started}</b> started and <b>${cameOn}</b> came on in their last club match` +
+    (scorers.length ? ` &middot; goals: <b>${scorers.join(", ")}</b>` : "") + (assists.length ? ` &middot; assists: <b>${assists.join(", ")}</b>` : "") : "";
+
+  let list = all.filter(p => S.pos === "all" || (S.pos === "cur" ? p.cur : p.pos === S.pos));
+  const row = p => playerRow(p, hasExtra);
+  let body;
+  const G = [["G", "Goalkeepers"], ["D", "Defenders"], ["M", "Midfielders"], ["F", "Forwards"]];
+  const byPos = ps => G.map(([k, name]) => { const x = ps.filter(p => p.pos === k); return x.length ? `<div class="grp">${name}</div>` + x.map(row).join("") : ""; }).join("");
+  if (S.sort === "form") body = list.slice().sort((a, b) => formScore(b) - formScore(a)).map(row).join("");
+  else if (hasExtra && S.pos !== "cur") {
+    const inn = list.filter(p => p.cur), out = list.filter(p => !p.cur);
+    body = (inn.length ? `<div class="blk">In the squad (${inn.length})</div>` + byPos(inn) : "") +
+      (out.length ? `<div class="blk">Recent call-ups, not in this squad (${out.length})</div>` + byPos(out) : "");
+  } else body = byPos(list);
+  const fb = (k, label) => `<button class="fb ${S.pos === k ? "on" : ""}" onclick="setPos('${k}')">${label}</button>`;
+  el.innerHTML = `<div class="card">
+    <div class="ctitle">${NAME[S.team]} — player pool &amp; club form</div>
+    <div class="cnote">${d.squadNote ? h(d.squadNote.replace(/^The following /, "The squad: ")) + " " : ""}${d.capsAsOf ? "Caps (international appearances) and goals as of " + h(d.capsAsOf) + ". " : ""}Under each player: what they did in their club's last three matches. Tap for the detail.</div>
+    ${sum ? `<div class="sumline">${sum}</div>` : ""}
+    <div class="filters">${fb("all", "All")}${hasExtra ? fb("cur", "In the squad") : ""}${fb("G", "GK")}${fb("D", "DEF")}${fb("M", "MID")}${fb("F", "FWD")}
+      <button class="fb ${S.sort === "form" ? "on" : ""}" onclick="toggleSort()" style="margin-left:auto">Sort: ${S.sort === "form" ? "in form" : "position"}</button></div>
+    ${body || `<div class="empty">No players match that filter.</div>`}
+    <div class="legend"><span>Club's last three, oldest → newest:</span><span><i class="dot S"></i>Started</span><span><i class="dot I"></i>Came on</span><span><i class="dot B"></i>On the bench</span><span><i class="dot X"></i>Left out by club</span></div>
+  </div>`;
+}
+function togglePlayer(id) { S.open[id] = !S.open[id]; renderPool(); renderOppo(); }
+function setPos(k) { S.pos = k; renderPool(); }
+function toggleSort() { S.sort = S.sort === "form" ? "pos" : "form"; renderPool(); }
+
+/* ── Fixtures & results ── */
+function renderFixtures() {
+  const el = $("fixtures");
+  const all = [];
+  for (const t of ORDER) for (const m of (S.data[t] ? S.data[t].fixtures : [])) all.push({ t, m });
+  all.sort((x, y) => x.m.date.localeCompare(y.m.date) || ORDER.indexOf(x.t) - ORDER.indexOf(y.t));
+  if (!all.length) { el.innerHTML = ""; return; }
+  el.innerHTML = `<div class="card"><div class="ctitle">Calendar — every upcoming match</div>
+    <div class="cnote">Women and men together, in your local time. Tap a match to open it.</div>` + all.map(({ t, m }) =>
+    `<div class="m tap" role="button" tabindex="0" onclick="pickTeam('${t}')"><div class="md">${fmtShort(m.date)}<small>${fmtTime(m.date)}</small></div>
+      <div><div class="mt"><span class="wm" title="${NAME[t]}">${NAME[t][0]}</span>${img(m.opp.logo, "")}${m.ha === "H" ? "vs" : "at"} ${h(m.opp.name)}</div>
+      <div class="ms">${ctag(m)} ${h([compLine(m), m.city].filter(Boolean).join(" · "))}</div>
+      ${m.tv.length ? `<div class="chips" style="margin-top:5px">${m.tv.map(x => `<span class="chip">${h(x)}</span>`).join("")}</div>` : ""}</div><span></span></div>`).join("") +
+    `<div class="acts"><button class="btn" onclick="openSub()">📅 Add all matches to my calendar</button></div>` + aheadHtml() + `</div>`;
+}
+/* Dates further out than the fixture feed knows (hand-written, data/usa/ahead.json). */
+function aheadHtml() {
+  const today = new Date().toISOString().slice(0, 10);
+  const items = ((S.ahead && S.ahead.items) || []).filter(x => (x.to || x.date) >= today)
+    .sort((a, b) => a.date.localeCompare(b.date) || ORDER.indexOf(a.team) - ORDER.indexOf(b.team));
+  if (!items.length) return "";
+  const day = d => new Date(d + "T12:00:00").toLocaleDateString([], { month: "short", day: "numeric" });
+  return `<div class="blk" style="margin-top:18px">Further ahead</div><div class="cnote" style="margin:2px 0 4px">Dates already fixed, before opponents and kickoff times are known.</div>` + items.map(x =>
+    `<div class="ah"><div class="md">${day(x.date)}<small>${x.to ? "to " + day(x.to) : new Date(x.date + "T12:00:00").getFullYear()}</small></div>
+      <div><span class="wm" title="${NAME[x.team]}">${NAME[x.team][0]}</span><b>${h(x.what)}</b>${x.where ? " &middot; " + h(x.where) : ""}${x.if ? `<small>${h(x.if)}</small>` : ""}</div></div>`).join("");
+}
+
+/* ── News: the feed's own headlines for the selected team ── */
+async function loadNews(team) {
+  if (S.news[team]) return;
+  S.news[team] = [];
+  try {
+    const j = (await getJson(`${API}/${team === "men" ? "fifa.friendly" : "fifa.friendly.w"}/news?team=${TEAM[team].id}&limit=10`)) || {};
+    S.news[team] = (j.articles || []).map(a => ({ t: a.headline, d: a.published, v: a.type === "Media", u: a.links && a.links.web && a.links.web.href })).filter(a => a.t && /^https:\/\//.test(a.u || "")).slice(0, 6);   // feed links must be plain https
+  } catch (e) { S.news[team] = null; /* try again next time this team is shown */ }
+  if (S.team === team) renderNews();
+}
+function renderNews() {
+  const list = S.news[S.team] || [];
+  $("news").innerHTML = list.length ? `<div class="card"><div class="ctitle">${NAME[S.team]} — news</div><div class="cnote">Latest headlines from ESPN. Links open ESPN.</div>` +
+    list.map(a => `<a class="nw" href="${h(a.u)}" target="_blank" rel="noopener" onclick="track('news-click')">${a.v ? "▶ " : ""}${h(a.t)}<small>${fmtShort(a.d)}</small></a>`).join("") + `</div>` : "";
+}
+
+/* ── One-tap feedback, counted as anonymous events ── */
+const POLL = [["reminders", "A reminder before each match"], ["other-teams", "Other countries' teams"], ["tickets", "Tickets and travel info"], ["more-stats", "More player stats"], ["fine", "Nothing, it's good"]];
+function renderPoll() {
+  let st = {}; try { st = JSON.parse(localStorage.getItem(KEY + ".poll") || "{}"); } catch (e) {}
+  const el = $("poll");
+  if (st.want) { el.innerHTML = `<div class="card"><div class="pollq">Thanks — that helps.</div><div class="cnote" style="margin:0">Your answers are counted anonymously.</div></div>`; return; }
+  const btn = (k, label, fn) => `<button class="fb" onclick="${fn}('${k}')">${label}</button>`;
+  el.innerHTML = !st.useful
+    ? `<div class="card"><div class="pollq">Would you use Cap Day to follow the national teams?</div><div class="filters">${btn("yes", "Yes", "pollUseful")}${btn("maybe", "Maybe", "pollUseful")}${btn("no", "Not really", "pollUseful")}</div><div class="cnote" style="margin:4px 0 0">One tap, counted anonymously.</div></div>`
+    : `<div class="card"><div class="pollq">What would make it better?</div><div class="filters">${POLL.map(([k, l]) => btn(k, l, "pollWant")).join("")}</div></div>`;
+}
+function pollSave(k, v) { let st = {}; try { st = JSON.parse(localStorage.getItem(KEY + ".poll") || "{}"); st[k] = v; localStorage.setItem(KEY + ".poll", JSON.stringify(st)); } catch (e) {} }
+function pollUseful(v) { track("poll-useful-" + v); pollSave("useful", v); renderPoll(); }
+function pollWant(v) { track("poll-want-" + v); pollSave("want", v); renderPoll(); }
+function openSub() {
+  const feed = new URL("data/usa/all.ics", location.href).href;
+  $("subApple").href = feed.replace(/^https?:/, "webcal:");
+  $("subGoogle").href = "https://calendar.google.com/calendar/render?cid=" + encodeURIComponent(feed.replace(/^https:/, "http:"));
+  $("sub").showModal(); track("calendar-opened");
+}
+function renderResults() {
+  const d = S.data[S.team], el = $("results"); if (!d) { el.innerHTML = ""; return; }
+  const list = d.results.slice(0, 12);
+  if (!list.length) { el.innerHTML = ""; return; }
+  const pill = m => { const o = outcome(m.us, m.them, m.pen); return `<span class="pill ${o}">${o}</span>`; };
+  el.innerHTML = `<div class="card"><div class="ctitle">${NAME[S.team]} — results</div>
+    <div class="cnote">Tap a match for its goals and cards.</div>
+    <div class="form" aria-label="Last five results">${list.slice(0, 5).reverse().map(pill).join("")}</div>` + list.map(m => {
+    const sm = S.sums[m.id];
+    let extra = "";
+    if (S.open["m" + m.id]) {
+      extra = `<div class="mx">` + (!sm ? `<div class="empty">Loading…</div>` : sm === "err" ? `<div class="empty">Couldn't load the match detail.</div>` :
+        sm.events.length ? `<ul class="tl" style="margin-top:0;border-top:0;padding-top:0">` + sm.events.map(e =>
+          `<li class="${e.us ? "us" : "them"}"><span class="min">${h(e.min)}</span><span>${e.icon} ${h(e.who)}${e.note ? ` <small>(${h(e.note)})</small>` : ""}</span></li>`).join("") + `</ul>` :
+        `<div class="empty">No goals or cards recorded.</div>`) + `</div>`;
+    }
+    return `<div class="m tap" role="button" tabindex="0" aria-expanded="${S.open["m" + m.id] ? "true" : "false"}" onclick="toggleMatch('${h(m.id)}')"><div class="md">${fmtShort(m.date)}<small>${yearOf(m.date)}</small></div>
+      <div><div class="mt">${img(m.opp.logo, "")}${m.ha === "H" ? "vs" : "at"} ${h(m.opp.name)}</div>
+      <div class="ms">${ctag(m)} ${h(compLine(m))}</div></div>
+      <div class="res">${m.us}–${m.them}${m.pen ? ` <small style="font-weight:600;color:var(--ink3)">(${m.pen[0]}–${m.pen[1]} p)</small>` : ""} ${pill(m)}</div>${extra}</div>`;
+  }).join("") + `</div>`;
+}
+async function toggleMatch(id) {
+  const k = "m" + id; S.open[k] = !S.open[k]; renderResults();
+  if (!S.open[k] || S.sums[id]) return;
+  const team = S.team, m = S.data[team].results.find(x => x.id === id);
+  try {
+    const G = await getJson(`${API}/${m.lg}/summary?event=${id}`);
+    S.sums[id] = (G && parseSummary(G, TEAM[team].id)) || "err";
+  } catch (e) { S.sums[id] = "err"; }
+  if (S.team === team) renderResults();
+}
+
+/* ── Shell ── */
+function render() {
+  renderNextUp();
+  const d = S.data[S.team];
+  const when = iso => D(iso).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+  $("stamp").textContent = d ? (d.checked ? "Schedule, squads and club form checked " + when(d.checked) : "Club form updated " + when(d.updated)) : "";
+  renderStale();
+  renderHero(); renderStories(); renderFacts(); renderNews(); renderPool(); renderOppo(); renderFixtures(); renderResults();
+}
+/* ── Fail-safe sections ──
+   Each section draws inside a guard: if one throws (a surprise in the feed, a
+   bug), that section shows a short notice and every other section carries on.
+   The error is counted anonymously so it can be found and fixed. */
+let errorsSent = 0;
+function reportError(where, e) {
+  if (errorsSent++ >= 5) return;
+  track("error " + where + ": " + String((e && e.message) || e).slice(0, 90) + " [v" + VERSION + "]");
+}
+function guard(fn, id, where) {
+  return function () {
+    try { return fn.apply(this, arguments); }
+    catch (e) {
+      reportError(where, e);
+      const el = $(id);
+      if (el) el.innerHTML = `<div class="card"><div class="empty">This part couldn't be shown just now. The rest of the app still works.</div></div>`;
+    }
+  };
+}
+renderHero = guard(renderHero, "hero", "match-card");
+renderStories = guard(renderStories, "stories", "storylines");
+renderFacts = guard(renderFacts, "facts", "facts");
+renderNews = guard(renderNews, "news", "news");
+renderPool = guard(renderPool, "pool", "players");
+renderOppo = guard(renderOppo, "oppo", "opponent");
+renderFixtures = guard(renderFixtures, "fixtures", "calendar");
+renderResults = guard(renderResults, "results", "results");
+renderNextUp = guard(renderNextUp, "nextup", "next-up");
+renderPoll = guard(renderPoll, "poll", "poll");
+window.addEventListener("error", e => reportError("script", e.error || e.message));
+window.addEventListener("unhandledrejection", e => reportError("promise", e.reason));
+
+/* Rows that act as buttons respond to Enter and Space, like real buttons. */
+document.addEventListener("keydown", e => {
+  const t = e.target;
+  if ((e.key === "Enter" || e.key === " ") && t && t.getAttribute && t.getAttribute("role") === "button" && t.tagName !== "BUTTON") { e.preventDefault(); t.click(); }
+});
+
+/* Which version this is, in the footer (the number lives in js/core.js). */
+$("ver").textContent = "AO Matchday concept, built on Cap Day v" + VERSION;
+
+let installEvt = null;
+window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; $("installBtn").hidden = false; });
+window.addEventListener("appinstalled", () => track("installed"));
+$("installBtn").addEventListener("click", () => { if (installEvt) { installEvt.prompt(); installEvt = null; $("installBtn").hidden = true; } });
+if ("serviceWorker" in navigator && location.protocol === "https:") navigator.serviceWorker.register("sw.js").catch(() => {});
+/* Test mode (?test=<league>:<event id>): point the match card at any match in the
+   feed, with the home side standing in for the USA, to rehearse live updates. */
+async function loadTest(spec) {
+  const [lg, id] = spec.split(":");
+  try {
+    const G = await getJson(`${API}/${lg}/summary?event=${id}`, { cache: "no-store" });
+    const c = G.header.competitions[0], hm = c.competitors.find(x => x.homeAway === "home"), aw = c.competitors.find(x => x.homeAway === "away");
+    const logo = t => (t.logos && t.logos[0] && t.logos[0].href) || t.logo || "";
+    const sn = String((G.header.season && G.header.season.name) || "").split(", ");
+    const v = (G.gameInfo && G.gameInfo.venue) || {};
+    S.test = { usId: hm.id, usName: hm.team.displayName, usLogo: logo(hm.team), m: {
+      id, lg, date: c.date, comp: (G.header.league && G.header.league.name) || sn[0] || "", round: sn[1] || "", leg: (c.leg && c.leg.displayValue) || "",
+      venue: v.fullName || "", city: (v.address && v.address.city) || "", ha: "H",
+      opp: { id: aw.id, name: aw.team.displayName, abbr: aw.team.abbreviation, logo: logo(aw.team) },
+      us: null, them: null, pen: null, state: (c.status && c.status.type && c.status.type.state) || "pre", tv: [] } };
+  } catch (e) { S.test = null; }
+}
+const testSpec = new URLSearchParams(location.search).get("test");
+takeChallenge();
+/* A challenge link opened while the app is already showing: no reload happens, only the address changes. */
+window.addEventListener("hashchange", () => {
+  const t = location.hash.replace("#", "").split("&")[0], got = takeChallenge();
+  if (TEAM[t] && t !== S.team) { chose = true; S.team = t; S.pos = "all"; render(); loadTeam(t); }
+  else if (got) render();
+});
+render(); renderPoll();
+Promise.all([...ORDER.map(fetchData), testSpec ? loadTest(testSpec) : null]).then(() => { if (!pinned) S.team = soonest(); loadTeam(S.team); });
+checkBuild();
+
+/* iPhone has no install prompt: show how to add the app to the home screen. */
+(function () {
+  const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) && !navigator.standalone;
+  let seen = false; try { seen = localStorage.getItem(KEY + ".iostip") === "1"; } catch (e) {}
+  if (!ios || seen) return;
+  const el = $("iosTip"); el.hidden = false;
+  el.querySelector("button").onclick = () => { el.hidden = true; try { localStorage.setItem(KEY + ".iostip", "1"); } catch (e) {} };
+})();
+</script>
+<!-- Visit counting: GoatCounter (no cookies, no personal data). -->
+<script>
+/* This GoatCounter account is shared with other projects: label everything "capday". */
+window.goatcounter = { path: function (p) { return "capday" + p.replace(/^\/wc2026/, ""); } };
+</script>
+<script data-goatcounter="https://jerredcook.goatcounter.com/count" async src="js/count.js"></script>
+<script src="js/ao.js"></script>
+</body>
+</html>
