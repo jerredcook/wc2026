@@ -358,3 +358,66 @@ test("ao page: sharing a chapter's link, and the way to its sign", async () => {
   assert.equal(q.run("copiedText"), "http://test.local/wc2026/ao.html?chapter=middlesex-county");
   assert.match(q.text("aoChapters"), /Link copied/);
 });
+
+/* ── What the chapter's leaders wrote: notes on the watch party card, and the songbook ── */
+const WRITTEN = { "middlesex-county": {
+  notes: [{ text: "Members get $1 off drafts." }, { date: "2026-11-14", text: "Doors <b>at</b> 6 & we're \"upstairs\"" }, { date: "2026-11-18", text: "for another match" }, { text: "a third note" }],
+  songs: [{ title: "I Believe", words: "I believe\nI believe that\n<i>we</i> will win!" }, { title: "U-S-A <img src=x>", words: "" }] },
+  dothan: { notes: [{ text: "We are still looking for a bar. Message us." }], songs: [] } };
+async function aoWritten(home, written) {
+  const p = await boot({ hash: "#men" });
+  p.run(AO_JS); await p.settle();
+  p.run((home ? "AO.home = '" + home + "'; " : "") + "AO.notes = " + JSON.stringify(written === undefined ? WRITTEN : written) + "; aoLoaded(" + JSON.stringify(LIST) + ")");
+  return p;
+}
+
+test("ao page: the leaders' note for this match shows on the watch party card, as plain text", async () => {
+  const p = await aoWritten(), html = p.html("aoWatch"), t = p.text("aoWatch");
+  assert.match(t, /Hailey's Harp & Pub 400 Main St, Metuchen, NJ From the chapter Doors &lt;b&gt;at&lt;\/b&gt; 6 & we're "upstairs" Members get \$1 off drafts\. 📍 Directions/, "the note for the match day first, then the standing one, above the buttons");
+  assert.ok(!/<b>at<\/b>/.test(html), "what leaders type is never treated as markup");
+  assert.ok(!/another match|third note/.test(t), "not another match's note, and two at most");
+  assert.equal((html.match(/class="aonote"/g) || []).length, 2);
+  assert.ok(html.indexOf('class="aonotes"') < html.indexOf('class="aoacts"') && html.indexOf('class="aonotes"') < html.indexOf("<details"), "inside the chapter's own block, not in the folded list");
+});
+
+test("ao page: a note belongs to the match's day in U.S. Eastern time", async () => {
+  const p = await aoWritten();
+  assert.equal(p.run("aoEtDay('2026-11-18T00:00Z')"), "2026-11-17", "a 7 PM Eastern kickoff is the next day in UTC");
+  assert.equal(p.run("aoEtDay('2026-11-28T01:30Z')"), "2026-11-27");
+  assert.equal(p.run("aoEtDay('2026-07-04T03:59Z')"), "2026-07-03"); assert.equal(p.run("aoEtDay('2026-07-04T04:00Z')"), "2026-07-04");
+  assert.deepStrictEqual(JSON.parse(p.run("JSON.stringify(aoNotes({ date: '2026-11-19T00:30Z' }).map(n => n.text))")), ["for another match", "Members get $1 off drafts."]);
+  assert.deepStrictEqual(JSON.parse(p.run("JSON.stringify(aoNotes({ date: '2026-12-25T20:00Z' }).map(n => n.text))")), ["Members get $1 off drafts.", "a third note"]);
+});
+
+test("ao page: notes are the chosen chapter's only, and show even before a place is posted", async () => {
+  const nyc = await aoWritten("nyc");
+  assert.ok(!/From the chapter/.test(nyc.text("aoWatch")), "another chapter's members do not see our notes");
+  assert.ok(!/Songbook/.test(nyc.text("aoChapters")));
+  const d = await aoWritten("dothan");
+  assert.match(d.text("aoWatch"), /AO Dothan hasn't posted a watch party for this match yet\. From the chapter We are still looking for a bar\. Message us\./);
+  assert.ok(!/Songbook/.test(d.text("aoChapters")), "no songs, no songbook");
+});
+
+test("ao page: the songbook is a folding section of the chapter's chants", async () => {
+  const p = await aoWritten(), html = p.html("aoChapters");
+  const book = html.split('<div class="card sec">')[2];
+  assert.ok(book, "a second folding section under Find your crew");
+  assert.match(book, /^<details  ontoggle="setOpen\('s\.songs',this\.open\)"><summary><span class="sh"><span class="st">Songbook<\/span><span class="ss">2 chants and songs from AO Central New Jersey<\/span>/, "closed until asked for, with a one-line preview");
+  assert.match(book, /<details class="aosong"><summary>I Believe<\/summary><div class="aowords">I believe\nI believe that\n&lt;i&gt;we&lt;\/i&gt; will win!<\/div><\/details><details class="aosong"><summary>U-S-A &lt;img src=x&gt;<\/summary>/, "each chant folds; its name and words are plain text, and the words keep their lines");
+  p.run("setOpen('s.songs', true)");
+  assert.ok(p.tracked.some(x => /ao-concept: open-songs/.test(x)));
+  const one = await aoWritten(null, { "middlesex-county": { notes: [], songs: [{ title: "Only", words: "one" }] } });
+  assert.match(one.text("aoChapters"), /Songbook 1 chant from AO Central New Jersey/);
+});
+
+test("ao page: a notes file that is missing, empty or malformed draws nothing and breaks nothing", async () => {
+  for (const written of [null, {}, { "middlesex-county": null }, { "middlesex-county": { notes: "x", songs: 7 } }, { "middlesex-county": { notes: [null, 5, { text: 9 }, { date: "2026-11-14" }], songs: [null, { title: 1, words: "w" }, "s"] } }, { toString: { notes: [{ text: "inherited name" }] } }]) {
+    const p = await aoWritten(null, written), what = JSON.stringify(written);
+    assert.match(p.text("aoWatch"), /Your chapter · official watch party AO Central New Jersey/, what);
+    assert.ok(!/From the chapter|aonote/.test(p.html("aoWatch")), what);
+    assert.match(p.text("aoChapters"), /^Find your crew/, what);
+    assert.ok(!/Songbook/.test(p.text("aoChapters")), what);
+  }
+  const odd = await aoWritten("toString", { toString: { notes: [{ text: "x" }] } });
+  assert.match(odd.text("aoChapters"), /^Find your crew AO Central New Jersey/, "a chapter name that is not a chapter falls back to ours");
+});

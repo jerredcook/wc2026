@@ -4,7 +4,7 @@
    party listings are a snapshot of theamericanoutlaws.com (data/ao/chapters.json). */
 "use strict";
 const AO_OWN = "middlesex-county";   // AO Central New Jersey, whose app this is
-const AO = { data: null, home: AO_OWN, here: null, q: "", wq: "", all: false, geo: "", more: false, linked: null, copied: false };
+const AO = { data: null, home: AO_OWN, here: null, q: "", wq: "", all: false, geo: "", more: false, linked: null, copied: false, notes: null };
 /* A chapter's own link (ao.html?chapter=<slug>, the one on its sign) opens the app on that chapter. It becomes the
    person's saved chapter only if they have not already picked one themselves. */
 try {
@@ -63,10 +63,24 @@ function aoWatchList(rest) {
     (!q && rest.length > 5 ? `<div class="acts"><button class="btn" onclick="AO.all=!AO.all;renderWatch()">${AO.all ? "Show the nearest five" : "Show all " + rest.length}</button></div>` : "");
 }
 
+/* What the chapter's leaders have written for the app: notes for the watch party card and a songbook
+   (data/ao/notes.json, copied from a sheet they keep by scripts/build-ao-notes.mjs). It is their text, shown as
+   plain text: every character goes through h(). */
+const aoWritten = () => (AO.notes && Object.prototype.hasOwnProperty.call(AO.notes, AO.home) && AO.notes[AO.home]) || null;
+const aoEtDay = iso => { try { return D(iso).toLocaleDateString("en-CA", { timeZone: "America/New_York" }); } catch (e) { return ""; } };
+/* Notes for this match: the ones dated for its day (U.S. Eastern) first, then the undated ones. Two at most. */
+function aoNotes(m) {
+  const w = aoWritten(); if (!w || !Array.isArray(w.notes) || !m) return [];
+  const day = aoEtDay(m.date), ok = n => n && typeof n.text === "string" && n.text;
+  return w.notes.filter(n => ok(n) && n.date === day).concat(w.notes.filter(n => ok(n) && !n.date)).slice(0, 2);
+}
+
 function renderWatch() {
   const el = $("aoWatch"); if (!el) return;
   const m = aoMatch();
   if (!AO.data || !m) { el.innerHTML = ""; return; }
+  const notes = aoNotes(m).map(n => `<div class="aonote">${h(n.text)}</div>`).join("");
+  const said = notes ? `<div class="aonotes"><div class="kicker">From the chapter</div>${notes}</div>` : "";
   const title = (m.ha === "H" ? "USA vs " : "USA at ") + m.opp.name + (S.team === "women" ? " (W)" : "");
   const all = aoParties(m), home = all.find(x => x.c.slug === AO.home), rest = all.filter(x => x.c.slug !== AO.home);
   const hc = aoChapter(AO.home);
@@ -76,9 +90,9 @@ function renderWatch() {
     <div class="cnote" style="margin:2px 0 0">${h(title)} · ${h(fmtDay(m.date))} · ${h(fmtTime(m.date))}</div>
     ${home ? `<div class="aohome">${aoCrest(home.c)}<div class="aot"><div class="kicker" style="color:var(--red)">Your chapter${home.p.official ? " · official watch party" : ""}</div>
         <div class="aon big">${h(aoName(home.c))}</div><b>${h(home.p.venue)}</b>${home.p.address ? `<small>${h(home.p.address)}</small>` : ""}</div>
-        <div class="aoacts">${home.p.address ? `<a class="btn" href="${h(aoMaps(home.p.address))}" target="_blank" rel="noopener" onclick="track('directions')">📍 Directions</a>` : ""}
+        ${said}<div class="aoacts">${home.p.address ? `<a class="btn" href="${h(aoMaps(home.p.address))}" target="_blank" rel="noopener" onclick="track('directions')">📍 Directions</a>` : ""}
         <button class="btn" onclick="aoSub()">📅 Add to calendar</button></div></div>`
-      : hc ? `<div class="empty" style="margin:8px 0 0">${h(aoName(hc))} hasn't posted a watch party for this match yet.</div>` : ""}
+      : hc ? `<div class="empty" style="margin:8px 0 0">${h(aoName(hc))} hasn't posted a watch party for this match yet.</div>${said ? `<div class="aohome">${said}</div>` : ""}` : ""}
     ${rest.length ? `<details ${AO.more ? "open" : ""} ontoggle="AO.more=this.open"><summary>${rest.length} more watch part${rest.length === 1 ? "y" : "ies"} across the country</summary>
       <input class="aoq" id="aoWQ" type="search" placeholder="Search by city, state, or bar" value="${h(AO.wq)}" autocomplete="off" enterkeyhint="search" aria-label="Search watch parties">
       <div class="cnote" style="margin:8px 0 0">Nearest to ${AO.here ? "you" : "your chapter"} first.</div>
@@ -135,6 +149,9 @@ function renderChapters() {
   const el = $("aoChapters"); if (!el) return;
   if (!AO.data) { el.innerHTML = ""; return; }
   const hc = aoChapter(AO.home), when = D(AO.data.captured).toLocaleDateString([], { month: "short", day: "numeric", year: "numeric" });
+  const w = aoWritten(), songs = hc && w && Array.isArray(w.songs) ? w.songs.filter(s => s && typeof s.title === "string" && typeof s.words === "string") : [];
+  const book = songs.length ? sec("songs", "Songbook", songs.length + (songs.length === 1 ? " chant" : " chants and songs") + " from " + h(aoName(hc)),
+    songs.map(s => `<details class="aosong"><summary>${h(s.title)}</summary><div class="aowords">${h(s.words)}</div></details>`).join("")) : "";
   el.innerHTML = sec("chapters", "Find your crew", (hc ? h(aoName(hc)) + " · " : "") + AO.data.chapters.length + " American Outlaws chapters", `
     <div class="cnote">Search by city, state, or bar.</div>
     ${hc ? `<div class="aohome">${aoCrest(hc)}<div class="aot"><div class="kicker" style="color:var(--red)">Your chapter</div>
@@ -147,7 +164,7 @@ function renderChapters() {
       <a href="ao-sign.html?chapter=${encodeURIComponent(hc.slug)}">Print a sign for the bar</a></div></div></div>` : ""}
     <input class="aoq" id="aoQ" type="search" placeholder="Search chapters" value="${h(AO.q)}" autocomplete="off" enterkeyhint="search">
     <div id="aoList">${aoList()}</div>
-    <div class="cnote" style="margin:12px 0 0">Chapters, bars and watch parties copied from theamericanoutlaws.com on ${h(when)}. A chapter that has not named a place for a match is not listed for it.</div>`);
+    <div class="cnote" style="margin:12px 0 0">Chapters, bars and watch parties copied from theamericanoutlaws.com on ${h(when)}. A chapter that has not named a place for a match is not listed for it.</div>`) + book;
   $("aoQ").addEventListener("input", e => { AO.q = e.target.value; $("aoList").innerHTML = aoList(); });
 }
 /* The band at the top names the chapter the app is set to. For any chapter but our own it says who built it. */
@@ -189,3 +206,5 @@ const aoBaseRender = render;
 render = function () { aoBaseRender.apply(this, arguments); renderAO(); };
 fetch("data/ao/chapters.json", { cache: "no-cache" }).then(r => r.ok ? r.json() : null)
   .then(j => { if (j) aoLoaded(j); }).catch(() => {});
+fetch("data/ao/notes.json", { cache: "no-cache" }).then(r => r.ok ? r.json() : null)
+  .then(j => { if (j && j.chapters && typeof j.chapters === "object") { AO.notes = j.chapters; renderAO(); } }).catch(() => {});

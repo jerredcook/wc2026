@@ -18,6 +18,8 @@ Schedules, squads, scores and rankings refresh on their own all day. Those are c
 - **Watch parties in your calendar.** "Add to calendar" on the AO page subscribes your phone to your chapter's watch parties, with the bar and its address on each one.
 - **A sign for the bar.** A page to print and put up, with a QR code that opens the app.
 - **A link and a sign for every chapter.** "Share this chapter's link" in Find your crew gives a link that opens the app on that chapter, and "Print a sign for the bar" prints that chapter's own sign and QR code.
+- **A note from your chapter.** Chapter leaders can write a line for the watch party card ("Doors at 6, upstairs") and it appears in the app, for one match or for all of them.
+- **Songbook.** The chapter's chants and songs, once its leaders have written them down.
 - **Reminders with your watch parties.** A subscribed chapter calendar now reminds you the day before and two hours before kickoff, where your calendar app allows it.
 - **AO Matchday can be found in search.** The page is no longer hidden from search engines, and its title spells out American Outlaws Central New Jersey.
 

@@ -1,0 +1,69 @@
+name: AO chapter notes and songbook
+
+# Rebuilds data/ao/notes.json: the notes for the watch party card and the
+# songbook that a chapter's leaders keep in a Google Sheet (see
+# scripts/build-ao-notes.mjs), and commits it when it changed. The sheet's id is
+# the AO_SHEETS secret ("chapter-slug=sheet-id"); without it the job does nothing.
+#
+# It runs often because a note is usually written close to a match ("doors at
+# 6"). GitHub starts scheduled jobs late, sometimes very late, so "every 20
+# minutes" is a hope, not a promise; it can also be started by hand.
+
+on:
+  schedule:
+    - cron: "7,27,47 * * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  actions: write     # to start the deploy after committing (see "Publish the new notes")
+
+concurrency:
+  group: ao-notes
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+
+      - name: Read the chapter sheets
+        env:
+          AO_SHEETS: ${{ secrets.AO_SHEETS }}
+        run: node scripts/build-ao-notes.mjs
+
+      - name: See whether anything changed
+        id: diff
+        run: |
+          if [ -n "$(git status --porcelain data/ao/notes.json)" ]; then echo "changed=true" >> "$GITHUB_OUTPUT"; else echo "No changes — nothing to commit."; fi
+
+      # The notes are only committed if the tests that read them pass (the deploy runs the whole suite again).
+      - name: Check the notes and the page against them
+        if: steps.diff.outputs.changed == 'true'
+        run: node --test test/ao-notes.test.mjs test/ao.test.cjs
+
+      - name: Commit changed notes
+        id: commit
+        if: steps.diff.outputs.changed == 'true'
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/ao/notes.json
+          git commit -m "Update AO chapter notes ($(date -u +%Y-%m-%dT%H:%MZ))"
+          git pull --rebase origin main
+          git push
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+      # A push made by a workflow does not start other workflows, so the deploy
+      # has to be started explicitly or the new notes never reach the live site.
+      - name: Publish the new notes
+        if: steps.commit.outputs.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy-pages.yml --ref main

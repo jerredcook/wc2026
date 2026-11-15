@@ -224,3 +224,12 @@ test("a chapter's link opens the app on that chapter in a real browser", opts, a
   assert.ok(/id="aoBandW">AO NYC</.test(dom), "the band names the chapter");
   assert.ok(section(dom, "aoChapters").includes("AO NYC"), "and the chapter finder starts from it");
 });
+
+test("AO Matchday: long notes from the chapter and an opened songbook stay inside a small phone's screen", opts, async () => {
+  const shut = await probe("url=/ao.html%23men&notes=1&w=320&sections=" + AO_IDS);
+  checkLayout(shut);
+  const plain = await probe("url=/ao.html%23men&w=320&sections=" + AO_IDS);
+  assert.ok(shut.sections.aoWatch > plain.sections.aoWatch + 60, "the notes are drawn on the watch party card (" + plain.sections.aoWatch + "px without, " + shut.sections.aoWatch + "px with)");
+  assert.ok(shut.sections.aoChapters > plain.sections.aoChapters + 40 && shut.sections.aoChapters < 190, "the songbook adds one folded line under Find your crew (" + shut.sections.aoChapters + "px)");
+  checkLayout(await probe("url=/ao.html%23men&notes=1&open=1&w=320&sections=" + AO_IDS));
+});
