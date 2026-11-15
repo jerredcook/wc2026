@@ -3,8 +3,15 @@
    (S, $, h, D, fmtDay, fmtTime, NAME, render, track). The chapter and watch
    party listings are a snapshot of theamericanoutlaws.com (data/ao/chapters.json). */
 "use strict";
-const AO = { data: null, home: "middlesex-county", here: null, q: "", wq: "", all: false, geo: "", more: false };
-try { AO.home = localStorage.getItem("ao.home") || AO.home; } catch (e) {}
+const AO_OWN = "middlesex-county";   // AO Central New Jersey, whose app this is
+const AO = { data: null, home: AO_OWN, here: null, q: "", wq: "", all: false, geo: "", more: false, linked: null, copied: false };
+/* A chapter's own link (ao.html?chapter=<slug>, the one on its sign) opens the app on that chapter. It becomes the
+   person's saved chapter only if they have not already picked one themselves. */
+try {
+  const saved = localStorage.getItem("ao.home"), m = /[?&]chapter=([a-z0-9-]+)(?:&|$)/.exec(location.search || "");
+  AO.home = (m && m[1]) || saved || AO.home;
+  if (m && !saved) AO.linked = m[1];
+} catch (e) {}
 
 /* What people do on the AO page is counted apart from Cap Day's (the name dates from when the page was a concept). */
 track = function (name) { name = "ao-concept: " + name; try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: name, title: name, event: true }); } catch (e) {} };
@@ -89,7 +96,7 @@ function aoSub() {
   const c = aoChapter(AO.home); if (!c) return;
   const feed = new URL("data/ao/cal/" + encodeURIComponent(c.slug) + ".ics", location.href).href;
   $("subHead").textContent = aoName(c) + " watch parties";
-  $("subText").textContent = "Add every " + aoName(c) + " watch party to your phone's calendar, with the bar and its address. New matches and changes of place arrive automatically.";
+  $("subText").textContent = "Add every " + aoName(c) + " watch party to your phone's calendar, with the bar and its address. New matches and changes of place arrive automatically. Each one carries a reminder the day before and two hours before kickoff; Google Calendar only shows them if you turn on notifications for this calendar.";
   $("subApple").href = feed.replace(/^https?:/, "webcal:");
   $("subGoogle").href = "https://calendar.google.com/calendar/render?cid=" + encodeURIComponent(feed.replace(/^https:/, "http:"));
   $("sub").showModal(); track("calendar-chapter");
@@ -135,13 +142,39 @@ function renderChapters() {
       ${hc.bar ? `<b>${h(hc.bar.name)}</b><small>${h(hc.bar.address)}</small>` : `<small>${h(hc.state)}</small>`}
       <div class="acts" style="margin-top:10px"><a class="btn" href="${h(aoPage(hc))}/signup" target="_blank" rel="noopener">Join this chapter</a>
       <a class="btn" href="${h(aoPage(hc))}" target="_blank" rel="noopener">Chapter page</a>
-      ${hc.ig ? `<a class="btn" href="${h(hc.ig)}" target="_blank" rel="noopener">Instagram</a>` : ""}</div></div></div>` : ""}
+      ${hc.ig ? `<a class="btn" href="${h(hc.ig)}" target="_blank" rel="noopener">Instagram</a>` : ""}</div>
+      <div class="aol" style="margin-top:10px"><a href="#" onclick="aoShare();return false">${AO.copied ? "Link copied" : "Share this chapter's link"}</a>
+      <a href="ao-sign.html?chapter=${encodeURIComponent(hc.slug)}">Print a sign for the bar</a></div></div></div>` : ""}
     <input class="aoq" id="aoQ" type="search" placeholder="Search chapters" value="${h(AO.q)}" autocomplete="off" enterkeyhint="search">
     <div id="aoList">${aoList()}</div>
     <div class="cnote" style="margin:12px 0 0">Chapters, bars and watch parties copied from theamericanoutlaws.com on ${h(when)}. A chapter that has not named a place for a match is not listed for it.</div>`);
   $("aoQ").addEventListener("input", e => { AO.q = e.target.value; $("aoList").innerHTML = aoList(); });
 }
+/* The band at the top names the chapter the app is set to. For any chapter but our own it says who built it. */
+const AO_BAND = [$("aoBandW").textContent, $("aoBandP").textContent];
+function renderBand() {
+  const c = aoChapter(AO.home), own = !c || c.slug === AO_OWN;
+  $("aoBandW").textContent = own ? AO_BAND[0] : aoName(c);
+  $("aoBandP").textContent = own ? AO_BAND[1] : "AO Matchday, set to " + aoName(c) + ". Built by a member of AO Central New Jersey; not a product of American Outlaws national.";
+}
+/* The link that opens the app on this chapter, for a text or a group chat. */
+const aoLink = c => new URL("ao.html?chapter=" + encodeURIComponent(c.slug), location.href).href;
+function aoShare() {
+  const c = aoChapter(AO.home); if (!c) return;
+  const url = aoLink(c); track("share-chapter");
+  if (navigator.share) navigator.share({ title: "AO Matchday", text: aoName(c) + " on AO Matchday: when the USA plays and where we watch.", url }).catch(() => {});
+  else if (navigator.clipboard) navigator.clipboard.writeText(url).then(() => { AO.copied = true; renderChapters(); }, () => {});
+}
+/* The listings have arrived: a link naming a chapter that does not exist falls back to the saved one, or ours. */
+function aoLoaded(j) {
+  AO.data = j;
+  if (!aoChapter(AO.home)) { let s = null; try { s = localStorage.getItem("ao.home"); } catch (e) {} AO.home = aoChapter(s) ? s : AO_OWN; }
+  else if (AO.linked === AO.home) { try { localStorage.setItem("ao.home", AO.home); } catch (e) {} track("chapter-link " + AO.home); }
+  AO.linked = null;
+  renderAO();
+}
 function renderAO() {
+  try { renderBand(); } catch (e) {}
   try { renderWatch(); } catch (e) { $("aoWatch").innerHTML = ""; }
   try { renderChapters(); } catch (e) { $("aoChapters").innerHTML = ""; }
 }
@@ -155,4 +188,4 @@ inOwnApp = function () { try { return sessionStorage.getItem("ao.app") === "1" &
 const aoBaseRender = render;
 render = function () { aoBaseRender.apply(this, arguments); renderAO(); };
 fetch("data/ao/chapters.json", { cache: "no-cache" }).then(r => r.ok ? r.json() : null)
-  .then(j => { if (j) { AO.data = j; renderAO(); } }).catch(() => {});
+  .then(j => { if (j) aoLoaded(j); }).catch(() => {});

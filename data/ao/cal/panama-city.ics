@@ -16,6 +16,16 @@ LOCATION:Beef 'O' Brady's Lynn Haven\, 2310 FL-77 Suite 350\, Lynn Haven\
  , FL\, 32444
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/panama-city
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Panama City watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Panama City watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-panama-city-20261128T0130Z-1@capday
@@ -27,6 +37,16 @@ LOCATION:Beef 'O' Brady's Lynn Haven\, 2310 FL-77 Suite 350\, Lynn Haven\
  , FL\, 32444
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/panama-city
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Panama City watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Panama City watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-panama-city-20261213T2030Z-2@capday
@@ -38,5 +58,15 @@ LOCATION:Beef 'O' Brady's Lynn Haven\, 2310 FL-77 Suite 350\, Lynn Haven\
  , FL\, 32444
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/panama-city
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Panama City watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Panama City watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 END:VCALENDAR

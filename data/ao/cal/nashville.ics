@@ -16,6 +16,16 @@ LOCATION:TailGate Brewery Music Row\, 1538 Demonbreun St\, Nashville\, TN
  \, 37203
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/nashville
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Nashville watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Nashville watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-nashville-20261128T0130Z-1@capday
@@ -27,6 +37,16 @@ LOCATION:TailGate Brewery Music Row\, 1538 Demonbreun St\, Nashville\, TN
  \, 37203
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/nashville
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Nashville watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Nashville watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-nashville-20261213T2030Z-2@capday
@@ -38,5 +58,15 @@ LOCATION:TailGate Brewery Music Row\, 1538 Demonbreun St\, Nashville\, TN
  \, 37203
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/nashville
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Nashville watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Nashville watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 END:VCALENDAR

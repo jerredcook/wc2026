@@ -16,6 +16,16 @@ LOCATION:Keg and Barrel\, 2501 Bienville Blvd\, Ocean Springs\, MS\, 3956
  4
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/ocean-springs
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Gulf Coast watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Gulf Coast watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-ocean-springs-20261128T0130Z-1@capday
@@ -27,6 +37,16 @@ LOCATION:Keg and Barrel\, 2501 Bienville Blvd\, Ocean Springs\, MS\, 3956
  4
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/ocean-springs
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Gulf Coast watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Gulf Coast watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-ocean-springs-20261213T2030Z-2@capday
@@ -38,5 +58,15 @@ LOCATION:Keg and Barrel\, 2501 Bienville Blvd\, Ocean Springs\, MS\, 3956
  4
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/ocean-springs
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Gulf Coast watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Gulf Coast watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 END:VCALENDAR

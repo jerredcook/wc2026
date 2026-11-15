@@ -15,6 +15,16 @@ SUMMARY:USMNT vs Haiti · AO Lancaster watch party
 LOCATION:Tellus360\, 24 E King St\, Lancaster\, PA\, 17602
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/lancaster
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Lancaster watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Lancaster watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-lancaster-20261213T2030Z-1@capday
@@ -25,5 +35,15 @@ SUMMARY:USMNT vs Jamaica · AO Lancaster watch party
 LOCATION:Tellus360\, 24 E King St\, Lancaster\, PA\, 17602
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/lancaster
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Lancaster watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Lancaster watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 END:VCALENDAR

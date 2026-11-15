@@ -16,6 +16,16 @@ LOCATION:Barrett's Barleycorn Pub & Grill\, 4322 Leavenworth St\, Omaha\,
   NE\, 68105
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/omaha
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Omaha watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Omaha watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-omaha-20261128T0130Z-1@capday
@@ -27,6 +37,16 @@ LOCATION:Barrett's Barleycorn Pub & Grill\, 4322 Leavenworth St\, Omaha\,
   NE\, 68105
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/omaha
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Omaha watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Omaha watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-omaha-20261128T0130Z-2@capday
@@ -37,6 +57,16 @@ SUMMARY:USWNT vs El Salvador · AO Omaha watch party
 LOCATION:SET The Bar\, 6121 Maple St\, Omaha\, NE\, 68104
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/omaha
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Omaha watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Omaha watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-omaha-20261213T2030Z-3@capday
@@ -48,5 +78,15 @@ LOCATION:Barrett's Barleycorn Pub & Grill\, 4322 Leavenworth St\, Omaha\,
   NE\, 68105
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/omaha
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Omaha watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Omaha watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 END:VCALENDAR

@@ -204,3 +204,23 @@ test("Cap Day is retired: its old addresses open AO Matchday in a real browser",
   assert.ok(!wc.includes("Cap Day"), "the World Cup page no longer says Cap Day");
   assert.ok((await open("/?capday")).includes("🇺🇸 Cap Day"), "?capday still shows Cap Day itself");
 });
+
+test("a chapter's sign carries its own name and a QR code for its own link", opts, async () => {
+  const dom = await open("/ao-sign.html?chapter=nyc");
+  assert.ok(/<h1 id="who">AO NYC<\/h1>/.test(dom), "the sign is headed with the chapter");
+  assert.ok(dom.includes("jerredcook.github.io/wc2026/ao.html?chapter=nyc"), "it prints the chapter's link");
+  assert.ok(/<div class="qr" id="qr"><svg[^>]*viewBox="0 0 \d+ \d+"/.test(dom) && !dom.includes('src="ao-qr.svg"'), "the QR code is drawn for that link, not the app's general one");
+  assert.ok(dom.includes("Built by a member of AO Central New Jersey.") && dom.includes("Not a product of American Outlaws national"));
+  assert.ok(!/class="[^"]*wait/.test(dom), "the sheet is shown once it is ready");
+  const plain = await open("/ao-sign.html?chapter=no-such-chapter");
+  assert.ok(plain.includes('<h1 id="who">AO Central New Jersey</h1>') && plain.includes('src="ao-qr.svg"') && !/class="[^"]*wait/.test(plain), "an unknown chapter leaves the plain sign, visible");
+  const r = await probe("url=/ao-sign.html%3Fchapter%3Dnyc&w=360&sections=");
+  assert.equal(r.pageOverflow, 0, "the page scrolls sideways");
+  assert.deepEqual(r.offScreen, []); assert.deepEqual(r.smallTargets, []); assert.deepEqual(r.brokenLocalImages, []); assert.equal(r.unlabelledImages, 0);
+});
+
+test("a chapter's link opens the app on that chapter in a real browser", opts, async () => {
+  const dom = await open("/ao.html?chapter=nyc");
+  assert.ok(/id="aoBandW">AO NYC</.test(dom), "the band names the chapter");
+  assert.ok(section(dom, "aoChapters").includes("AO NYC"), "and the chapter finder starts from it");
+});

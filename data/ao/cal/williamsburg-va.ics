@@ -15,6 +15,16 @@ SUMMARY:USMNT vs Haiti · AO Williamsburg\, VA watch party
 LOCATION:Sullivan Square (behind Legacy Hall)\, 4301 New Town Ave\, Willi
  amsburg\, VA\, 23188
 DESCRIPTION:https://theamericanoutlaws.com/chapters/williamsburg-va
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Williamsburg\, VA watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Williamsburg\, VA watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-williamsburg-va-20261118T0000Z-1@capday
@@ -25,6 +35,16 @@ SUMMARY:USMNT vs Haiti · AO Williamsburg\, VA watch party
 LOCATION:Paul's Deli and Neighborhood Restaurant\, 4345 New Town Ave STE 
  100\, Williamsburg\, VA\, 23188
 DESCRIPTION:https://theamericanoutlaws.com/chapters/williamsburg-va
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Williamsburg\, VA watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Williamsburg\, VA watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-williamsburg-va-20261128T0130Z-2@capday
@@ -35,6 +55,16 @@ SUMMARY:USWNT vs El Salvador · AO Williamsburg\, VA watch party
 LOCATION:Paul's Deli and Neighborhood Restaurant\, 4345 New Town Ave STE 
  100\, Williamsburg\, VA\, 23188
 DESCRIPTION:https://theamericanoutlaws.com/chapters/williamsburg-va
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Williamsburg\, VA watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Williamsburg\, VA watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-williamsburg-va-20261213T2030Z-3@capday
@@ -45,6 +75,16 @@ SUMMARY:USMNT vs Jamaica · AO Williamsburg\, VA watch party
 LOCATION:Sullivan Square (behind Legacy Hall)\, 4301 New Town Ave\, Willi
  amsburg\, VA\, 23188
 DESCRIPTION:https://theamericanoutlaws.com/chapters/williamsburg-va
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Williamsburg\, VA watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Williamsburg\, VA watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-williamsburg-va-20261213T2030Z-4@capday
@@ -55,5 +95,15 @@ SUMMARY:USMNT vs Jamaica · AO Williamsburg\, VA watch party
 LOCATION:Paul's Deli and Neighborhood Restaurant\, 4345 New Town Ave STE 
  100\, Williamsburg\, VA\, 23188
 DESCRIPTION:https://theamericanoutlaws.com/chapters/williamsburg-va
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Williamsburg\, VA watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Williamsburg\, VA watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 END:VCALENDAR

@@ -14,6 +14,16 @@ DTEND:20261118T020000Z
 SUMMARY:USMNT vs Haiti · AO Lynchburg watch party
 LOCATION:Apocalypse Ale Works\, 1257 Burnbridge Rd\, Forest\, VA\, 24551
 DESCRIPTION:https://theamericanoutlaws.com/chapters/lynchburg
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Lynchburg watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Lynchburg watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-lynchburg-20261128T0130Z-1@capday
@@ -23,6 +33,16 @@ DTEND:20261128T033000Z
 SUMMARY:USWNT vs El Salvador · AO Lynchburg watch party
 LOCATION:Apocalypse Ale Works\, 1257 Burnbridge Rd\, Forest\, VA\, 24551
 DESCRIPTION:https://theamericanoutlaws.com/chapters/lynchburg
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Lynchburg watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Lynchburg watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-lynchburg-20261213T2030Z-2@capday
@@ -32,5 +52,15 @@ DTEND:20261213T223000Z
 SUMMARY:USMNT vs Jamaica · AO Lynchburg watch party
 LOCATION:Apocalypse Ale Works\, 1257 Burnbridge Rd\, Forest\, VA\, 24551
 DESCRIPTION:https://theamericanoutlaws.com/chapters/lynchburg
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Lynchburg watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Lynchburg watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 END:VCALENDAR

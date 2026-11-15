@@ -16,6 +16,16 @@ LOCATION:Black Hart of St Paul\, 1415 university Ave w\, St. Paul\, MN\,
  55104
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/minneapolis-st-paul
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Minneapolis/St. Paul watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Minneapolis/St. Paul watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-minneapolis-st-paul-20261128T0130Z-1@capday
@@ -27,6 +37,16 @@ LOCATION:Black Hart of St Paul\, 1415 university Ave w\, St. Paul\, MN\,
  55104
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/minneapolis-st-paul
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Minneapolis/St. Paul watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Minneapolis/St. Paul watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-minneapolis-st-paul-20261213T2030Z-2@capday
@@ -38,5 +58,15 @@ LOCATION:Black Hart of St Paul\, 1415 university Ave w\, St. Paul\, MN\,
  55104
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/minneapolis-st-paul
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Minneapolis/St. Paul watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Minneapolis/St. Paul watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 END:VCALENDAR

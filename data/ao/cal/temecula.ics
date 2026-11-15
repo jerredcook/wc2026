@@ -16,6 +16,16 @@ LOCATION:The Champion Sports Pub\, 39400 Murrieta Hot Springs Rd STE 123A
  \, Murrieta \, CA\, 92563
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/temecula
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Temecula watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Temecula watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-temecula-20261128T0130Z-1@capday
@@ -27,6 +37,16 @@ LOCATION:The Champion Sports Pub\, 39400 Murrieta Hot Springs Rd STE 123A
  \, Murrieta \, CA\, 92563
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/temecula
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Temecula watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Temecula watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-temecula-20261213T2030Z-2@capday
@@ -38,5 +58,15 @@ LOCATION:The Champion Sports Pub\, 39400 Murrieta Hot Springs Rd STE 123A
  \, Murrieta \, CA\, 92563
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/temecula
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Temecula watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Temecula watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 END:VCALENDAR

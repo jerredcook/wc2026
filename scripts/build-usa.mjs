@@ -534,7 +534,10 @@ export function ics(name, events) {
   for (const e of events.slice().sort((a, b) => a.start.localeCompare(b.start))) {
     L.push("BEGIN:VEVENT", "UID:" + e.uid, "DTSTAMP:" + icsTime(e.start), "DTSTART:" + icsTime(e.start),
       "DTEND:" + icsTime(new Date(e.start).getTime() + 2 * 36e5), "SUMMARY:" + icsEsc(e.summary),
-      "LOCATION:" + icsEsc(e.location), "DESCRIPTION:" + icsEsc(e.desc), "END:VEVENT");
+      "LOCATION:" + icsEsc(e.location), "DESCRIPTION:" + icsEsc(e.desc));
+    /* Reminders, where the calendar keeps them (Apple's does unless told not to; Google's ignores them in a subscribed calendar). */
+    for (const a of e.alarms || []) L.push("BEGIN:VALARM", "ACTION:DISPLAY", "DESCRIPTION:" + icsEsc(e.summary), "TRIGGER:" + a, "END:VALARM");
+    L.push("END:VEVENT");
   }
   L.push("END:VCALENDAR");
   return L.map(fold).join("\r\n") + "\r\n";

@@ -72,9 +72,9 @@ swapRe(/<h1>[^<]*<\/h1>\s*<p class="sub"[^>]*>[\s\S]*?<\/p>/,
   `<h1>AO Matchday</h1>
       <p class="sub" style="margin-bottom:0">American Outlaws &middot; U.S. women's &amp; men's national teams</p>`);
 swap(`<div class="nextup" id="nextup"></div>`, `<div class="aoband">
-    <div class="w">AO Central New Jersey</div>
+    <div class="w" id="aoBandW">AO Central New Jersey</div>
     <div class="t">American Outlaws &middot; Unite &amp; Strengthen</div>
-    <p>The matchday app of AO Central New Jersey. Built by a chapter member; not a product of American Outlaws national.</p>
+    <p id="aoBandP">The matchday app of AO Central New Jersey. Built by a chapter member; not a product of American Outlaws national.</p>
   </div>
   <div class="nextup" id="nextup"></div>`);
 /* The watch party sits inside the match zone, above the match card: picking a team scrolls to the top of that zone. */

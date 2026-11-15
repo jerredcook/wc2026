@@ -15,6 +15,16 @@ SUMMARY:USMNT vs Haiti · AO Fort Worth watch party
 LOCATION:Morton's Tavern\, 212 Lipscomb St\, Fort Worth\, TX\, 76104
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/fort-worth
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Fort Worth watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Fort Worth watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-fort-worth-20261128T0130Z-1@capday
@@ -26,6 +36,16 @@ LOCATION:HopFusion Ale Works\, 200 E. Broadway Ave\, Fort Worth\, TX\, 76
  104
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/fort-worth
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Fort Worth watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Fort Worth watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-fort-worth-20261213T2030Z-2@capday
@@ -36,5 +56,15 @@ SUMMARY:USMNT vs Jamaica · AO Fort Worth watch party
 LOCATION:Morton's Tavern\, 212 Lipscomb St\, Fort Worth\, TX\, 76104
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/fort-worth
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Fort Worth watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Fort Worth watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 END:VCALENDAR

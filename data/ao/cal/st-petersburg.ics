@@ -16,6 +16,16 @@ LOCATION:Mary Margaret's Olde Irish Tavern\, 29 3rd Street North\, St Pet
  ersburg\, FL\, 33701
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/st-petersburg
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO St. Petersburg watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO St. Petersburg watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-st-petersburg-20261128T0130Z-1@capday
@@ -27,6 +37,16 @@ LOCATION:Mary Margaret's Olde Irish Tavern\, 29 3rd Street North\, St Pet
  ersburg\, FL\, 33701
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/st-petersburg
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO St. Petersburg watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO St. Petersburg watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-st-petersburg-20261213T2030Z-2@capday
@@ -38,5 +58,15 @@ LOCATION:Mary Margaret's Olde Irish Tavern\, 29 3rd Street North\, St Pet
  ersburg\, FL\, 33701
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/st-petersburg
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO St. Petersburg watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO St. Petersburg watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 END:VCALENDAR

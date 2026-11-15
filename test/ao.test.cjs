@@ -191,12 +191,13 @@ test("ao: the page is the chapter's app in every place it names itself", () => {
 
 test("ao: the sign for the bar points at the AO page and can be printed", () => {
   const sign = read("ao-sign.html");
-  assert.match(sign, /<img class="qr" src="ao-qr\.svg" alt="[^"]+"/);
+  assert.match(sign, /<img class="qr" id="qr" src="ao-qr\.svg" alt="[^"]+"/);
   assert.match(sign, /jerredcook\.github\.io\/wc2026\/ao\.html/);
   assert.match(sign, /@media print/); assert.match(sign, /window\.print\(\)/);
   assert.match(sign, /<meta name="robots" content="noindex,nofollow">/);
   assert.match(read("ao.html"), /<a href="ao-sign\.html">Print a sign for the bar<\/a>/, "the QR dialog on the AO page links to it");
-  assert.ok(!/<script/.test(sign), "it is a plain page");
+  assert.match(sign, /if \(!m \|\| m\[1\] === "middlesex-county"\) return;/, "without a chapter in the address its script does nothing: the plain sign stands");
+  assert.match(sign, /\}\)\.catch\(show\);/, "and if the chapter list cannot be read, the plain sign is shown rather than a blank page");
 });
 
 test("ao: every chapter has a calendar feed, and it carries the bar", async () => {
@@ -215,6 +216,15 @@ test("ao: every chapter has a calendar feed, and it carries the bar", async () =
   assert.match(flat, /LOCATION:Wilka's\\; Bar\\, 241 Bowery\\, New York/);
   assert.match(flat, /DESCRIPTION:Official American Outlaws watch party\.\\nhttps:\/\/theamericanoutlaws\.com\/chapters\/x-y/);
   assert.equal((chapterCal({ slug: "quiet", name: "Quiet" }).match(/BEGIN:VEVENT/g) || []).length, 0, "a chapter with nothing posted has an empty calendar, not a missing one");
+  // Reminders: the day before and two hours before, inside each event; the USA calendars carry none.
+  const events = flat.split("BEGIN:VEVENT").slice(1);
+  assert.equal(events.length, 2);
+  for (const e of events) {
+    assert.deepStrictEqual([...e.matchAll(/BEGIN:VALARM\r\nACTION:DISPLAY\r\nDESCRIPTION:([^\r]+)\r\nTRIGGER:([^\r]+)\r\nEND:VALARM\r\n/g)].map(m => m[2]), ["-P1D", "-PT2H"]);
+    assert.ok(e.lastIndexOf("END:VALARM") < e.indexOf("END:VEVENT"), "the reminders sit inside the event");
+    assert.match(e, /DESCRIPTION:US[MW]NT vs [^\r]+ watch party\r\nTRIGGER/, "a reminder says which watch party");
+  }
+  assert.ok(!/VALARM/.test(read("data/usa/all.ics")), "the USA match calendars are unchanged");
 
   const dir = fs.mkdtempSync(path.join(require("node:os").tmpdir(), "aocal-"));
   try {
@@ -294,4 +304,57 @@ test("retired: nothing a visitor reaches still says Cap Day, and every way back 
   assert.equal(png.readUInt32BE(16) + "x" + png.readUInt32BE(20), "1200x630", "the share picture is the size the tags say");
   assert.match(read("usa.html"), /location\.replace\("ao\.html" \+ location\.hash\)/, "the oldest address goes straight there");
   assert.match(read("sw.js"), /caches\.match\("\.\/ao\.html"\)/, "offline, the app falls back to the AO page");
+});
+
+/* ── A chapter's own link, its sign, and the band ── */
+async function aoLinked(search, storage) {
+  const p = await boot({ hash: "#men", search, storage, share: true });
+  p.el("aoBandW").textContent = "AO Central New Jersey"; p.el("aoBandP").textContent = "The matchday app of AO Central New Jersey.";     // what the page's own markup says
+  p.run(AO_JS); await p.settle();
+  p.run("aoLoaded(" + JSON.stringify(LIST) + ")");
+  return p;
+}
+
+test("ao page: a chapter's own link opens the app on that chapter and keeps it for a newcomer", async () => {
+  const p = await aoLinked("?chapter=nyc");
+  assert.match(p.text("aoWatch"), /Your chapter · official watch party AO NYC Long Acre/);
+  assert.match(p.text("aoChapters"), /Find your crew AO NYC · 13 American Outlaws chapters/);
+  assert.equal(p.store["ao.home"], "nyc", "someone who has never picked a chapter keeps the one on the sign they scanned");
+  assert.ok(p.tracked.some(x => /ao-concept: chapter-link nyc/.test(x)));
+  assert.equal(p.el("aoBandW").textContent, "AO NYC", "the band names the chapter the app is set to");
+  assert.equal(p.el("aoBandP").textContent, "AO Matchday, set to AO NYC. Built by a member of AO Central New Jersey; not a product of American Outlaws national.");
+  p.run("aoSetHome('middlesex-county')");
+  assert.deepStrictEqual([p.el("aoBandW").textContent, p.el("aoBandP").textContent], ["AO Central New Jersey", "The matchday app of AO Central New Jersey."], "our own chapter gets the page's own words back");
+});
+
+test("ao page: a chapter link does not overwrite a chapter the person picked, and an unknown one changes nothing", async () => {
+  const mine = await aoLinked("?x=1&chapter=nyc", { "ao.home": "seattle" });
+  assert.match(mine.text("aoWatch"), /Your chapter · official watch party AO NYC/, "the link's chapter is shown for this visit");
+  assert.equal(mine.store["ao.home"], "seattle", "but the saved choice stands");
+  assert.ok(!mine.tracked.some(x => /chapter-link/.test(x)));
+
+  for (const [search, storage, want] of [["?chapter=atlantis", undefined, "Central New Jersey"], ["?chapter=atlantis", { "ao.home": "seattle" }, "Seattle"],
+    ["?chapter=%3Cscript%3E", undefined, "Central New Jersey"], ["?chapter=NYC", undefined, "Central New Jersey"], ["?mychapter=nyc", undefined, "Central New Jersey"], ["", { "ao.home": "gone-chapter" }, "Central New Jersey"]]) {
+    const p = await aoLinked(search, storage);
+    assert.match(p.text("aoChapters"), new RegExp("^Find your crew AO " + want + " · "), search + " should leave the app on AO " + want);
+    assert.equal(p.store["ao.home"], storage && storage["ao.home"], search + " must not save anything");
+  }
+});
+
+test("ao page: sharing a chapter's link, and the way to its sign", async () => {
+  const p = await aoLinked("?chapter=nyc");
+  const html = p.html("aoChapters");
+  assert.match(html, /<a href="#" onclick="aoShare\(\);return false">Share this chapter's link<\/a>/);
+  assert.match(html, /<a href="ao-sign\.html\?chapter=nyc">Print a sign for the bar<\/a>/);
+  p.run("aoShare()");
+  assert.deepStrictEqual(JSON.parse(JSON.stringify(p.shared)), [{ title: "AO Matchday", text: "AO NYC on AO Matchday: when the USA plays and where we watch.", url: "http://test.local/wc2026/ao.html?chapter=nyc" }]);
+  assert.ok(p.tracked.some(x => /ao-concept: share-chapter/.test(x)));
+
+  // No share sheet (a desktop browser): the link is copied, and the page says so.
+  const q = await boot({ hash: "#men" });
+  q.run(AO_JS); await q.settle();
+  q.run("var copiedText = null; navigator.clipboard = { writeText: t => { copiedText = t; return Promise.resolve(); } }; aoLoaded(" + JSON.stringify(LIST) + "); aoShare()");
+  await q.settle();
+  assert.equal(q.run("copiedText"), "http://test.local/wc2026/ao.html?chapter=middlesex-county");
+  assert.match(q.text("aoChapters"), /Link copied/);
 });

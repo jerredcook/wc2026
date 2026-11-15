@@ -122,6 +122,7 @@ export function chapterCal(c) {
     uid: `ao-${c.slug}-${p.date.replace(/\W/g, "")}-${i}@capday`, start: p.date.replace(/Z$/, ":00Z"),
     summary: `${p.title} · AO ${c.name} watch party`, location: [p.venue, p.address].filter(Boolean).join(", "),
     desc: [p.official ? "Official American Outlaws watch party." : "", `${SITE}/chapters/${c.slug}`].filter(Boolean).join("\n"),
+    alarms: ["-P1D", "-PT2H"],     // the day before, and two hours before kickoff
   }));
   return ics(`AO ${c.name} watch parties`, events);
 }

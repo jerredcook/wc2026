@@ -15,6 +15,16 @@ SUMMARY:USMNT vs Haiti · AO Dayton watch party
 LOCATION:The Dayton Beer Company\, 41 Madison St\, Dayton\, OH\, 45402
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/dayton
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Dayton watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Dayton watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-dayton-20261128T0130Z-1@capday
@@ -25,6 +35,16 @@ SUMMARY:USWNT vs El Salvador · AO Dayton watch party
 LOCATION:The Dayton Beer Company\, 41 Madison St\, Dayton\, OH\, 45402
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/dayton
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Dayton watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Dayton watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-dayton-20261213T2030Z-2@capday
@@ -35,5 +55,15 @@ SUMMARY:USMNT vs Jamaica · AO Dayton watch party
 LOCATION:The Dayton Beer Company\, 41 Madison St\, Dayton\, OH\, 45402
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/dayton
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Dayton watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Dayton watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 END:VCALENDAR

@@ -15,6 +15,16 @@ SUMMARY:USMNT vs Haiti · AO Eugene watch party
 LOCATION:The Bier Stein\, 1591 Willamette St\, Eugene\, OR\, 97401
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/eugene
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Eugene watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Eugene watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-eugene-20261128T0130Z-1@capday
@@ -25,6 +35,16 @@ SUMMARY:USWNT vs El Salvador · AO Eugene watch party
 LOCATION:The Bier Stein\, 1591 Willamette St\, Eugene\, OR\, 97401
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/eugene
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Eugene watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Eugene watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-eugene-20261213T2030Z-2@capday
@@ -35,5 +55,15 @@ SUMMARY:USMNT vs Jamaica · AO Eugene watch party
 LOCATION:The Bier Stein\, 1591 Willamette St\, Eugene\, OR\, 97401
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/eugene
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Eugene watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Eugene watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 END:VCALENDAR

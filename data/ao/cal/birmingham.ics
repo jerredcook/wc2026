@@ -15,6 +15,16 @@ SUMMARY:USMNT vs Haiti · AO Birmingham watch party
 LOCATION:Good People Brewing\, 114 14th St S\, Birmingham\, AL\, 35233
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/birmingham
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Birmingham watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO Birmingham watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-birmingham-20261128T0130Z-1@capday
@@ -25,6 +35,16 @@ SUMMARY:USWNT vs El Salvador · AO Birmingham watch party
 LOCATION:Good People Brewing\, 114 14th St S\, Birmingham\, AL\, 35233
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/birmingham
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Birmingham watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO Birmingham watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-birmingham-20261213T2030Z-2@capday
@@ -35,5 +55,15 @@ SUMMARY:USMNT vs Jamaica · AO Birmingham watch party
 LOCATION:Good People Brewing\, 114 14th St S\, Birmingham\, AL\, 35233
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/birmingham
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Birmingham watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO Birmingham watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 END:VCALENDAR

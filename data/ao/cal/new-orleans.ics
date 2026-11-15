@@ -15,6 +15,16 @@ SUMMARY:USMNT vs Haiti · AO New Orleans watch party
 LOCATION:Rendezvous Tavern\, 3101 Magazine St\, New Orleans\, LA\, 70115
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/new-orleans
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO New Orleans watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO New Orleans watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-new-orleans-20261118T0000Z-1@capday
@@ -26,6 +36,16 @@ LOCATION:Port Orleans Brewing Co.\, 4124 Tchoupitoulas St\, New Orleans\,
   LA\, 70115
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/new-orleans
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO New Orleans watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Haiti · AO New Orleans watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-new-orleans-20261128T0130Z-2@capday
@@ -36,6 +56,16 @@ SUMMARY:USWNT vs El Salvador · AO New Orleans watch party
 LOCATION:Rendezvous Tavern\, 3101 Magazine St\, New Orleans\, LA\, 70115
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/new-orleans
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO New Orleans watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO New Orleans watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-new-orleans-20261128T0130Z-3@capday
@@ -47,6 +77,16 @@ LOCATION:Port Orleans Brewing Co.\, 4124 Tchoupitoulas St\, New Orleans\,
   LA\, 70115
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/new-orleans
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO New Orleans watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USWNT vs El Salvador · AO New Orleans watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-new-orleans-20261213T2030Z-4@capday
@@ -57,6 +97,16 @@ SUMMARY:USMNT vs Jamaica · AO New Orleans watch party
 LOCATION:Rendezvous Tavern\, 3101 Magazine St\, New Orleans\, LA\, 70115
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/new-orleans
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO New Orleans watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO New Orleans watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 BEGIN:VEVENT
 UID:ao-new-orleans-20261213T2030Z-5@capday
@@ -68,5 +118,15 @@ LOCATION:Port Orleans Brewing Co.\, 4124 Tchoupitoulas St\, New Orleans\,
   LA\, 70115
 DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
  tlaws.com/chapters/new-orleans
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO New Orleans watch party
+TRIGGER:-P1D
+END:VALARM
+BEGIN:VALARM
+ACTION:DISPLAY
+DESCRIPTION:USMNT vs Jamaica · AO New Orleans watch party
+TRIGGER:-PT2H
+END:VALARM
 END:VEVENT
 END:VCALENDAR

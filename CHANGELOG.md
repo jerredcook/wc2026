@@ -17,6 +17,8 @@ Schedules, squads, scores and rankings refresh on their own all day. Those are c
 - **AO Matchday is AO Central New Jersey's app.** The version of Cap Day under American Outlaws naming is no longer a concept: the chapter uses it. It shows where the chapter is watching each match, and every other chapter's watch party in the country, nearest first, with a search by city, state or bar. The listings are read from American Outlaws' site twice a day.
 - **Watch parties in your calendar.** "Add to calendar" on the AO page subscribes your phone to your chapter's watch parties, with the bar and its address on each one.
 - **A sign for the bar.** A page to print and put up, with a QR code that opens the app.
+- **A link and a sign for every chapter.** "Share this chapter's link" in Find your crew gives a link that opens the app on that chapter, and "Print a sign for the bar" prints that chapter's own sign and QR code.
+- **Reminders with your watch parties.** A subscribed chapter calendar now reminds you the day before and two hours before kickoff, where your calendar app allows it.
 - **AO Matchday can be found in search.** The page is no longer hidden from search engines, and its title spells out American Outlaws Central New Jersey.
 
 ## 0.1.0 — 2026-11-15
