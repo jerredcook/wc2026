@@ -182,3 +182,14 @@ test("the challenge dialog: every control it needs is in the page", () => {
   assert.match(dlg[0], /<div id="duelBody" hidden>/, "the QR part starts hidden");
   assert.match(read("privacy.html"), /Challenging a friend/, "the privacy policy explains what a challenge link carries");
 });
+
+test("every committed calendar file ends its lines the way the calendar format requires (CRLF)", () => {
+  const fs = require("node:fs"), path = require("node:path"), root = path.join(__dirname, "..");
+  const files = ["women", "men", "all"].map(f => "data/usa/" + f + ".ics").concat(fs.readdirSync(path.join(root, "data/ao/cal")).filter(f => f.endsWith(".ics")).map(f => "data/ao/cal/" + f));
+  assert.ok(files.length > 200);
+  for (const f of files) {
+    const s = fs.readFileSync(path.join(root, f), "latin1");
+    assert.ok(s.startsWith("BEGIN:VCALENDAR\r\n") && s.endsWith("END:VCALENDAR\r\n"), f + " does not start and end as a calendar file");
+    assert.ok(!/(^|[^\r])\n/.test(s), f + " has a line that ends without a carriage return: some calendar apps reject that");
+  }
+});
