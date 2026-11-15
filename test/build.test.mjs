@@ -2,7 +2,7 @@
    the validation gate that stops thin data replacing good data. */
 import test from "node:test";
 import assert from "node:assert/strict";
-import { wikiPlayer, unwiki, nameKey, ics, calEvents, validate, stamp, CHECK_EVERY, clubKey, indexClubs, findAthlete, keepPrevClubs } from "../scripts/build-usa.mjs";
+import { wikiPlayer, unwiki, nameKey, ics, calEvents, validate, stamp, CHECK_EVERY, clubKey, indexClubs, findAthlete, keepPrevClubs, venueAt } from "../scripts/build-usa.mjs";
 
 test("wikiPlayer: a called-up player row", () => {
   const p = wikiPlayer("{{nat fs g player|no=|pos=DF|name={{sortname|Antonee|Robinson}}|age={{birth date and age|1997|8|8}}|caps=62|goals=5|club=[[Fulham F.C.|Fulham]]|clubnat=ENG}}", true);
@@ -153,4 +153,12 @@ test("keepPrevClubs: an unanswered lookup keeps last run's club form; an answere
   assert.deepEqual(players[2].rec, []);
   assert.ok(players.every(p => !("unanswered" in p)), "the working flag never reaches the data file");
   assert.equal(keepPrevClubs([{ name: "X", club: null, rec: [], unanswered: true }], null), 0, "first run: nothing to keep");
+});
+
+test("a stadium's position is kept when its article gives one, and nothing odd is", () => {
+  assert.deepEqual(venueAt({ coordinates: { lat: 39.11138889, lon: -84.52222222 } }), { lat: 39.1114, lng: -84.5222 });
+  assert.deepEqual(venueAt({ coordinates: { lat: -33.8568, lon: 151.2153 } }), { lat: -33.8568, lng: 151.2153 });
+  for (const sum of [null, undefined, {}, { coordinates: null }, { coordinates: {} }, { coordinates: { lat: "39.1", lon: "-84.5" } }, { coordinates: { lat: 39.1 } }, { coordinates: { lat: 91, lon: 0.5 } },
+    { coordinates: { lat: 10, lon: 181 } }, { coordinates: { lat: NaN, lon: 1 } }, { coordinates: { lat: 0, lon: 0 } }, { coordinates: { lat: Infinity, lon: 1 } }]) assert.deepEqual(venueAt(sum), {}, JSON.stringify(sum));
+  assert.deepEqual({ title: "x", ...venueAt({}) }, { title: "x" }, "a stadium with no position simply has none");
 });

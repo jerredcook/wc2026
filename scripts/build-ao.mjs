@@ -44,6 +44,7 @@ swap(`</style>`, `
 .aohome{display:flex;gap:12px;align-items:flex-start;background:var(--chip);border-radius:12px;padding:12px;margin-top:10px;flex-wrap:wrap}
 .aoacts{display:flex;gap:8px;flex:1 0 100%}
 .aoacts .btn{background:var(--card);flex:1 1 0;text-align:center;padding:9px 10px}
+.aonear{font-size:12.5px;font-weight:700;color:var(--good);margin-top:4px}
 .aonotes{flex:1 0 100%;background:var(--card);border-left:3px solid var(--red);border-radius:8px;padding:8px 10px}
 .aonote{font-size:13.5px;line-height:1.4;margin-top:3px;overflow-wrap:anywhere}
 .aosong{border-bottom:1px solid var(--line)}

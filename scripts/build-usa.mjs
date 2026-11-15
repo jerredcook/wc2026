@@ -314,6 +314,12 @@ async function wikiSquad(title) {
 }
 
 /* ── Stadium details, from Wikipedia ── */
+/* Where the stadium is, when its article says (to four decimal places, about ten metres). Anything odd gives nothing. */
+export function venueAt(sum) {
+  const c = sum && sum.coordinates;
+  if (!c || typeof c.lat !== "number" || typeof c.lon !== "number" || !Number.isFinite(c.lat) || !Number.isFinite(c.lon) || Math.abs(c.lat) > 90 || Math.abs(c.lon) > 180 || (c.lat === 0 && c.lon === 0)) return {};
+  return { lat: Math.round(c.lat * 1e4) / 1e4, lng: Math.round(c.lon * 1e4) / 1e4 };
+}
 const venueCache = new Map();
 async function venueInfo(name, city) {
   if (!name) return null;
@@ -336,7 +342,7 @@ async function venueInfo(name, city) {
         out = {
           title: sum.title, url: sum.content_urls && sum.content_urls.desktop ? sum.content_urls.desktop.page : "",
           blurb: (sum.extract || "").split(/(?<=\.)\s/).slice(0, 2).join(" "), img: (sum.thumbnail && sum.thumbnail.source) || "",
-          capacity: cap ? Number(cap[1].replace(/,/g, "")) : null, opened: opened ? Number(opened[0]) : null, tenants: ten,
+          capacity: cap ? Number(cap[1].replace(/,/g, "")) : null, opened: opened ? Number(opened[0]) : null, tenants: ten, ...venueAt(sum),
         };
       }
     }

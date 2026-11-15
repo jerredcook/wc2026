@@ -63,6 +63,18 @@ function aoWatchList(rest) {
     (!q && rest.length > 5 ? `<div class="acts"><button class="btn" onclick="AO.all=!AO.all;renderWatch()">${AO.all ? "Show the nearest five" : "Show all " + rest.length}</button></div>` : "");
 }
 
+/* Matches you can drive to: a home match whose stadium is within about four hours of your chapter (or of you, once
+   you have shared your location). Distances are straight lines, so they are given as "about". */
+const AO_DRIVE = 250;
+function aoNear(m) {
+  const v = m && m.ha === "H" && m.vinfo;
+  if (!v || typeof v.lat !== "number" || typeof v.lng !== "number") return null;
+  const mi = aoMiles(aoOrigin(), v);
+  return mi != null && mi <= AO_DRIVE ? Math.round(mi) : null;
+}
+const aoNearText = mi => (mi < 3 ? "In town" : "About " + mi + " mi from " + (AO.here ? "you" : "your chapter"));
+fixtureNote = function (m) { const mi = aoNear(m); return mi == null ? "" : `<div class="aonear">🚗 ${aoNearText(mi)}</div>`; };
+
 /* What the chapter's leaders have written for the app: notes for the watch party card and a songbook
    (data/ao/notes.json, copied from a sheet they keep by scripts/build-ao-notes.mjs). It is their text, shown as
    plain text: every character goes through h(). */
@@ -88,6 +100,7 @@ function renderWatch() {
   el.innerHTML = `<div class="card aocard">
     <div class="kicker">Watch with American Outlaws</div>
     <div class="cnote" style="margin:2px 0 0">${h(title)} · ${h(fmtDay(m.date))} · ${h(fmtTime(m.date))}</div>
+    ${aoNear(m) != null ? `<div class="aonear">🚗 You could go: ${h(m.venue)} is ${h(aoNearText(aoNear(m)).replace(/^[AI]/, c => c.toLowerCase()))}.</div>` : ""}
     ${home ? `<div class="aohome">${aoCrest(home.c)}<div class="aot"><div class="kicker" style="color:var(--red)">Your chapter${home.p.official ? " · official watch party" : ""}</div>
         <div class="aon big">${h(aoName(home.c))}</div><b>${h(home.p.venue)}</b>${home.p.address ? `<small>${h(home.p.address)}</small>` : ""}</div>
         ${said}<div class="aoacts">${home.p.address ? `<a class="btn" href="${h(aoMaps(home.p.address))}" target="_blank" rel="noopener" onclick="track('directions')">📍 Directions</a>` : ""}
@@ -192,6 +205,7 @@ function aoLoaded(j) {
 }
 function renderAO() {
   try { renderBand(); } catch (e) {}
+  try { renderFixtures(); } catch (e) {}     // its rows say which matches are within driving distance of the chapter
   try { renderWatch(); } catch (e) { $("aoWatch").innerHTML = ""; }
   try { renderChapters(); } catch (e) { $("aoChapters").innerHTML = ""; }
 }

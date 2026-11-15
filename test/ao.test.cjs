@@ -421,3 +421,52 @@ test("ao page: a notes file that is missing, empty or malformed draws nothing an
   const odd = await aoWritten("toString", { toString: { notes: [{ text: "x" }] } });
   assert.match(odd.text("aoChapters"), /^Find your crew AO Central New Jersey/, "a chapter name that is not a chapter falls back to ours");
 });
+
+/* ── Matches within driving distance of the chapter ── */
+const { fixture: aoFixture, clone: aoClone } = require("./helpers/page.cjs");
+const HARRISON = { lat: 40.7369, lng: -74.1503 }, FLORIDA = { lat: 26.1933, lng: -80.1606 };     // about 17 miles from Metuchen, and about 1,050
+async function aoDrive(change, home) {
+  const men = aoClone(aoFixture("data-men.json"));
+  Object.assign(men.fixtures[1].vinfo, HARRISON); Object.assign(men.fixtures[2].vinfo, FLORIDA);     // Nov 18 v Haiti (home), Dec 13 v Jamaica (home)
+  if (change) change(men);
+  const p = await boot({ hash: "#men", data: { men } });
+  p.run(AO_JS); await p.settle();
+  assert.equal(p.run("fixtureNote({ ha: 'H', vinfo: { lat: 40.7, lng: -74.1 } })"), "", "before the chapter list arrives there is nothing to measure from, and nothing breaks");
+  p.run((home ? "AO.home = '" + home + "'; " : "") + "aoLoaded(" + JSON.stringify(LIST) + ")");
+  return p;
+}
+const nearRows = p => p.html("fixtures").split('<div class="m tap"').slice(1).map(r => r.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()).filter(r => /🚗/.test(r));
+
+test("ao page: a home match within driving distance of the chapter is flagged in the calendar", async () => {
+  const p = await aoDrive();
+  const rows = nearRows(p);
+  assert.equal(rows.length, 1, "the match near New Jersey, not the one in Florida");
+  assert.match(rows[0], /vs Haiti .* 🚗 About 1[5-9] mi from your chapter/);
+  assert.match(p.html("fixtures"), /<div class="aonear">🚗 About \d+ mi from your chapter<\/div>/);
+  assert.equal(nearRows(await aoDrive(null, "seattle")).length, 0, "nothing is near Seattle");
+  p.run("aoSetHome('seattle')");
+  assert.equal(nearRows(p).length, 0, "changing chapter redraws the calendar");
+  p.run("aoSetHome('nyc')");
+  assert.match(nearRows(p)[0], /🚗 About \d mi from your chapter/);
+});
+
+test("ao page: only a home match with a known stadium position counts, out to about four hours' drive", async () => {
+  const p = await aoDrive();
+  const near = m => p.run("aoNear(" + JSON.stringify(m) + ")");
+  assert.equal(near({ ha: "H", vinfo: HARRISON }) > 14 && near({ ha: "H", vinfo: HARRISON }) < 20, true);
+  assert.equal(near({ ha: "A", vinfo: HARRISON }), null, "an away match is not a trip to suggest");
+  for (const vinfo of [undefined, null, {}, { lat: "40.7", lng: "-74.1" }, { lat: 40.7 }, { lng: -74.1 }]) assert.equal(near({ ha: "H", vinfo }), null, JSON.stringify(vinfo));
+  assert.equal(near({ ha: "H", vinfo: { lat: 40.54 + 3.6, lng: -74.36 } }), 249, "just inside 250 miles");
+  assert.equal(near({ ha: "H", vinfo: { lat: 40.54 + 3.65, lng: -74.36 } }), null, "just outside");
+  assert.equal(p.run("fixtureNote(" + JSON.stringify({ ha: "H", vinfo: { lat: 40.55, lng: -74.36 } }) + ")"), '<div class="aonear">🚗 In town</div>');
+  p.run("AO.here = { lat: 39.0, lng: -77.0 }; renderAO()");
+  assert.match(p.run("fixtureNote(" + JSON.stringify({ ha: "H", vinfo: HARRISON }) + ")"), /About 1\d\d mi from you</, "once location is shared, distance is from the person");
+});
+
+test("ao page: the watch party card says when the match itself is within reach", async () => {
+  const far = await aoDrive();
+  assert.ok(!/You could go/.test(far.text("aoWatch")), "the match on the card is away, in another country");
+  const p = await aoDrive(men => { men.fixtures[0].ha = "H"; men.fixtures[0].venue = "Sports <Illustrated> Stadium"; Object.assign(men.fixtures[0].vinfo, HARRISON); });
+  assert.match(p.text("aoWatch"), /🚗 You could go: Sports &lt;Illustrated&gt; Stadium is about 1[5-9] mi from your chapter\. /);
+  assert.ok(p.html("aoWatch").indexOf("You could go") < p.html("aoWatch").indexOf('class="aohome"'), "above the chapter's own block");
+});
