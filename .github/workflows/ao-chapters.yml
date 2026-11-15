@@ -1,0 +1,63 @@
+name: AO chapters and watch parties
+
+# Rebuilds data/ao/chapters.json, the American Outlaws chapters and watch
+# parties shown on the AO Matchday page, from theamericanoutlaws.com, and
+# commits it when it changed. It reads about 280 pages with a pause between
+# them (four to five minutes). The script leaves the previous file in place
+# and exits non-zero if the site cannot be read or comes back thin.
+
+on:
+  schedule:
+    - cron: "40 9 * * *"    # once a day, early morning in the US (GitHub may run it hours late; a day-old listing is fine)
+    - cron: "40 21 * * *"   # and once in the afternoon, so a place posted on match day is picked up
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  actions: write     # to start the deploy after committing (see "Publish the new listings")
+
+concurrency:
+  group: ao-chapters
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: "22"
+
+      - name: Read the chapters and watch parties
+        run: node scripts/build-ao-chapters.mjs
+
+      # The listings are only committed if the whole test suite passes with them.
+      - name: Check the listings and the app against them
+        run: node --test
+
+      - name: Commit changed listings
+        id: commit
+        run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if [ -n "$(git status --porcelain data/ao)" ]; then
+            git add data/ao
+            git commit -m "Update AO chapters and watch parties ($(date -u +%Y-%m-%dT%H:%MZ))"
+            git pull --rebase origin main
+            git push
+            echo "pushed=true" >> "$GITHUB_OUTPUT"
+            echo "Pushed updated listings."
+          else
+            echo "No changes — nothing to commit."
+          fi
+
+      # A push made by a workflow does not start other workflows, so the deploy
+      # has to be started explicitly or the new listings never reach the live site.
+      - name: Publish the new listings
+        if: steps.commit.outputs.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run deploy-pages.yml --ref main

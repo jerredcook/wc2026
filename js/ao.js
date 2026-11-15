@@ -3,7 +3,7 @@
    (S, $, h, D, fmtDay, fmtTime, NAME, render, track). The chapter and watch
    party listings are a snapshot of theamericanoutlaws.com (data/ao/chapters.json). */
 "use strict";
-const AO = { data: null, home: "middlesex-county", here: null, q: "", all: false, geo: "", more: false };
+const AO = { data: null, home: "middlesex-county", here: null, q: "", wq: "", all: false, geo: "", more: false };
 try { AO.home = localStorage.getItem("ao.home") || AO.home; } catch (e) {}
 
 /* Visits on the concept page are counted apart from Cap Day's. */
@@ -28,16 +28,32 @@ function aoStatus(c) {
   return `<span class="st ${k}">${h(c.status)}${c.num ? " · #" + c.num : ""}</span>`;
 }
 
-/* The match the hub is showing: the selected team's next fixture. */
-function aoMatch() { const d = S.data[S.team]; return d && d.fixtures && d.fixtures[0]; }
+/* The match the hub's match card is showing. */
+function aoMatch() { return focus(); }
+/* A watch party's own position when the listing gives one (a chapter can use different bars), else its chapter's. */
+const aoAt = x => (x.p.lat != null && x.p.lng != null ? x.p : x.c);
+/* A party belongs to a match when the two kickoff times agree to within three hours: the two sites do not always agree to the minute. */
+const aoSameKickoff = (a, b) => Math.abs(D(a) - D(b)) <= 3 * 36e5;
 
 function aoParties(m) {
   if (!AO.data || !m) return [];
   const out = [];
-  for (const c of AO.data.chapters) for (const p of (c.parties || [])) if (p.date === m.date) out.push({ c, p });
+  for (const c of AO.data.chapters) for (const p of (c.parties || [])) if (p.venue && aoSameKickoff(p.date, m.date)) out.push({ c, p });
   const o = aoOrigin();
-  out.sort((x, y) => (aoMiles(o, x.c) ?? 1e9) - (aoMiles(o, y.c) ?? 1e9));
+  out.sort((x, y) => (aoMiles(o, aoAt(x)) ?? 1e9) - (aoMiles(o, aoAt(y)) ?? 1e9) || x.c.name.localeCompare(y.c.name));
   return out;
+}
+
+/* Every other chapter's party for this match: the nearest five, all of them, or the ones a search finds. */
+function aoWatchList(rest) {
+  const q = AO.wq.trim().toLowerCase();
+  const found = q ? rest.filter(x => (x.c.name + " " + x.c.state + " " + x.p.venue + " " + x.p.address).toLowerCase().includes(q)) : rest;
+  const shown = q ? found.slice(0, 40) : AO.all ? found : found.slice(0, 5);
+  const row = x => `<div class="aor"><div class="aot"><div class="aon">${h(aoName(x.c))}</div><b>${h(x.p.venue)}</b>${x.p.address ? `<small>${h(x.p.address)}</small>` : ""}</div>
+      <div class="aod">${h(aoMi(aoAt(x)))}${x.p.address ? `<a href="${h(aoMaps(x.p.address))}" target="_blank" rel="noopener">Map</a>` : ""}</div></div>`;
+  return (q ? `<div class="cnote" style="margin:8px 0 0">${found.length} match${found.length === 1 ? "" : "es"}${found.length > 40 ? ", nearest 40 shown" : ""}</div>` : "") +
+    (shown.map(row).join("") || `<div class="empty">No watch party matches “${h(AO.wq)}”.</div>`) +
+    (!q && rest.length > 5 ? `<div class="acts"><button class="btn" onclick="AO.all=!AO.all;renderWatch()">${AO.all ? "Show the nearest five" : "Show all " + rest.length}</button></div>` : "");
 }
 
 function renderWatch() {
@@ -45,25 +61,24 @@ function renderWatch() {
   const m = aoMatch();
   if (!AO.data || !m) { el.innerHTML = ""; return; }
   const title = (m.ha === "H" ? "USA vs " : "USA at ") + m.opp.name + (S.team === "women" ? " (W)" : "");
-  const all = aoParties(m), home = all.find(x => x.c.slug === AO.home), rest = all.filter(x => x !== home);
+  const all = aoParties(m), home = all.find(x => x.c.slug === AO.home), rest = all.filter(x => x.c.slug !== AO.home);
   const hc = aoChapter(AO.home);
-  const venue = ({ c, p }) => p.venue ? `<b>${h(p.venue)}</b>${p.address ? `<small>${h(p.address)}</small>` : ""}` : `<b>Location to be announced</b><small>Check the chapter page closer to kickoff</small>`;
-  const row = x => `<div class="aor">${aoCrest(x.c)}<div class="aot"><div class="aon">${h(aoName(x.c))}</div>${venue(x)}</div>
-      <div class="aod">${h(aoMi(x.c))}${x.p.address ? `<a href="${h(aoMaps(x.p.address))}" target="_blank" rel="noopener">Map</a>` : ""}</div></div>`;
-  const shown = AO.all ? rest : rest.slice(0, 5);
-  /* Closed, the card is the one thing a member needs: where their own chapter is watching. The other parties fold away. */
+  /* Closed, the card is the one thing a member needs: where their own chapter is watching. Every other party in the country folds away under it. */
   el.innerHTML = `<div class="card aocard">
     <div class="kicker">Watch with American Outlaws</div>
     <div class="cnote" style="margin:2px 0 0">${h(title)} · ${h(fmtDay(m.date))} · ${h(fmtTime(m.date))}</div>
     ${home ? `<div class="aohome">${aoCrest(home.c)}<div class="aot"><div class="kicker" style="color:var(--red)">Your chapter${home.p.official ? " · official watch party" : ""}</div>
-        <div class="aon big">${h(aoName(home.c))}</div>${venue(home)}</div>
+        <div class="aon big">${h(aoName(home.c))}</div><b>${h(home.p.venue)}</b>${home.p.address ? `<small>${h(home.p.address)}</small>` : ""}</div>
         ${home.p.address ? `<a class="btn aogo" href="${h(aoMaps(home.p.address))}" target="_blank" rel="noopener" onclick="track('directions')">📍 Directions</a>` : ""}</div>`
       : hc ? `<div class="empty" style="margin:8px 0 0">${h(aoName(hc))} hasn't posted a watch party for this match yet.</div>` : ""}
-    ${rest.length ? `<details ${AO.more ? "open" : ""} ontoggle="AO.more=this.open"><summary>${rest.length} more watch part${rest.length === 1 ? "y" : "ies"}${AO.here ? " near you" : " nearby"}</summary>` + shown.map(row).join("") +
-      `<div class="acts">${rest.length > 5 ? `<button class="btn" onclick="AO.all=!AO.all;renderWatch()">${AO.all ? "Show fewer" : "Show all " + rest.length}</button>` : ""}
-      <button class="btn" onclick="aoLocate()">${AO.here ? "📍 Using your location" : "📍 Sort by my location"}</button></div>
+    ${rest.length ? `<details ${AO.more ? "open" : ""} ontoggle="AO.more=this.open"><summary>${rest.length} more watch part${rest.length === 1 ? "y" : "ies"} across the country</summary>
+      <input class="aoq" id="aoWQ" type="search" placeholder="Search by city, state, or bar" value="${h(AO.wq)}" autocomplete="off" enterkeyhint="search" aria-label="Search watch parties">
+      <div class="cnote" style="margin:8px 0 0">Nearest to ${AO.here ? "you" : "your chapter"} first.</div>
+      <div id="aoWList">${aoWatchList(rest)}</div>
+      <div class="acts"><button class="btn" onclick="aoLocate()">${AO.here ? "📍 Using your location" : "📍 Sort by my location"}</button></div>
       ${AO.geo ? `<div class="cnote" style="margin:8px 0 0">${h(AO.geo)}</div>` : ""}</details>` : ""}
   </div>`;
+  const box = $("aoWQ"); if (box) box.addEventListener("input", e => { AO.wq = e.target.value; $("aoWList").innerHTML = aoWatchList(rest); });
 }
 
 function aoLocate() {
@@ -84,7 +99,7 @@ function aoList() {
   if (q) list = list.filter(c => (c.name + " " + c.state + " " + (c.bar ? c.bar.name + " " + c.bar.address : "")).toLowerCase().includes(q));
   else list = list.filter(c => c.slug !== AO.home);
   list.sort((a, b) => (aoMiles(o, a) ?? 1e9) - (aoMiles(o, b) ?? 1e9) || a.name.localeCompare(b.name));
-  const rows = list.slice(0, q ? 40 : 6).map(c => `<div class="aor">${aoCrest(c)}<div class="aot">
+  const rows = list.slice(0, q ? 40 : 6).map(c => `<div class="aor"><div class="aot">
       <div class="aon">${h(aoName(c))} ${aoStatus(c)}</div>
       ${c.bar ? `<b>${h(c.bar.name)}</b><small>${h(c.bar.address)}</small>` : `<small>${h(c.state)}</small>`}
       <div class="aol"><a href="${h(aoPage(c))}" target="_blank" rel="noopener">Chapter page</a>${c.ig ? `<a href="${h(c.ig)}" target="_blank" rel="noopener">Instagram</a>` : ""}
@@ -106,7 +121,7 @@ function renderChapters() {
       ${hc.ig ? `<a class="btn" href="${h(hc.ig)}" target="_blank" rel="noopener">Instagram</a>` : ""}</div></div></div>` : ""}
     <input class="aoq" id="aoQ" type="search" placeholder="Search chapters" value="${h(AO.q)}" autocomplete="off" enterkeyhint="search">
     <div id="aoList">${aoList()}</div>
-    <div class="cnote" style="margin:12px 0 0">Chapter list copied from theamericanoutlaws.com on ${h(when)}. Bars and watch parties are filled in for chapters in New Jersey, New York City, the Hudson Valley, and eastern Pennsylvania.</div>`);
+    <div class="cnote" style="margin:12px 0 0">Chapters, bars and watch parties copied from theamericanoutlaws.com on ${h(when)}. A chapter that has not named a place for a match is not listed for it.</div>`);
   $("aoQ").addEventListener("input", e => { AO.q = e.target.value; $("aoList").innerHTML = aoList(); });
 }
 function renderAO() {

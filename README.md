@@ -22,11 +22,13 @@ Cap Day answers three questions for both teams: **when do they play next, what i
 
 The schedule, squads and club form are built by [`scripts/build-usa.mjs`](scripts/build-usa.mjs) into `data/usa/men.json` and `data/usa/women.json`, refreshed hourly by the [`usa-hub`](.github/workflows/usa-hub.yml) Action. Live match detail is fetched by the page itself. [`usa.html`](usa.html) is only a redirect, kept so old links and QR codes still work.
 
+**AO Matchday** ([`ao.html`](ao.html)) is the same app under American Outlaws naming, used by AO Central New Jersey. It is generated from `index.html` by [`scripts/build-ao.mjs`](scripts/build-ao.mjs) (the tests fail when it is behind), with two cards of its own from [`js/ao.js`](js/ao.js): where each chapter is watching the next match, and a chapter finder. The chapters and watch parties in `data/ao/chapters.json` are read from theamericanoutlaws.com by [`scripts/build-ao-chapters.mjs`](scripts/build-ao-chapters.mjs), twice a day, by the [`ao-chapters`](.github/workflows/ao-chapters.yml) Action. Like the other data scripts it will not replace a good file with a thin one.
+
 ## Engineering
 
 - **Core logic is separate and tested.** [`js/core.js`](js/core.js) holds the pure match logic (feed parsing, competition and match explanations, prediction grading, win expectancy). The page loads it as a plain script; the tests load it with `require()`.
 - **The "Did you know?" facts are a plain list.** [`js/facts.js`](js/facts.js) holds them, each marked as one for newcomers or a deep cut, with the rules for adding one at the top of the file. A fact that a future result could change carries an `until` date and drops out of the app after it, until someone checks it and moves the date. `factOrder` in `js/core.js` decides the order: the next opponent's facts first, then a fresh mix each day.
-- **Tests:** `node --test` (191 tests, no dependencies, about ten seconds).
+- **Tests:** `node --test` (199 tests, no dependencies, about ten seconds).
   - [`test/core.test.cjs`](test/core.test.cjs): the logic against real recorded feed data in `test/fixtures/`.
   - [`test/render.test.cjs`](test/render.test.cjs): what each section puts on screen in every state — before kickoff, live, connection lost, full time, second leg, friendly, no match scheduled, women's view, test mode — plus the prediction flow, the feedback poll, escaping of feed text, and one section failing without taking the others down. The page's own code runs in a sandbox with a stand-in document, a fixed clock and recorded data ([`test/helpers/page.cjs`](test/helpers/page.cjs)).
   - [`test/browser.test.cjs`](test/browser.test.cjs): the whole app in headless Chrome, served locally — it boots, every section fills in, old links redirect. Skipped where no Chrome is installed.
