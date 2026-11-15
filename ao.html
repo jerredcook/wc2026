@@ -76,6 +76,7 @@ h1{font-size:22px;font-weight:700;letter-spacing:-.01em}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
 @media (prefers-reduced-motion:reduce){.livebadge{animation:none}}
 .when{text-align:center;font-size:15px;font-weight:700}
+.ruled{width:fit-content;margin:8px auto 0;padding:5px 12px;border-radius:10px;background:var(--chip);color:var(--ink);font-size:12.5px;font-weight:700;text-align:center}
 .count{text-align:center;font-size:13px;color:var(--good);font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
 .where{text-align:center;font-size:12px;color:var(--ink2);margin-top:4px}
 .meta{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
@@ -428,7 +429,7 @@ const TEAM = { women: { id: "2765" }, men: { id: "660" } };
 const USA_LOGO = "https://a.espncdn.com/i/teamlogos/countries/500/usa.png";
 const KEY = "wc2026.usa.v1";
 
-const S = { team: "men", data: {}, ranks: {}, live: {}, sums: {}, open: {}, pos: "all", sort: "pos", ed: null, calls: {}, flash: false, news: {}, ahead: null, liveOk: 0, failed: {}, rivals: {}, name: "", jump: null, fact: 0 };
+const S = { team: "men", data: {}, ranks: {}, live: {}, sums: {}, open: {}, pos: "all", sort: "pos", ed: null, calls: {}, flash: false, news: {}, ahead: null, liveOk: 0, failed: {}, rivals: {}, name: "", jump: null, fact: 0, ruled: 0 };
 try { S.calls = JSON.parse(localStorage.getItem(KEY + ".calls") || "{}") || {}; } catch (e) {}
 try { S.rivals = JSON.parse(localStorage.getItem(KEY + ".rivals") || "{}") || {}; } catch (e) {}
 try { S.name = cleanName(localStorage.getItem(KEY + ".name") || ""); } catch (e) {}
@@ -597,6 +598,7 @@ function focus() {
 }
 
 let pollT = null;
+const RULED_MS = 3 * 6e4;     // how long the "goal ruled out" note stays on the card
 async function refreshLive() {
   clearTimeout(pollT);
   const team = S.team, m = focus(); if (!m) return;
@@ -605,10 +607,13 @@ async function refreshLive() {
     if (G) {
       const L = parseSummary(G, S.test ? S.test.usId : TEAM[team].id), old = S.live[m.id];
       if (L) {
-        /* A goal since the last look (either side): flash the card. */
-        if (old && L.state === "in" && old.us != null && (L.us !== old.us || L.them !== old.them)) {
-          S.flash = true; setTimeout(() => { S.flash = false; }, 4000);
-          if (navigator.vibrate) { try { navigator.vibrate([120, 60, 120]); } catch (e) {} }
+        /* A goal since the last look (either side): flash the card. A score that goes down is a goal
+           taken away after review: no flash, and a short note so the lower score is not a mystery. */
+        if (old && L.state === "in" && old.us != null && L.us != null) {
+          if (L.us > old.us || L.them > old.them) {
+            S.flash = true; S.ruled = 0; setTimeout(() => { S.flash = false; }, 4000);
+            if (navigator.vibrate) { try { navigator.vibrate([120, 60, 120]); } catch (e) {} }
+          } else if (L.us < old.us || L.them < old.them) { S.flash = false; S.ruled = Date.now(); track("goal-ruled-out"); }
         }
         S.live[m.id] = L; S.liveOk = Date.now();
       }
@@ -863,6 +868,7 @@ function renderHero() {
     ${S.test ? `<div class="testbar">TEST MODE: following another match to check live updates. <a href="./">Exit</a></div>` : ""}
     <div class="kicker">${st === "in" ? "Live now" : st === "post" ? "Full time" : "Next match"} &middot; ${h(label)}</div>
     <div class="vs">${home ? usSide : oppSide}<div class="mid">${mid}</div>${home ? oppSide : usSide}</div>
+    ${st === "in" && S.ruled && Date.now() - S.ruled < RULED_MS ? `<div class="ruled" role="status">Goal ruled out. The score has been corrected.</div>` : ""}
     ${st === "pre" ? `<div class="when">${fmtDay(m.date)} &middot; ${fmtTime(m.date)} <span style="font-weight:600;color:var(--ink3)">${h(fmtZone(m.date))}</span></div>
       <div class="cd" id="cd" data-iso="${h(m.date)}">${cdTiles(m.date)}</div>` : ""}
     <div class="where">${h([m.venue, m.city].filter(Boolean).join(" · "))}</div>

@@ -15,6 +15,7 @@ Schedules, squads, scores and rankings refresh on their own all day. Those are c
 
 The first numbered version of Cap Day: when the U.S. women's and men's national teams play next, what the match is for, and how to watch.
 
+- **A goal that is taken away no longer looks like a goal.** When a goal is ruled out after review the score goes back down. The match card used to flash and buzz for that as if someone had scored. Now it stays still and shows a short note, "Goal ruled out. The score has been corrected."
 - **A shorter page.** Everything below the match card (storylines, news, players, the opponent, the calendar, results) now folds to one line with a preview of what is inside. Tap to open; the app remembers what you left open.
 - **Install, when the phone doesn't offer it.** On Android the Install button now always appears and, when Chrome has no prompt to give, shows the three steps to do it by hand.
 - **Next match for both teams** on the front page, women listed first, opening on whichever team plays soonest.

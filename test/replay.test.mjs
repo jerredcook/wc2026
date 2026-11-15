@@ -116,3 +116,26 @@ test("the recorded match with goals: complete, in order, and the score only ever
   assert.equal(goals[4].note, "own goal");
   assert.ok(readFileSync(path.join(ROOT, "test", "fixtures", "replay-guatemala-canada.json")).length < 130e3, "the fixture stays small");
 });
+
+test("the recorded USA match: complete, in order, and the score goes down twice (two goals ruled out)", () => {
+  const R = replay("replay-haiti-usa.json");
+  assert.equal(R.match, "Haiti v United States");
+  assert.ok(R.frames.length >= 20 && R.looks > 250);
+  assert.deepEqual(R.frames.map(f => f.at), R.frames.map(f => f.at).slice().sort(), "frames are in the order recorded");
+  const Ls = R.frames.map(f => core.parseSummary(f.summary, "660"));
+  assert.equal(Ls[0].state, "pre"); assert.equal(Ls[Ls.length - 1].state, "post");
+  assert.deepEqual([Ls[Ls.length - 1].us, Ls[Ls.length - 1].them], [6, 0]);
+  const down = [];
+  let last = [0, 0];
+  for (const [i, L] of Ls.entries()) {
+    if (L.state === "pre") continue;
+    if (L.us < last[0] || L.them < last[1]) down.push(`${last[0]}-${last[1]} to ${L.us}-${L.them}`);
+    last = [L.us, L.them];
+  }
+  assert.deepEqual(down, ["5-1 to 5-0", "6-0 to 5-0"], "a Haiti goal and a USA goal were given and then taken away");
+  const goals = Ls[Ls.length - 1].events.filter(e => e.icon === "⚽");
+  assert.equal(goals.length, 6);
+  assert.ok(goals.every(g => g.us), "every goal that stood was the USA's, playing away");
+  assert.deepEqual(goals.filter(g => g.note === "pen").map(g => g.who), ["Christian Pulisic"]);
+  assert.ok(readFileSync(path.join(ROOT, "test", "fixtures", "replay-haiti-usa.json")).length < 170e3, "the fixture stays small");
+});

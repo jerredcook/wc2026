@@ -785,3 +785,87 @@ test("replay with goals: no numbers until both sides have had the ball", async (
   assert.match(t, /LIVE 6' Canada/);
   assert.match(t, /47% Possession 53% 0 Shots 0 0 On target 0 0 Corners 1 1 Fouls 0/);
 });
+
+/* ── A recorded USA match: Haiti 0–6 USA, Nov 14 2026. The first recording of the
+   USA itself (played as the real match, not in test mode), with a penalty and
+   two goals that were given and then taken away after review. ── */
+const USA_NIGHT = replay("replay-haiti-usa.json");
+async function replayUsa() {
+  let cur = USA_NIGHT.frames[0];
+  const p = await boot({ hash: "#men", summary: () => cur.summary, now: cur.at });
+  return { p, async show(f, iso) { cur = f; p.setNow(iso || f.at); await p.refresh(); return p.text("hero"); }, async at(iso) { p.setNow(iso); await p.refresh(); return p.text("hero"); } };
+}
+const RULED = "Goal ruled out. The score has been corrected.";
+
+test("replay, USA at Haiti: the card flashes for a goal, and never for a goal being taken away", async () => {
+  const r = await replayUsa();
+  const flashes = [], ruled = [];
+  let prev = null;
+  for (const f of USA_NIGHT.frames) {
+    await r.p.fire(t => t.ms === 4000);
+    const L = core.parseSummary(f.summary, "660"), t = await r.show(f);
+    const flash = /class="card hero live flash/.test(r.p.html("hero"));
+    const both = !!prev && prev.state === "in" && L.state === "in";
+    const up = both && (L.us > prev.us || L.them > prev.them), down = both && (L.us < prev.us || L.them < prev.them);
+    assert.equal(flash, up, `at ${f.at} (${L.us}–${L.them}, ${L.clock})`);
+    if (flash) flashes.push(`${L.us}-${L.them}`);
+    if (down) { ruled.push(`${L.us}-${L.them}`); assert.ok(t.includes(RULED), "the lower score is explained at " + f.at); }
+    if (up) assert.ok(!t.includes(RULED), "the next goal clears the note at " + f.at);
+    assert.ok(!/undefined|NaN|null/.test(t), `nothing unfilled on the card at ${f.at}`);
+    for (const id of SECTIONS) assert.ok(!r.p.html(id).includes(NOTICE), `${id} drew without an error at ${f.at}`);
+    prev = L;
+  }
+  assert.deepEqual(flashes, ["1-0", "2-0", "3-0", "4-0", "5-0", "5-1", "6-0", "6-0"], "eight goals were given");
+  assert.deepEqual(ruled, ["5-0", "5-0"], "two of them were taken away");
+  assert.equal(r.p.tracked.filter(x => /goal-ruled-out/.test(x)).length, 2);
+  assert.ok(!(await r.show(USA_NIGHT.frames[USA_NIGHT.frames.length - 1])).includes(RULED), "no note at full time");
+  assert.deepEqual(r.p.tracked.filter(x => /error/.test(x)), []);
+});
+
+test("replay, USA at Haiti: the ruled-out note stays for three minutes and then goes", async () => {
+  const r = await replayUsa();
+  const Ls = USA_NIGHT.frames.map(f => core.parseSummary(f.summary, "660"));
+  const i = Ls.findIndex((L, k) => k > 0 && L.state === "in" && L.them < Ls[k - 1].them);
+  assert.ok(i > 0, "the recording has the moment Haiti's goal was taken away");
+  await r.show(USA_NIGHT.frames[i - 1]);
+  await r.p.fire(t => t.ms === 4000);
+  const at = Date.parse(USA_NIGHT.frames[i].at);
+  assert.ok((await r.show(USA_NIGHT.frames[i])).includes(RULED));
+  assert.match(r.p.html("hero"), /<div class="ruled" role="status">/);
+  assert.ok((await r.at(new Date(at + 170e3).toISOString())).includes(RULED), "still there after 2 min 50 s");
+  assert.ok(!(await r.at(new Date(at + 190e3).toISOString())).includes(RULED), "gone after 3 min 10 s");
+
+  /* A goal straight after a ruling: the note goes at once and the card flashes. */
+  const r2 = await replayUsa();
+  await r2.show(USA_NIGHT.frames[i - 1]);
+  await r2.p.fire(t => t.ms === 4000);
+  await r2.show(USA_NIGHT.frames[i]);
+  const goal = USA_NIGHT.frames[i + Ls.slice(i).findIndex(L => L.us > Ls[i].us)];
+  const t = await r2.show(goal, new Date(at + 30e3).toISOString());
+  assert.ok(!t.includes(RULED) && /class="card hero live flash/.test(r2.p.html("hero")));
+
+  /* Full time straight after a ruling: the final score stands on its own, without the note. */
+  const r3 = await replayUsa();
+  await r3.show(USA_NIGHT.frames[i - 1]);
+  await r3.show(USA_NIGHT.frames[i]);
+  const end = await r3.show(USA_NIGHT.frames[USA_NIGHT.frames.length - 1], new Date(at + 60e3).toISOString());
+  assert.ok(/Full time/.test(end) && !end.includes(RULED));
+});
+
+test("replay, USA at Haiti: the USA away from home, a penalty, and the final score", async () => {
+  const r = await replayUsa();
+  const frames = USA_NIGHT.frames, Ls = frames.map(f => core.parseSummary(f.summary, "660"));
+  const first = frames[Ls.findIndex(L => L.state === "in")];
+  assert.match(await r.show(first), /^Live now · Concacaf Nations League · Quarterfinals · 1st Leg Haiti FIFA #84 0 : 0 LIVE 1' United States/);
+  assert.match(r.p.text("nextup"), /Men · next at Haiti .* LIVE/);
+  const pen = frames[Ls.findIndex(L => L.events.some(e => e.note === "pen"))];
+  assert.match(await r.show(pen), /0 : 3 LIVE 62' United States .* 62' ⚽ Christian Pulisic \(pen\)/);
+  const end = await r.show(frames[frames.length - 1]);
+  assert.match(end, /^Full time · .* Haiti FIFA #84 0 : 6 Full time United States/);
+  const tl = /<ul class="tl"[\s\S]*?<\/ul>/.exec(r.p.html("hero"))[0];
+  assert.equal((tl.match(/<li class="us">/g) || []).length, 8, "six goals and two yellow cards on the USA's side of the list");
+  assert.equal((tl.match(/<li class="them">/g) || []).length, 1, "one yellow card on Haiti's");
+  assert.match(r.p.text("nextup"), /Men · next at Haiti .* Full time/);
+  assert.match(end, /82' ⚽ Folarin Balogun \(assist Malik Tillman\)/);
+  assert.ok(!/Lenny Joseph/.test(tl), "the goal that was ruled out is not in the list of goals");
+});
