@@ -11,7 +11,7 @@ How the numbers work, for a version like 0.1.2:
 
 Schedules, squads, scores and rankings refresh on their own all day. Those are content updates, not new versions, and are not listed here.
 
-## 0.1.0 — not yet released
+## 0.1.0 — 2026-11-15
 
 The first numbered version of Cap Day: when the U.S. women's and men's national teams play next, what the match is for, and how to watch.
 
