@@ -1,7 +1,12 @@
 {
  "chapters": {
   "middlesex-county": {
-   "notes": [],
+   "notes": [
+    {
+     "date": "2030-01-01",
+     "text": "Test row: checking that the sheet reaches the app. Safe to delete."
+    }
+   ],
    "songs": []
   }
  }
