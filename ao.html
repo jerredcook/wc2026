@@ -15,7 +15,7 @@
 <meta property="og:description" content="The matchday app of AO Central New Jersey.">
 <meta property="og:url" content="https://jerredcook.github.io/wc2026/ao.html">
 <link rel="canonical" href="https://jerredcook.github.io/wc2026/ao.html">
-<meta property="og:image" content="https://jerredcook.github.io/wc2026/og-image.png">
+<meta property="og:image" content="https://jerredcook.github.io/wc2026/ao-og.png">
 <link rel="manifest" href="ao.webmanifest">
 <meta name="theme-color" content="#f5f5f7" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#15161a" media="(prefers-color-scheme: dark)">
@@ -373,7 +373,7 @@ a.btn{display:inline-block;text-decoration:none;color:var(--ink)}
   </a>
 
   <p class="foot">
-    <a id="ver" href="https://github.com/jerredcook/wc2026/blob/main/CHANGELOG.md" target="_blank" rel="noopener">Cap Day</a> &middot; <a href="privacy.html">Privacy</a> &middot; The matchday app of AO Central New Jersey, built by a chapter member. Not a product of American Outlaws national, and not affiliated with or endorsed by U.S. Soccer, Concacaf or FIFA. American Outlaws chapter and watch party listings are copied from theamericanoutlaws.com.
+    <a id="ver" href="https://github.com/jerredcook/wc2026/blob/main/CHANGELOG.md" target="_blank" rel="noopener">AO Matchday</a> &middot; <a href="privacy.html">Privacy</a> &middot; The matchday app of AO Central New Jersey, built by a chapter member. Not a product of American Outlaws national, and not affiliated with or endorsed by U.S. Soccer, Concacaf or FIFA. American Outlaws chapter and watch party listings are copied from theamericanoutlaws.com.
     Match and squad data from ESPN's public feed; rankings from FIFA. Club form covers each player's last three club matches and refreshes a few times a day.
     Kickoff times are shown in your local time zone. Visits are counted anonymously, without cookies. "Cap" is the football word for an international appearance: in 1886 England began giving each player a white silk cap for every international match.
   </p>
@@ -394,7 +394,7 @@ a.btn{display:inline-block;text-decoration:none;color:var(--ink)}
     <label for="duelInput" style="font-size:13px;color:#555">Your first name, so friends know whose call it is</label>
     <input id="duelInput" maxlength="16" autocomplete="given-name" autocapitalize="words" enterkeyhint="done" onkeydown="if(event.key==='Enter')saveName()">
     <button onclick="saveName()">Continue</button>
-    <p style="font-size:11.5px;margin-top:10px;word-break:normal">Your name and your call travel inside the link you share. They are not sent to Cap Day or stored anywhere else.</p>
+    <p style="font-size:11.5px;margin-top:10px;word-break:normal">Your name and your call travel inside the link you share. They are not sent to AO Matchday or stored anywhere else.</p>
   </div>
   <div id="duelBody" hidden>
     <p id="duelText" style="font-size:15px;font-weight:800;color:#1a1a1a;word-break:normal;margin-bottom:10px"></p>
@@ -1024,7 +1024,7 @@ function addCal(id) {
   const m = S.data[S.team].fixtures.find(x => x.id === id); if (!m) return;
   const z = t => new Date(t).toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, "");
   const title = (m.ha === "H" ? "USA vs " + m.opp.name : m.opp.name + " vs USA") + (S.team === "women" ? " (W)" : "");
-  const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Cap Day//EN", "BEGIN:VEVENT",
+  const ics = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//AO Matchday//EN", "BEGIN:VEVENT",
     "UID:usa-" + m.id + "@capday", "DTSTAMP:" + z(Date.now()), "DTSTART:" + z(m.date), "DTEND:" + z(D(m.date).getTime() + 2 * 36e5),
     "SUMMARY:" + title, "LOCATION:" + [m.venue, m.city].filter(Boolean).join(", ").replace(/,/g, "\\,"),
     "DESCRIPTION:" + [[m.comp, m.round, m.leg].filter(Boolean).join(" · "), m.tv.length ? "Watch: " + m.tv.join(" / ") : ""].filter(Boolean).join("\\n").replace(/,/g, "\\,"),
@@ -1254,7 +1254,7 @@ document.addEventListener("keydown", e => {
 });
 
 /* Which version this is, in the footer (the number lives in js/core.js). */
-$("ver").textContent = "AO Matchday, built on Cap Day v" + VERSION;
+$("ver").textContent = "AO Matchday v" + VERSION;
 
 let installEvt = null;
 window.addEventListener("beforeinstallprompt", e => { e.preventDefault(); installEvt = e; $("installBtn").hidden = false; });

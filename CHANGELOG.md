@@ -1,4 +1,4 @@
-# What's new in Cap Day
+# What's new in AO Matchday
 
 Each version of the app is listed here, newest first, with what changed in plain words.
 The version you have is shown at the bottom of the app.
@@ -13,6 +13,7 @@ Schedules, squads, scores and rankings refresh on their own all day. Those are c
 
 ## 0.2.0 — not yet released
 
+- **Cap Day is now AO Matchday.** The Cap Day name is retired for now. The old address opens AO Matchday, the World Cup page leads back to it, and the calendars, the privacy page and the picture that shows when the link is shared all carry the new name.
 - **AO Matchday is AO Central New Jersey's app.** The version of Cap Day under American Outlaws naming is no longer a concept: the chapter uses it. It shows where the chapter is watching each match, and every other chapter's watch party in the country, nearest first, with a search by city, state or bar. The listings are read from American Outlaws' site twice a day.
 - **Watch parties in your calendar.** "Add to calendar" on the AO page subscribes your phone to your chapter's watch parties, with the bar and its address on each one.
 - **A sign for the bar.** A page to print and put up, with a QR code that opens the app.

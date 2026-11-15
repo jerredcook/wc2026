@@ -242,20 +242,56 @@ test("ao page: Add to calendar subscribes to the chosen chapter's feed, and the 
   assert.deepStrictEqual([p.el("subHead").textContent, p.el("subText").textContent], ["Never miss a match", "the hub's words"]);
 });
 
-test("ao: search engines may list the page, and can tell it from Cap Day", () => {
+test("ao: search engines may list the page, and are pointed at it from Cap Day's old address", () => {
   const ao = read("ao.html"), hub = read("index.html"), base = "https://jerredcook.github.io/wc2026/";
   for (const [what, html] of [["the AO page", ao], ["Cap Day", hub]]) assert.ok(!/<meta name="robots"[^>]*noindex/i.test(html), what + " is not kept out of search");
   const canon = html => (html.match(/<link rel="canonical" href="([^"]+)">/g) || []).join();
   assert.equal(canon(ao), `<link rel="canonical" href="${base}ao.html">`, "the AO page names its own address, once");
-  assert.equal(canon(hub), `<link rel="canonical" href="${base}">`, "and Cap Day names its own");
+  assert.equal(canon(hub), `<link rel="canonical" href="${base}ao.html">`, "and the retired front page points at it too");
   assert.match(ao, /<meta name="description" content="American Outlaws Central New Jersey[^"]{40,140}">/, "the description spells the chapter out and fits a search result");
-  assert.match(read("privacy.html"), /<a href="ao\.html">AO Matchday<\/a>/, "a listed page links to it, so it can be reached by following links");
+  assert.match(read("privacy.html"), /<a href="ao\.html">/, "the privacy page links to it");
   const locs = [...read("sitemap.xml").matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]);
-  assert.ok(locs.includes(base) && locs.includes(base + "ao.html"), "the sitemap lists both");
+  assert.ok(locs.includes(base + "ao.html") && !locs.includes(base), "the sitemap lists the AO page, and not the address that only sends people on");
   for (const u of locs) {
     assert.ok(u.startsWith(base), u + " is on this site");
     const f = u.slice(base.length) || "index.html";
     assert.ok(fs.existsSync(path.join(root, f)), "the sitemap names a missing page: " + f);
     assert.ok(!/<meta name="robots"[^>]*noindex/i.test(read(f)), "the sitemap names a page that is kept out of search: " + f);
   }
+});
+
+test("retired: nothing a visitor reaches still says Cap Day, and every way back leads to AO Matchday", () => {
+  const ao = read("ao.html"), hub = read("index.html"), wc = read("worldcup.html");
+  for (const f of ["ao.html", "worldcup.html", "privacy.html", "usa.html", "ao-sign.html", "ao.webmanifest", "sitemap.xml"]) assert.ok(!/Cap Day/.test(read(f)), f + " still says Cap Day");
+  for (const f of ["women", "men", "all"]) assert.match(read("data/usa/" + f + ".ics"), /^X-WR-CALNAME:AO Matchday — USA /m, f + ".ics is named for the app people have");
+
+  // The old address sends people on, before anything is drawn, and the AO page does not send them on again.
+  const send = hub.match(/<script>\/\* Cap Day is retired for now[^\n]*<\/script>/);
+  assert.ok(send && hub.indexOf(send[0]) < hub.indexOf("<style"), "the front page redirects from its head");
+  assert.ok(!/location\.replace\("ao\.html"/.test(ao), "the AO page must not redirect to itself");
+  const went = (search, hash, standalone) => {
+    let to = null;
+    new Function("location", "window", "matchMedia", send[0].replace(/^<script>|<\/script>$/g, ""))({ search, hash, replace: u => { to = u; } }, { matchMedia: true }, () => ({ matches: standalone }));
+    return to;
+  };
+  assert.equal(went("", "", false), "ao.html");
+  assert.equal(went("", "#men", false), "ao.html#men", "a link to one team still opens that team");
+  assert.equal(went("?test=x:1", "#women", true), "ao.html?test=x:1#women");
+  assert.equal(went("", "", true), "ao.html#app", "an installed Cap Day opens AO Matchday as an app, not as a web page inside one");
+  assert.equal(went("?capday", "", false), null, "?capday still shows Cap Day, which the AO page is built from");
+  assert.equal(went("?x=1&capday", "#men", true), null);
+  assert.equal(went("?capdayz", "", false), "ao.html?capdayz");
+
+  // The World Cup page: both ways back, its name, its install details and its share picture.
+  assert.ok(!/href="\.\/"|href="index\.html/.test(wc), "the World Cup page no longer links to the old front page");
+  assert.equal((wc.match(/href="ao\.html"/g) || []).length, 2, "the back link and the next-match banner both lead to AO Matchday");
+  assert.match(wc, /&larr; AO Matchday<\/a>/); assert.match(wc, /<link rel="manifest" href="ao\.webmanifest">/);
+  for (const [what, html] of [["the AO page", ao], ["the World Cup page", wc]]) {
+    assert.ok(!/og-image\.png/.test(html), what + " still shares the Cap Day picture");
+    assert.match(html, /<meta property="og:image" content="https:\/\/jerredcook\.github\.io\/wc2026\/ao-og\.png">/);
+  }
+  const png = fs.readFileSync(path.join(root, "ao-og.png"));
+  assert.equal(png.readUInt32BE(16) + "x" + png.readUInt32BE(20), "1200x630", "the share picture is the size the tags say");
+  assert.match(read("usa.html"), /location\.replace\("ao\.html" \+ location\.hash\)/, "the oldest address goes straight there");
+  assert.match(read("sw.js"), /caches\.match\("\.\/ao\.html"\)/, "offline, the app falls back to the AO page");
 });

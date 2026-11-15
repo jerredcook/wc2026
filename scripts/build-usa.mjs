@@ -502,7 +502,7 @@ async function build(key) {
   stamp(out, old);
   await writeFile(file, JSON.stringify(out) + "\n");
   CAL[key] = calEvents(T.label, fixtures, results);
-  await writeFile(join(ROOT, "data", "usa", key + ".ics"), ics(`Cap Day — USA ${T.label}`, CAL[key]));
+  await writeFile(join(ROOT, "data", "usa", key + ".ics"), ics(`AO Matchday — USA ${T.label}`, CAL[key]));
   console.log(`  wrote data/usa/${key}.json (${players.filter(p => p.club).length}/${players.length} players with club form)`);
 }
 
@@ -610,7 +610,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     catch (e) { failed = true; console.error(`FAILED ${key}: ${e.message}`); }
   }
   if (CAL.women && CAL.men) {
-    await writeFile(join(ROOT, "data", "usa", "all.ics"), ics("Cap Day — USA Women & Men", [...CAL.women, ...CAL.men]));
+    await writeFile(join(ROOT, "data", "usa", "all.ics"), ics("AO Matchday — USA Women & Men", [...CAL.women, ...CAL.men]));
     console.log("\nwrote data/usa/all.ics");
   }
   process.exit(failed ? 1 : 0);

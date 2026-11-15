@@ -58,7 +58,7 @@ const section = (dom, id) => { const i = dom.indexOf(`id="${id}"`); assert.ok(i 
 const opts = { skip: CHROME ? false : "no Chrome on this machine", timeout: 240000 };
 
 test("the app boots in a real browser and every section fills in", opts, async () => {
-  const dom = await open("/");
+  const dom = await open("/?capday");
   assert.ok(!dom.includes("couldn't be shown"), "a section failed to draw");
   assert.equal((dom.match(/class="nu ?(on)?"/g) || []).length, 2, "both team tiles are drawn");
   assert.ok(dom.indexOf("Women &middot; next") < dom.indexOf("Men &middot; next") || dom.indexOf("Women · next") < dom.indexOf("Men · next"), "women first");
@@ -70,7 +70,7 @@ test("the app boots in a real browser and every section fills in", opts, async (
 });
 
 test("an iPhone gets the Add to Home Screen tip", opts, async () => {
-  const dom = await open("/", IPHONE);
+  const dom = await open("/?capday", IPHONE);
   assert.match(dom, /<div class="card iostip" id="iosTip">/);
   assert.ok(dom.includes("Add to Home Screen"));
 });
@@ -86,7 +86,7 @@ test("old links still land on the app, and the other pages load", opts, async ()
   assert.ok((await open("/usa.html")).includes('id="nextup"'), "usa.html should redirect to the app");
   const wc = await open("/worldcup.html");
   assert.ok(wc.includes("World Cup") && wc.includes("Back to matchday"));
-  assert.ok((await open("/privacy.html")).includes("What Cap Day does not do"));
+  assert.ok((await open("/privacy.html")).includes("What AO Matchday does not do"));
 });
 
 /* ── Layout, measured in the browser (helpers/probe.html) ── */
@@ -110,22 +110,22 @@ function checkLayout(r) {
   for (const [id, hgt] of Object.entries(r.sections)) assert.ok(hgt > 20, `#${id} is empty or missing (height ${hgt})`);
 }
 for (const w of [320, 360, 390, 768]) {
-  test(`layout holds at ${w}px wide`, opts, async () => checkLayout(await probe("url=/&w=" + w)));
+  test(`layout holds at ${w}px wide`, opts, async () => checkLayout(await probe("url=/%3Fcapday&w=" + w)));
 }
 test("the Did you know? card stays a card, not a page, on a small phone", opts, async () => {
-  const r = await probe("url=/&w=320");
+  const r = await probe("url=/%3Fcapday&w=320");
   assert.ok(r.sections.facts > 120 && r.sections.facts < 340, `the card is ${r.sections.facts}px tall at 320px wide`);
 });
-test("layout holds for the women's view", opts, async () => checkLayout(await probe("url=/%23women&w=360")));
+test("layout holds for the women's view", opts, async () => checkLayout(await probe("url=/%3Fcapday%23women&w=360")));
 for (const w of [320, 412]) {
   test(`layout holds at ${w}px wide with every folding section opened`, opts, async () => {
-    const r = await probe("url=/%23men&open=1&w=" + w);
+    const r = await probe("url=/%3Fcapday%23men&open=1&w=" + w);
     checkLayout(r);
     assert.ok(r.sections.pool > 1500 && r.sections.results > 300, "the sections were really opened: " + JSON.stringify(r.sections));
   });
 }
 test("the page as it opens is short: sections folded, a few screens in all", opts, async () => {
-  const r = await probe("url=/%23men&w=360");
+  const r = await probe("url=/%3Fcapday%23men&w=360");
   for (const id of ["stories", "pool", "fixtures", "results"]) assert.ok(r.sections[id] >= 44 && r.sections[id] < 90, `#${id} is one line when folded (${r.sections[id]}px)`);
 });
 const AO_IDS = "nextup,aoWatch,hero,aoChapters,stories,facts,pool,fixtures,results,poll";
@@ -153,7 +153,7 @@ test("a challenge link opens on the friend's call, in a real browser", opts, asy
   assert.ok(!dom.includes("couldn't be shown"));
 });
 test("layout holds on a small phone with a challenge on the card and the QR dialog open", opts, async () => {
-  const r = await probe("url=/&w=320&duel=1");
+  const r = await probe("url=/%3Fcapday&w=320&duel=1");
   if (!r.duel.match) return;
   assert.match(r.duel.board, /The challenge/); assert.match(r.duel.board, /Bartholomew-Jean/);
   if (r.duel.open) {               // before kickoff: the dialog is showing
@@ -165,7 +165,7 @@ test("layout holds on a small phone with a challenge on the card and the QR dial
   checkLayout(r);
 });
 test("layout holds on a small phone with the 'newer version' and 'out of date' bars showing", opts, async () => {
-  const r = await probe("url=/&w=320&notices=1");
+  const r = await probe("url=/%3Fcapday&w=320&notices=1");
   const bar = id => r.noticeBars.find(b => b.id === id);
   assert.ok(bar("update").shown, "the refresh offer is visible");
   assert.match(bar("update").text, /newer version of Cap Day is ready.*Refresh/);
@@ -174,7 +174,7 @@ test("layout holds on a small phone with the 'newer version' and 'out of date' b
   checkLayout(r);
 });
 test("layout holds with a live match on a small phone (timeline, stats, lineups open)", opts, async () => {
-  const r = await probe("url=/&w=320&live=1");
+  const r = await probe("url=/%3Fcapday&w=320&live=1");
   if (r.noMatch) return;   // nothing scheduled for either team: there is no card to put into a live state
   assert.match(r.state, /^Live now/);
   checkLayout(r);
@@ -191,4 +191,16 @@ test("the AO Matchday concept page boots in a real browser with both of its card
   assert.ok(ch.includes("Find your crew") && ch.includes("AO Central New Jersey"), "the chapter finder is drawn, starting from the default chapter");
   assert.ok(dom.indexOf('id="aoWatch"') < dom.indexOf('id="hero"') && dom.indexOf('id="hero"') < dom.indexOf('id="aoChapters"'), "watch parties above the match card, chapters below it");
   for (const [id, mark] of [["hero", "What is this match?"], ["facts", "Did you know?"], ["fixtures", "every upcoming match"], ["results", "results"]]) assert.ok(section(dom, id).includes(mark), `#${id} does not contain "${mark}"`);
+});
+
+test("Cap Day is retired: its old addresses open AO Matchday in a real browser", opts, async () => {
+  for (const url of ["/", "/index.html", "/usa.html"]) {
+    const dom = await open(url);
+    assert.ok(section(dom, "aoWatch").includes("Watch with American Outlaws"), url + " did not land on AO Matchday");
+    assert.ok(!dom.includes("Cap Day"), url + " still shows the Cap Day name");
+  }
+  const wc = await open("/worldcup.html");
+  assert.ok(wc.includes("&larr; AO Matchday") || wc.includes("← AO Matchday"), "the World Cup page's way back is named AO Matchday");
+  assert.ok(!wc.includes("Cap Day"), "the World Cup page no longer says Cap Day");
+  assert.ok((await open("/?capday")).includes("🇺🇸 Cap Day"), "?capday still shows Cap Day itself");
 });

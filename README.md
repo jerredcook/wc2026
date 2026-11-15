@@ -1,12 +1,14 @@
-# Cap Day 🇺🇸 — the U.S. women's & men's national teams
+# AO Matchday 🇺🇸 — the matchday app of AO Central New Jersey
 
-**Live app: [jerredcook.github.io/wc2026](https://jerredcook.github.io/wc2026/)** · unofficial fan app, not affiliated with U.S. Soccer, Concacaf or FIFA.
+**Live app: [jerredcook.github.io/wc2026/ao.html](https://jerredcook.github.io/wc2026/ao.html)** · built by a chapter member; not a product of American Outlaws national, and not affiliated with U.S. Soccer, Concacaf or FIFA.
+
+**Cap Day is retired for now.** The app was called Cap Day until November 2026. [`index.html`](index.html) is still the Cap Day page, kept because AO Matchday is generated from it and the tests run against it, but anyone who opens it is sent to `ao.html` (add `?capday` to the address to see Cap Day itself). To bring Cap Day back, remove the redirect script from the head of `index.html` and point its canonical link at itself again.
 
 A near-zero-dependency web app (installable, offline-capable) for following the U.S. national teams. The front page, [`index.html`](index.html), is the matchday hub; the complete 2026 World Cup archive, FIFA rankings and World Cup history live on [`worldcup.html`](worldcup.html) as an extra section. Both are single files of HTML, CSS and vanilla JavaScript with no build step. (The app began as a 2026 World Cup stadium guide, which is why the repository is still called `wc2026`.)
 
 ## The hub
 
-Cap Day answers three questions for both teams: **when do they play next, what is the match for, and how do I watch it?** ("Cap" is the football word for an international appearance.) It deliberately does not try to be a daily tracker of Americans at their clubs; club form appears only as pre-match context.
+The app answers three questions for both teams: **when do they play next, what is the match for, and how do I watch it?** ("Cap" is the football word for an international appearance.) It deliberately does not try to be a daily tracker of Americans at their clubs; club form appears only as pre-match context.
 
 - **Both teams up top**, women listed first: each team's next match with its date, a purpose tag (Friendly / Competitive / Qualifier / Tournament) and a plain-English line on what the competition is. The page opens on whichever match comes first.
 - **"What is this match?"** on the match card, in three labelled lines: the competition, this match (round, one leg or two), and what is at stake (hand-written per match in `data/usa/editorial.json`). Below it, **where the round stands** (every tie in a knockout round, or the group table) and **the stadium** (capacity, opening year, home teams, photo — from Wikipedia).
@@ -22,13 +24,13 @@ Cap Day answers three questions for both teams: **when do they play next, what i
 
 The schedule, squads and club form are built by [`scripts/build-usa.mjs`](scripts/build-usa.mjs) into `data/usa/men.json` and `data/usa/women.json`, refreshed hourly by the [`usa-hub`](.github/workflows/usa-hub.yml) Action. Live match detail is fetched by the page itself. [`usa.html`](usa.html) is only a redirect, kept so old links and QR codes still work.
 
-**AO Matchday** ([`ao.html`](ao.html)) is the same app under American Outlaws naming, used by AO Central New Jersey. It is generated from `index.html` by [`scripts/build-ao.mjs`](scripts/build-ao.mjs) (the tests fail when it is behind), with two cards of its own from [`js/ao.js`](js/ao.js): where each chapter is watching the next match, and a chapter finder. The chapters and watch parties in `data/ao/chapters.json` are read from theamericanoutlaws.com by [`scripts/build-ao-chapters.mjs`](scripts/build-ao-chapters.mjs), twice a day, by the [`ao-chapters`](.github/workflows/ao-chapters.yml) Action. Like the other data scripts it will not replace a good file with a thin one. The same script writes a calendar feed for each chapter (`data/ao/cal/<chapter>.ics`) with the bar as each event's location, and [`ao-sign.html`](ao-sign.html) is a printable sign with the page's QR code.
+**AO Matchday** ([`ao.html`](ao.html)) is the page people use. It is generated from `index.html` by [`scripts/build-ao.mjs`](scripts/build-ao.mjs) (the tests fail when it is behind), with two cards of its own from [`js/ao.js`](js/ao.js): where each chapter is watching the next match, and a chapter finder. The chapters and watch parties in `data/ao/chapters.json` are read from theamericanoutlaws.com by [`scripts/build-ao-chapters.mjs`](scripts/build-ao-chapters.mjs), twice a day, by the [`ao-chapters`](.github/workflows/ao-chapters.yml) Action. Like the other data scripts it will not replace a good file with a thin one. The same script writes a calendar feed for each chapter (`data/ao/cal/<chapter>.ics`) with the bar as each event's location, and [`ao-sign.html`](ao-sign.html) is a printable sign with the page's QR code.
 
 ## Engineering
 
 - **Core logic is separate and tested.** [`js/core.js`](js/core.js) holds the pure match logic (feed parsing, competition and match explanations, prediction grading, win expectancy). The page loads it as a plain script; the tests load it with `require()`.
 - **The "Did you know?" facts are a plain list.** [`js/facts.js`](js/facts.js) holds them, each marked as one for newcomers or a deep cut, with the rules for adding one at the top of the file. A fact that a future result could change carries an `until` date and drops out of the app after it, until someone checks it and moves the date. `factOrder` in `js/core.js` decides the order: the next opponent's facts first, then a fresh mix each day.
-- **Tests:** `node --test` (205 tests, no dependencies, about ten seconds).
+- **Tests:** `node --test` (207 tests, no dependencies, about ten seconds).
   - [`test/core.test.cjs`](test/core.test.cjs): the logic against real recorded feed data in `test/fixtures/`.
   - [`test/render.test.cjs`](test/render.test.cjs): what each section puts on screen in every state — before kickoff, live, connection lost, full time, second leg, friendly, no match scheduled, women's view, test mode — plus the prediction flow, the feedback poll, escaping of feed text, and one section failing without taking the others down. The page's own code runs in a sandbox with a stand-in document, a fixed clock and recorded data ([`test/helpers/page.cjs`](test/helpers/page.cjs)).
   - [`test/browser.test.cjs`](test/browser.test.cjs): the whole app in headless Chrome, served locally — it boots, every section fills in, old links redirect. Skipped where no Chrome is installed.

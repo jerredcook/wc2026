@@ -165,8 +165,9 @@ test("data files: the build's working flags never reach the published data", () 
 test("every script the front page loads is in the offline shell and in the build fingerprint", async () => {
   const shell = /const SHELL = (\[[^\]]*\])/.exec(read("sw.js"))[1];
   const code = /export const CODE = (\[[^\]]*\])/.exec(read("scripts/build-id.mjs"))[1];
-  const scripts = [...read("index.html").matchAll(/<script[^>]*\ssrc="([^"]+)"/g)].map(m => m[1]);
-  assert.ok(scripts.includes("js/core.js") && scripts.includes("js/qr.js"));
+  const scripts = [...new Set([...(read("index.html") + read("ao.html")).matchAll(/<script[^>]*\ssrc="([^"]+)"/g)].map(m => m[1]))];
+  assert.ok(scripts.includes("js/core.js") && scripts.includes("js/qr.js") && scripts.includes("js/ao.js"));
+  for (const f of ["ao.html", "ao.webmanifest"]) { assert.ok(shell.includes(`"./${f}"`), f + " is not in the offline shell"); assert.ok(code.includes(`"${f}"`), f + " is not in the build fingerprint"); }
   for (const f of scripts.filter(f => f !== "js/count.js")) {
     assert.ok(shell.includes(`"./${f}"`), `${f} is not in the service worker's offline shell: the installed app would break offline`);
     assert.ok(code.includes(`"${f}"`), `${f} is not in the build fingerprint: open copies would not notice it changing`);

@@ -14,8 +14,8 @@ import path from "node:path";
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-/* The files that make up the Cap Day app itself. */
-export const CODE = ["index.html", "js/core.js", "js/facts.js", "js/qr.js", "sw.js", "manifest.webmanifest"];
+/* The files that make up the app itself. */
+export const CODE = ["index.html", "ao.html", "js/core.js", "js/facts.js", "js/qr.js", "js/ao.js", "sw.js", "manifest.webmanifest", "ao.webmanifest"];
 
 export function fingerprint(read = f => readFileSync(path.join(ROOT, f))) {
   const h = createHash("sha256");

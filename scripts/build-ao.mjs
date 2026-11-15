@@ -23,7 +23,9 @@ const swapRe = (re, to) => {
 // names its own address (canonical) and spells the chapter out in the title and description.
 const TITLE = "AO Matchday — American Outlaws Central New Jersey";
 swapRe(/<title>[^<]*<\/title>/, `<title>${TITLE}</title>`);
-swap(`<link rel="canonical" href="https://jerredcook.github.io/wc2026/">`, `<link rel="canonical" href="https://jerredcook.github.io/wc2026/ao.html">`);
+// Cap Day is retired for now: index.html sends its visitors here. This page must not send them on again.
+swapRe(/<script>\/\* Cap Day is retired for now[^\n]*<\/script>\n/, "");
+swap(`https://jerredcook.github.io/wc2026/og-image.png`, `https://jerredcook.github.io/wc2026/ao-og.png`);
 swapRe(/<meta name="description" content="[^"]*">/, `<meta name="description" content="American Outlaws Central New Jersey's matchday app: when the USA plays next, how to watch, and the watch party at every AO chapter in the country.">`);
 swapRe(/<meta property="og:title" content="[^"]*">/, `<meta property="og:title" content="${TITLE}">`);
 swapRe(/<meta property="og:site_name" content="[^"]*">/, `<meta property="og:site_name" content="AO Matchday">`);
@@ -89,7 +91,9 @@ swap(`<b>A newer version of Cap Day is ready.</b>`, `<b>A newer version of AO Ma
 swap(`<dialog id="qr" aria-label="QR code for Cap Day">`, `<dialog id="qr" aria-label="QR code for AO Matchday">`);
 swap(`navigator.share({ title: "Cap Day", text, url })`, `navigator.share({ title: "AO Matchday", text, url })`);
 swap(`Would you use Cap Day to follow the national teams?`, `Would you use AO Matchday to follow the national teams?`);
-swap(`$("ver").textContent = "Cap Day v" + VERSION;`, `$("ver").textContent = "AO Matchday, built on Cap Day v" + VERSION;`);
+swap(`$("ver").textContent = "Cap Day v" + VERSION;`, `$("ver").textContent = "AO Matchday v" + VERSION;`);
+/* Anything left that names Cap Day (the footer link before the script fills it, the share-link note, the calendar file's maker). */
+html = html.split("Cap Day").join("AO Matchday");
 
 const out = "<!-- Generated from index.html by scripts/build-ao.mjs. Do not edit by hand. -->\n" + html;
 /* --check writes nothing: it fails when ao.html is behind index.html (the tests run it). */

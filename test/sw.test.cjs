@@ -75,7 +75,7 @@ test("offline: the stored copy is served", async () => {
 });
 
 test("offline with nothing stored for that address: the app's front page is the fallback", async () => {
-  const w = worker({ network: offline, stored: { [ORIGIN + "/wc2026/index.html"]: ok("front page") } });
+  const w = worker({ network: offline, stored: { [ORIGIN + "/wc2026/ao.html"]: ok("front page"), [ORIGIN + "/wc2026/index.html"]: ok("the retired page, which would only try to send them on") } });
   assert.equal((await w.request("some/new/page")).body, "front page");
 });
 
