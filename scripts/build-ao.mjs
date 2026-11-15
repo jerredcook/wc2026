@@ -1,5 +1,5 @@
-// Builds ao.html, the American Outlaws concept page, from index.html.
-// The concept is the Cap Day hub with AO naming plus two cards from js/ao.js:
+// Builds ao.html, AO Central New Jersey's matchday app, from index.html.
+// It is the Cap Day hub with AO naming plus two cards from js/ao.js:
 // "Watch with American Outlaws" and "Find your crew". Rerun after changing index.html:
 //   node scripts/build-ao.mjs
 // The tests fail until you do (they run it with --check).
@@ -19,25 +19,26 @@ const swapRe = (re, to) => {
   html = html.replace(re, to);
 };
 
-const TITLE = "AO Matchday (concept) — American Outlaws";
+const TITLE = "AO Matchday — AO Central New Jersey";
 swapRe(/<title>[^<]*<\/title>/, `<title>${TITLE}</title>\n<meta name="robots" content="noindex,nofollow">`);
-swapRe(/<meta name="description" content="[^"]*">/, `<meta name="description" content="Concept app for American Outlaws: next match, how to watch, and the nearest AO watch party.">`);
+swapRe(/<meta name="description" content="[^"]*">/, `<meta name="description" content="AO Central New Jersey's matchday app: the next U.S. match, how to watch, and where every American Outlaws chapter is watching.">`);
 swapRe(/<meta property="og:title" content="[^"]*">/, `<meta property="og:title" content="${TITLE}">`);
 swapRe(/<meta property="og:site_name" content="[^"]*">/, `<meta property="og:site_name" content="AO Matchday">`);
-swapRe(/<meta property="og:description" content="[^"]*">/, `<meta property="og:description" content="Concept app for American Outlaws.">`);
+swapRe(/<meta property="og:description" content="[^"]*">/, `<meta property="og:description" content="The matchday app of AO Central New Jersey.">`);
 swapRe(/<meta property="og:url" content="[^"]*">/, `<meta property="og:url" content="https://jerredcook.github.io/wc2026/ao.html">`);
 swap(`<link rel="manifest" href="manifest.webmanifest">`, `<link rel="manifest" href="ao.webmanifest">`);
 swap(`<meta name="apple-mobile-web-app-title" content="Cap Day">`, `<meta name="apple-mobile-web-app-title" content="AO Matchday">`);
 
 swap(`</style>`, `
-/* ── AO concept ── */
+/* ── AO Matchday ── */
 .aoband{background:#0b2a5b;color:#fff;border-radius:14px;padding:14px 16px;margin-bottom:14px;border-bottom:4px solid #c8102e}
 .aoband .w{font-size:20px;font-weight:900;letter-spacing:.08em;text-transform:uppercase;line-height:1.1}
 .aoband .t{font-size:12px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#ffb3bd;margin-top:3px}
 .aoband p{font-size:12px;line-height:1.45;color:#d3daea;margin-top:8px}
 .aocard{border-top:4px solid var(--red)}
 .aohome{display:flex;gap:12px;align-items:flex-start;background:var(--chip);border-radius:12px;padding:12px;margin-top:10px;flex-wrap:wrap}
-.aohome .aogo{background:var(--card);flex:1 0 100%;text-align:center;padding:9px 14px}
+.aoacts{display:flex;gap:8px;flex:1 0 100%}
+.aoacts .btn{background:var(--card);flex:1 1 0;text-align:center;padding:9px 10px}
 .aocard>details>summary{min-height:32px;display:flex;align-items:center}
 .aocard>details>summary::before{margin-right:5px}
 .aor{display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--line)}
@@ -66,18 +67,18 @@ swapRe(/<h1>[^<]*<\/h1>\s*<p class="sub"[^>]*>[\s\S]*?<\/p>/,
   `<h1>AO Matchday</h1>
       <p class="sub" style="margin-bottom:0">American Outlaws &middot; U.S. women's &amp; men's national teams</p>`);
 swap(`<div class="nextup" id="nextup"></div>`, `<div class="aoband">
-    <div class="w">American Outlaws</div>
-    <div class="t">Unite &amp; Strengthen</div>
-    <p>A concept for an AO app, built by Jerred Cook of AO Central New Jersey on top of his Cap Day app. It is not an official American Outlaws product.</p>
+    <div class="w">AO Central New Jersey</div>
+    <div class="t">American Outlaws &middot; Unite &amp; Strengthen</div>
+    <p>The matchday app of AO Central New Jersey. Built by a chapter member; not a product of American Outlaws national.</p>
   </div>
   <div class="nextup" id="nextup"></div>`);
 /* The watch party sits inside the match zone, above the match card: picking a team scrolls to the top of that zone. */
 swap(`<div id="match"><div id="hero"></div></div>`, `<div id="match"><div id="aoWatch"></div><div id="hero"></div></div>\n  <div id="aoChapters"></div>`);
 swap(`<span class="appname">Cap Day</span>`, `<span class="appname">AO Matchday</span>`);
-swap(`<p>Scan to open Cap Day<br>jerredcook.github.io/wc2026</p>`, `<p>Scan to open AO Matchday<br>jerredcook.github.io/wc2026/ao.html</p>`);
+swap(`<p>Scan to open Cap Day<br>jerredcook.github.io/wc2026</p>`, `<p>Scan to open AO Matchday<br>jerredcook.github.io/wc2026/ao.html</p>\n  <p style="margin-top:8px"><a href="ao-sign.html">Print a sign for the bar</a></p>`);
 swap(`<img src="qr.svg" alt="QR code for this page"`, `<img src="ao-qr.svg" alt="QR code for this page"`);
 swap(`Unofficial and fan-made — not affiliated with or endorsed by U.S. Soccer, Concacaf or FIFA.`,
-  `Concept build. Not an official American Outlaws app, and not affiliated with or endorsed by U.S. Soccer, Concacaf or FIFA. American Outlaws chapter and watch party listings are copied from theamericanoutlaws.com.`);
+  `The matchday app of AO Central New Jersey, built by a chapter member. Not a product of American Outlaws national, and not affiliated with or endorsed by U.S. Soccer, Concacaf or FIFA. American Outlaws chapter and watch party listings are copied from theamericanoutlaws.com.`);
 swapRe(/(<script data-goatcounter[^>]*><\/script>)/, `$1\n<script src="js/ao.js"></script>`);
 /* Wording a visitor sees or shares: the page's own name, not Cap Day's. */
 swap(`<b>Add Cap Day to your iPhone.</b>`, `<b>Add AO Matchday to your iPhone.</b>`);
@@ -85,7 +86,7 @@ swap(`<b>A newer version of Cap Day is ready.</b>`, `<b>A newer version of AO Ma
 swap(`<dialog id="qr" aria-label="QR code for Cap Day">`, `<dialog id="qr" aria-label="QR code for AO Matchday">`);
 swap(`navigator.share({ title: "Cap Day", text, url })`, `navigator.share({ title: "AO Matchday", text, url })`);
 swap(`Would you use Cap Day to follow the national teams?`, `Would you use AO Matchday to follow the national teams?`);
-swap(`$("ver").textContent = "Cap Day v" + VERSION;`, `$("ver").textContent = "AO Matchday concept, built on Cap Day v" + VERSION;`);
+swap(`$("ver").textContent = "Cap Day v" + VERSION;`, `$("ver").textContent = "AO Matchday, built on Cap Day v" + VERSION;`);
 
 const out = "<!-- Generated from index.html by scripts/build-ao.mjs. Do not edit by hand. -->\n" + html;
 /* --check writes nothing: it fails when ao.html is behind index.html (the tests run it). */

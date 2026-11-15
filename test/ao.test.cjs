@@ -181,3 +181,64 @@ test("ao: what the privacy page says about location matches what the page does",
   assert.ok(!/No access to your location, contacts/.test(privacy), "and no longer says the app never uses location");
   assert.match(privacy, /theamericanoutlaws\.com/, "the crests' source is named");
 });
+
+test("ao: the page is the chapter's app in every place it names itself", () => {
+  const html = read("ao.html"), man = JSON.parse(read("ao.webmanifest"));
+  assert.match(html, /<title>AO Matchday — AO Central New Jersey<\/title>/);
+  assert.equal(man.name, "AO Matchday");
+  for (const [what, text] of [["the page", html.replace(/ao-concept/g, "")], ["the install details", JSON.stringify(man)], ["the sign", read("ao-sign.html")]]) assert.ok(!/concept/i.test(text), what + " still says concept");
+  assert.equal((html.match(/not a product of American Outlaws national/gi) || []).length, 2, "the band and the footer both say whose app it is not");
+});
+
+test("ao: the sign for the bar points at the AO page and can be printed", () => {
+  const sign = read("ao-sign.html");
+  assert.match(sign, /<img class="qr" src="ao-qr\.svg" alt="[^"]+"/);
+  assert.match(sign, /jerredcook\.github\.io\/wc2026\/ao\.html/);
+  assert.match(sign, /@media print/); assert.match(sign, /window\.print\(\)/);
+  assert.match(sign, /<meta name="robots" content="noindex,nofollow">/);
+  assert.match(read("ao.html"), /<a href="ao-sign\.html">Print a sign for the bar<\/a>/, "the QR dialog on the AO page links to it");
+  assert.ok(!/<script/.test(sign), "it is a plain page");
+});
+
+test("ao: every chapter has a calendar feed, and it carries the bar", async () => {
+  const { chapterCal, writeCals } = await reader();
+  const d = JSON.parse(read("data/ao/chapters.json"));
+  for (const c of d.chapters) assert.equal(read("data/ao/cal/" + c.slug + ".ics"), chapterCal(c), c.slug + ": the calendar on disk is the one the listings give");
+  const cal = chapterCal({ slug: "x-y", name: "Tom, Dick & Harry", parties: [
+    { date: "2026-11-28T01:30Z", title: "USWNT vs El Salvador", venue: "Wilka's; Bar", address: "241 Bowery, New York", official: false },
+    { date: "2026-11-18T00:00Z", title: "USMNT vs Haiti", venue: "Long Acre", address: "146 W 47th St, New York, NY 10036, a very long address that has to be folded onto a second line", official: true }] });
+  const lines = cal.split("\r\n");
+  assert.ok(lines.every(l => l.length <= 75), "no line is longer than calendars allow");
+  const flat = cal.replace(/\r\n /g, "");
+  assert.match(flat, /X-WR-CALNAME:AO Tom\\, Dick & Harry watch parties/);
+  assert.ok(flat.indexOf("USMNT vs Haiti") < flat.indexOf("USWNT vs El Salvador"), "in order of kickoff");
+  assert.match(flat, /UID:ao-x-y-20261118T0000Z-1@capday\r\nDTSTAMP:20261118T000000Z\r\nDTSTART:20261118T000000Z\r\nDTEND:20261118T020000Z\r\nSUMMARY:USMNT vs Haiti · AO Tom\\, Dick & Harry watch party/);
+  assert.match(flat, /LOCATION:Wilka's\\; Bar\\, 241 Bowery\\, New York/);
+  assert.match(flat, /DESCRIPTION:Official American Outlaws watch party\.\\nhttps:\/\/theamericanoutlaws\.com\/chapters\/x-y/);
+  assert.equal((chapterCal({ slug: "quiet", name: "Quiet" }).match(/BEGIN:VEVENT/g) || []).length, 0, "a chapter with nothing posted has an empty calendar, not a missing one");
+
+  const dir = fs.mkdtempSync(path.join(require("node:os").tmpdir(), "aocal-"));
+  try {
+    assert.equal(writeCals([{ slug: "a", name: "A" }, { slug: "../evil", name: "E" }], dir), 1, "an odd address on the site cannot write outside the folder");
+    assert.deepStrictEqual(fs.readdirSync(dir), ["a.ics"]);
+    assert.equal(writeCals([{ slug: "a", name: "A" }], dir), 0, "an unchanged calendar is not rewritten");
+  } finally { fs.rmSync(dir, { recursive: true, force: true }); }
+});
+
+test("ao page: Add to calendar subscribes to the chosen chapter's feed, and the hub's own calendar keeps its words", async () => {
+  const p = await boot({ hash: "#men" });
+  p.el("subHead").textContent = "Never miss a match"; p.el("subText").textContent = "the hub's words";     // what the page's own markup says
+  p.run(AO_JS); await p.settle();
+  p.run("AO.data = " + JSON.stringify(LIST) + "; renderAO()");
+  assert.match(p.html("aoWatch"), /<button class="btn" onclick="aoSub\(\)">📅 Add to calendar<\/button>/);
+  p.run("aoSub()");
+  assert.equal(p.el("sub").open, true);
+  assert.equal(p.el("subApple").href, "webcal://test.local/wc2026/data/ao/cal/middlesex-county.ics");
+  assert.equal(p.el("subGoogle").href, "https://calendar.google.com/calendar/render?cid=" + encodeURIComponent("http://test.local/wc2026/data/ao/cal/middlesex-county.ics"));
+  assert.equal(p.el("subHead").textContent, "AO Central New Jersey watch parties");
+  assert.match(p.el("subText").textContent, /with the bar and its address/);
+  assert.ok(p.tracked.some(x => /ao-concept: calendar-chapter/.test(x)));
+  p.run("openSub()");
+  assert.equal(p.el("subApple").href, "webcal://test.local/wc2026/data/usa/all.ics");
+  assert.deepStrictEqual([p.el("subHead").textContent, p.el("subText").textContent], ["Never miss a match", "the hub's words"]);
+});

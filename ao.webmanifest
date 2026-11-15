@@ -1,8 +1,8 @@
 {
  "id": "/wc2026/ao.html",
- "name": "AO Matchday (concept)",
+ "name": "AO Matchday",
  "short_name": "AO Matchday",
- "description": "Concept app for American Outlaws: next match, how to watch, and the nearest AO watch party.",
+ "description": "AO Central New Jersey's matchday app: the next U.S. match, how to watch, and where every American Outlaws chapter is watching.",
  "categories": ["sports"],
  "lang": "en",
  "start_url": "./ao.html#app",

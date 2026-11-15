@@ -15,13 +15,18 @@
    - if the list is much shorter than before, or more than a tenth of the pages
      fail, nothing is written and the script exits non-zero;
    - the file is byte-identical when nothing changed (the "captured" time only
-     moves when the content does). */
-import { readFileSync, writeFileSync } from "node:fs";
+     moves when the content does).
+
+   It also writes a calendar feed for each chapter, data/ao/cal/<chapter>.ics:
+   the matches that chapter has named a place for, with the bar as the location. */
+import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
+import { ics } from "./build-usa.mjs";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 const FILE = path.join(ROOT, "data", "ao", "chapters.json");
+const CAL = path.join(ROOT, "data", "ao", "cal");
 const SITE = "https://theamericanoutlaws.com";
 const PAUSE_MS = 700;
 
@@ -110,6 +115,29 @@ export function merge(slugs, pages, old, now) {
   return { data: { captured: same ? old.captured : now, source: SITE + "/chapters", chapters }, failed, same: !!same };
 }
 
+/* A chapter's calendar feed: each match it has named a place for, with the bar as the location.
+   A chapter with nothing posted gets an empty calendar, so a subscription made earlier keeps working. */
+export function chapterCal(c) {
+  const events = (c.parties || []).map((p, i) => ({
+    uid: `ao-${c.slug}-${p.date.replace(/\W/g, "")}-${i}@capday`, start: p.date.replace(/Z$/, ":00Z"),
+    summary: `${p.title} · AO ${c.name} watch party`, location: [p.venue, p.address].filter(Boolean).join(", "),
+    desc: [p.official ? "Official American Outlaws watch party." : "", `${SITE}/chapters/${c.slug}`].filter(Boolean).join("\n"),
+  }));
+  return ics(`AO ${c.name} watch parties`, events);
+}
+/* Writes the feeds that differ from what is on disk. Returns how many were written. */
+export function writeCals(chapters, dir = CAL) {
+  mkdirSync(dir, { recursive: true });
+  let n = 0;
+  for (const c of chapters) {
+    if (!/^[a-z0-9-]+$/.test(c.slug)) continue;
+    const file = path.join(dir, c.slug + ".ics"), text = chapterCal(c);
+    let have = null; try { have = readFileSync(file, "utf8"); } catch (e) {}
+    if (have !== text) { writeFileSync(file, text); n++; }
+  }
+  return n;
+}
+
 /* Refuse to replace a good file with a thin one. */
 export function problems(result, slugs, old) {
   const out = [], before = ((old && old.chapters) || []).length;
@@ -152,6 +180,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   console.error("watch parties by kickoff: " + JSON.stringify(dates));
   if (bad.length) { console.error("Not written: " + bad.join("; ") + "."); process.exit(1); }
   if (dry) console.error("Dry run: nothing written.");
-  else if (result.same) console.error("Nothing changed.");
-  else { writeFileSync(FILE, JSON.stringify(result.data) + "\n"); console.error("Wrote data/ao/chapters.json"); }
+  else {
+    if (result.same) console.error("Nothing changed.");
+    else { writeFileSync(FILE, JSON.stringify(result.data) + "\n"); console.error("Wrote data/ao/chapters.json"); }
+    const n = writeCals(result.data.chapters);
+    if (n) console.error(`Wrote ${n} chapter calendars in data/ao/cal`);
+  }
 }

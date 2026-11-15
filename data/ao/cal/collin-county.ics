@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Cap Day//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:AO Collin County watch parties
+REFRESH-INTERVAL;VALUE=DURATION:PT6H
+X-PUBLISHED-TTL:PT6H
+BEGIN:VEVENT
+UID:ao-collin-county-20261118T0000Z-0@capday
+DTSTAMP:20261118T000000Z
+DTSTART:20261118T000000Z
+DTEND:20261118T020000Z
+SUMMARY:USMNT vs Haiti · AO Collin County watch party
+LOCATION:Glen Echo Brewing\, 106 N Birmingham St\, Wylie\, TX\, 75098
+DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
+ tlaws.com/chapters/collin-county
+END:VEVENT
+BEGIN:VEVENT
+UID:ao-collin-county-20261128T0130Z-1@capday
+DTSTAMP:20261128T013000Z
+DTSTART:20261128T013000Z
+DTEND:20261128T033000Z
+SUMMARY:USWNT vs El Salvador · AO Collin County watch party
+LOCATION:Glen Echo Brewing\, 106 N Birmingham St\, Wylie\, TX\, 75098
+DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
+ tlaws.com/chapters/collin-county
+END:VEVENT
+BEGIN:VEVENT
+UID:ao-collin-county-20261213T2030Z-2@capday
+DTSTAMP:20261213T203000Z
+DTSTART:20261213T203000Z
+DTEND:20261213T223000Z
+SUMMARY:USMNT vs Jamaica · AO Collin County watch party
+LOCATION:Glen Echo Brewing\, 106 N Birmingham St\, Wylie\, TX\, 75098
+DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
+ tlaws.com/chapters/collin-county
+END:VEVENT
+END:VCALENDAR

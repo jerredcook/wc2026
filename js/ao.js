@@ -1,4 +1,4 @@
-/* AO Matchday concept: American Outlaws chapters and watch parties on top of Cap Day.
+/* AO Matchday, AO Central New Jersey's app: American Outlaws chapters and watch parties on top of Cap Day.
    Loaded only by ao.html, after the main script, so it can use its globals
    (S, $, h, D, fmtDay, fmtTime, NAME, render, track). The chapter and watch
    party listings are a snapshot of theamericanoutlaws.com (data/ao/chapters.json). */
@@ -6,7 +6,7 @@
 const AO = { data: null, home: "middlesex-county", here: null, q: "", wq: "", all: false, geo: "", more: false };
 try { AO.home = localStorage.getItem("ao.home") || AO.home; } catch (e) {}
 
-/* Visits on the concept page are counted apart from Cap Day's. */
+/* What people do on the AO page is counted apart from Cap Day's (the name dates from when the page was a concept). */
 track = function (name) { name = "ao-concept: " + name; try { if (window.goatcounter && window.goatcounter.count) window.goatcounter.count({ path: name, title: name, event: true }); } catch (e) {} };
 
 const aoChapter = slug => AO.data && AO.data.chapters.find(c => c.slug === slug);
@@ -69,7 +69,8 @@ function renderWatch() {
     <div class="cnote" style="margin:2px 0 0">${h(title)} · ${h(fmtDay(m.date))} · ${h(fmtTime(m.date))}</div>
     ${home ? `<div class="aohome">${aoCrest(home.c)}<div class="aot"><div class="kicker" style="color:var(--red)">Your chapter${home.p.official ? " · official watch party" : ""}</div>
         <div class="aon big">${h(aoName(home.c))}</div><b>${h(home.p.venue)}</b>${home.p.address ? `<small>${h(home.p.address)}</small>` : ""}</div>
-        ${home.p.address ? `<a class="btn aogo" href="${h(aoMaps(home.p.address))}" target="_blank" rel="noopener" onclick="track('directions')">📍 Directions</a>` : ""}</div>`
+        <div class="aoacts">${home.p.address ? `<a class="btn" href="${h(aoMaps(home.p.address))}" target="_blank" rel="noopener" onclick="track('directions')">📍 Directions</a>` : ""}
+        <button class="btn" onclick="aoSub()">📅 Add to calendar</button></div></div>`
       : hc ? `<div class="empty" style="margin:8px 0 0">${h(aoName(hc))} hasn't posted a watch party for this match yet.</div>` : ""}
     ${rest.length ? `<details ${AO.more ? "open" : ""} ontoggle="AO.more=this.open"><summary>${rest.length} more watch part${rest.length === 1 ? "y" : "ies"} across the country</summary>
       <input class="aoq" id="aoWQ" type="search" placeholder="Search by city, state, or bar" value="${h(AO.wq)}" autocomplete="off" enterkeyhint="search" aria-label="Search watch parties">
@@ -80,6 +81,22 @@ function renderWatch() {
   </div>`;
   const box = $("aoWQ"); if (box) box.addEventListener("input", e => { AO.wq = e.target.value; $("aoWList").innerHTML = aoWatchList(rest); });
 }
+
+/* The chapter's own calendar feed (data/ao/cal/<chapter>.ics, written by scripts/build-ao-chapters.mjs):
+   every match the chapter has named a place for, with the bar as the location. It uses the hub's dialog. */
+const AO_SUB = [$("subHead").textContent, $("subText").textContent];
+function aoSub() {
+  const c = aoChapter(AO.home); if (!c) return;
+  const feed = new URL("data/ao/cal/" + encodeURIComponent(c.slug) + ".ics", location.href).href;
+  $("subHead").textContent = aoName(c) + " watch parties";
+  $("subText").textContent = "Add every " + aoName(c) + " watch party to your phone's calendar, with the bar and its address. New matches and changes of place arrive automatically.";
+  $("subApple").href = feed.replace(/^https?:/, "webcal:");
+  $("subGoogle").href = "https://calendar.google.com/calendar/render?cid=" + encodeURIComponent(feed.replace(/^https:/, "http:"));
+  $("sub").showModal(); track("calendar-chapter");
+}
+/* The hub's own "all matches" calendar uses the same dialog: give it its own words back. */
+const aoBaseSub = openSub;
+openSub = function () { $("subHead").textContent = AO_SUB[0]; $("subText").textContent = AO_SUB[1]; aoBaseSub(); };
 
 function aoLocate() {
   if (!navigator.geolocation) { AO.geo = "This browser can't share its location."; renderAO(); return; }

@@ -1,0 +1,49 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Cap Day//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:AO St. Louis watch parties
+REFRESH-INTERVAL;VALUE=DURATION:PT6H
+X-PUBLISHED-TTL:PT6H
+BEGIN:VEVENT
+UID:ao-st-louis-20261118T0000Z-0@capday
+DTSTAMP:20261118T000000Z
+DTSTART:20261118T000000Z
+DTEND:20261118T020000Z
+SUMMARY:USMNT vs Haiti · AO St. Louis watch party
+LOCATION:Amsterdam Tavern\, 3175 Morganford Rd\, St. Louis\, MO\, 63116
+DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
+ tlaws.com/chapters/st-louis
+END:VEVENT
+BEGIN:VEVENT
+UID:ao-st-louis-20261128T0130Z-1@capday
+DTSTAMP:20261128T013000Z
+DTSTART:20261128T013000Z
+DTEND:20261128T033000Z
+SUMMARY:USWNT vs El Salvador · AO St. Louis watch party
+LOCATION:Amsterdam Tavern\, 3175 Morganford Rd\, St. Louis\, MO\, 63116
+DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
+ tlaws.com/chapters/st-louis
+END:VEVENT
+BEGIN:VEVENT
+UID:ao-st-louis-20261128T0130Z-2@capday
+DTSTAMP:20261128T013000Z
+DTSTART:20261128T013000Z
+DTEND:20261128T033000Z
+SUMMARY:USWNT vs El Salvador · AO St. Louis watch party
+LOCATION:The Sports Bra\, 7344 Manchester Rd\, Maplewood\, MO\, 63143
+DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
+ tlaws.com/chapters/st-louis
+END:VEVENT
+BEGIN:VEVENT
+UID:ao-st-louis-20261213T2030Z-3@capday
+DTSTAMP:20261213T203000Z
+DTSTART:20261213T203000Z
+DTEND:20261213T223000Z
+SUMMARY:USMNT vs Jamaica · AO St. Louis watch party
+LOCATION:Amsterdam Tavern\, 3175 Morganford Rd\, St. Louis\, MO\, 63116
+DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
+ tlaws.com/chapters/st-louis
+END:VEVENT
+END:VCALENDAR

@@ -75,6 +75,13 @@ test("an iPhone gets the Add to Home Screen tip", opts, async () => {
   assert.ok(dom.includes("Add to Home Screen"));
 });
 
+test("the sign for the bar fits on a phone screen and shows its QR code", opts, async () => {
+  const r = await probe("url=/ao-sign.html&w=360&sections=");
+  assert.equal(r.pageOverflow, 0, "the page scrolls sideways");
+  assert.deepEqual(r.offScreen, []); assert.deepEqual(r.smallTargets, []); assert.deepEqual(r.brokenLocalImages, []); assert.equal(r.unlabelledImages, 0);
+  assert.ok((await open("/ao-sign.html")).includes("Point your phone's camera here"));
+});
+
 test("old links still land on the app, and the other pages load", opts, async () => {
   assert.ok((await open("/usa.html")).includes('id="nextup"'), "usa.html should redirect to the app");
   const wc = await open("/worldcup.html");
@@ -176,7 +183,8 @@ test("layout holds with a live match on a small phone (timeline, stats, lineups 
 test("the AO Matchday concept page boots in a real browser with both of its cards", opts, async () => {
   const dom = await open("/ao.html");
   assert.ok(!dom.includes("couldn't be shown"), "a section failed to draw");
-  assert.ok(dom.includes("AO Matchday") && dom.includes("not an official American Outlaws product"), "the concept notice is on the page");
+  assert.ok(dom.includes("AO Matchday") && dom.includes("The matchday app of AO Central New Jersey") && dom.includes("not a product of American Outlaws national"), "the page says whose app it is, and whose it is not");
+  assert.ok(!/concept/i.test(dom.replace(/ao-concept/g, "")), "the page no longer calls itself a concept");
   assert.ok(dom.includes("Add AO Matchday to your iPhone") && !dom.includes("Add Cap Day"), "the install tip names this page, not Cap Day");
   assert.ok(section(dom, "aoWatch").includes("Watch with American Outlaws"), "the watch party card is drawn");
   const ch = section(dom, "aoChapters");

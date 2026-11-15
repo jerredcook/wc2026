@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Cap Day//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:AO Macon watch parties
+REFRESH-INTERVAL;VALUE=DURATION:PT6H
+X-PUBLISHED-TTL:PT6H
+BEGIN:VEVENT
+UID:ao-macon-20261118T0000Z-0@capday
+DTSTAMP:20261118T000000Z
+DTSTART:20261118T000000Z
+DTEND:20261118T020000Z
+SUMMARY:USMNT vs Haiti · AO Macon watch party
+LOCATION:Bearfoot Tavern\, 468 2nd St\, Macon\, GA\, 31201
+DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
+ tlaws.com/chapters/macon
+END:VEVENT
+BEGIN:VEVENT
+UID:ao-macon-20261128T0130Z-1@capday
+DTSTAMP:20261128T013000Z
+DTSTART:20261128T013000Z
+DTEND:20261128T033000Z
+SUMMARY:USWNT vs El Salvador · AO Macon watch party
+LOCATION:Bearfoot Tavern\, 468 2nd St\, Macon\, GA\, 31201
+DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
+ tlaws.com/chapters/macon
+END:VEVENT
+BEGIN:VEVENT
+UID:ao-macon-20261213T2030Z-2@capday
+DTSTAMP:20261213T203000Z
+DTSTART:20261213T203000Z
+DTEND:20261213T223000Z
+SUMMARY:USMNT vs Jamaica · AO Macon watch party
+LOCATION:Bearfoot Tavern\, 468 2nd St\, Macon\, GA\, 31201
+DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
+ tlaws.com/chapters/macon
+END:VEVENT
+END:VCALENDAR

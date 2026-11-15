@@ -1,0 +1,39 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Cap Day//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:AO Asheville watch parties
+REFRESH-INTERVAL;VALUE=DURATION:PT6H
+X-PUBLISHED-TTL:PT6H
+BEGIN:VEVENT
+UID:ao-asheville-20261118T0000Z-0@capday
+DTSTAMP:20261118T000000Z
+DTSTART:20261118T000000Z
+DTEND:20261118T020000Z
+SUMMARY:USMNT vs Haiti · AO Asheville watch party
+LOCATION:Olde London Road\, 270 Depot St\, Asheville\, NC\, 28801
+DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
+ tlaws.com/chapters/asheville
+END:VEVENT
+BEGIN:VEVENT
+UID:ao-asheville-20261128T0130Z-1@capday
+DTSTAMP:20261128T013000Z
+DTSTART:20261128T013000Z
+DTEND:20261128T033000Z
+SUMMARY:USWNT vs El Salvador · AO Asheville watch party
+LOCATION:Olde London Road\, 270 Depot St\, Asheville\, NC\, 28801
+DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
+ tlaws.com/chapters/asheville
+END:VEVENT
+BEGIN:VEVENT
+UID:ao-asheville-20261213T2030Z-2@capday
+DTSTAMP:20261213T203000Z
+DTSTART:20261213T203000Z
+DTEND:20261213T223000Z
+SUMMARY:USMNT vs Jamaica · AO Asheville watch party
+LOCATION:Olde London Road\, 270 Depot St\, Asheville\, NC\, 28801
+DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
+ tlaws.com/chapters/asheville
+END:VEVENT
+END:VCALENDAR

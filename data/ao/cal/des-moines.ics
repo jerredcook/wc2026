@@ -1,0 +1,29 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Cap Day//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:AO Des Moines watch parties
+REFRESH-INTERVAL;VALUE=DURATION:PT6H
+X-PUBLISHED-TTL:PT6H
+BEGIN:VEVENT
+UID:ao-des-moines-20261118T0000Z-0@capday
+DTSTAMP:20261118T000000Z
+DTSTART:20261118T000000Z
+DTEND:20261118T020000Z
+SUMMARY:USMNT vs Haiti · AO Des Moines watch party
+LOCATION:The Station\, 3124 Ingersoll Ave\, Des Moines\, IA\, 50312
+DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
+ tlaws.com/chapters/des-moines
+END:VEVENT
+BEGIN:VEVENT
+UID:ao-des-moines-20261213T2030Z-1@capday
+DTSTAMP:20261213T203000Z
+DTSTART:20261213T203000Z
+DTEND:20261213T223000Z
+SUMMARY:USMNT vs Jamaica · AO Des Moines watch party
+LOCATION:The Station\, 3124 Ingersoll Ave\, Des Moines\, IA\, 50312
+DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
+ tlaws.com/chapters/des-moines
+END:VEVENT
+END:VCALENDAR

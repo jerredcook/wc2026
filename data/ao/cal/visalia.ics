@@ -1,0 +1,42 @@
+BEGIN:VCALENDAR
+VERSION:2.0
+PRODID:-//Cap Day//EN
+CALSCALE:GREGORIAN
+METHOD:PUBLISH
+X-WR-CALNAME:AO Visalia watch parties
+REFRESH-INTERVAL;VALUE=DURATION:PT6H
+X-PUBLISHED-TTL:PT6H
+BEGIN:VEVENT
+UID:ao-visalia-20261118T0000Z-0@capday
+DTSTAMP:20261118T000000Z
+DTSTART:20261118T000000Z
+DTEND:20261118T020000Z
+SUMMARY:USMNT vs Haiti · AO Visalia watch party
+LOCATION:Soccer City 1852 Visalia\, 707 W Murray Ave\, Visalia\, CA\, 932
+ 91
+DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
+ tlaws.com/chapters/visalia
+END:VEVENT
+BEGIN:VEVENT
+UID:ao-visalia-20261128T0130Z-1@capday
+DTSTAMP:20261128T013000Z
+DTSTART:20261128T013000Z
+DTEND:20261128T033000Z
+SUMMARY:USWNT vs El Salvador · AO Visalia watch party
+LOCATION:Soccer City 1852 Visalia\, 707 W Murray Ave\, Visalia\, CA\, 932
+ 91
+DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
+ tlaws.com/chapters/visalia
+END:VEVENT
+BEGIN:VEVENT
+UID:ao-visalia-20261213T2030Z-2@capday
+DTSTAMP:20261213T203000Z
+DTSTART:20261213T203000Z
+DTEND:20261213T223000Z
+SUMMARY:USMNT vs Jamaica · AO Visalia watch party
+LOCATION:Soccer City 1852 Visalia\, 707 W Murray Ave\, Visalia\, CA\, 932
+ 91
+DESCRIPTION:Official American Outlaws watch party.\nhttps://theamericanou
+ tlaws.com/chapters/visalia
+END:VEVENT
+END:VCALENDAR
