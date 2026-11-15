@@ -19,9 +19,12 @@ const swapRe = (re, to) => {
   html = html.replace(re, to);
 };
 
-const TITLE = "AO Matchday — AO Central New Jersey";
-swapRe(/<title>[^<]*<\/title>/, `<title>${TITLE}</title>\n<meta name="robots" content="noindex,nofollow">`);
-swapRe(/<meta name="description" content="[^"]*">/, `<meta name="description" content="AO Central New Jersey's matchday app: the next U.S. match, how to watch, and where every American Outlaws chapter is watching.">`);
+// Search engines may list this page. It is nearly the same file as index.html, so it
+// names its own address (canonical) and spells the chapter out in the title and description.
+const TITLE = "AO Matchday — American Outlaws Central New Jersey";
+swapRe(/<title>[^<]*<\/title>/, `<title>${TITLE}</title>`);
+swap(`<link rel="canonical" href="https://jerredcook.github.io/wc2026/">`, `<link rel="canonical" href="https://jerredcook.github.io/wc2026/ao.html">`);
+swapRe(/<meta name="description" content="[^"]*">/, `<meta name="description" content="American Outlaws Central New Jersey's matchday app: when the USA plays next, how to watch, and the watch party at every AO chapter in the country.">`);
 swapRe(/<meta property="og:title" content="[^"]*">/, `<meta property="og:title" content="${TITLE}">`);
 swapRe(/<meta property="og:site_name" content="[^"]*">/, `<meta property="og:site_name" content="AO Matchday">`);
 swapRe(/<meta property="og:description" content="[^"]*">/, `<meta property="og:description" content="The matchday app of AO Central New Jersey.">`);

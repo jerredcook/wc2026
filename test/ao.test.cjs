@@ -23,10 +23,9 @@ test("ao: the chapter snapshot is well formed", () => {
   assert.ok(d.chapters.some(c => c.slug === "middlesex-county"), "the default chapter is in the list");   // it may have no watch party posted: the file is refreshed from AO's site every day, quiet months included
 });
 
-test("ao: the concept page loads its script after the hub and stays out of search", () => {
+test("ao: the page loads its script after the hub", () => {
   const html = read("ao.html");
   assert.ok(html.indexOf('src="js/ao.js"') > html.indexOf("function render()"), "js/ao.js loads after the main script");
-  assert.match(html, /<meta name="robots" content="noindex,nofollow">/);
   assert.match(html, /id="aoWatch"/); assert.match(html, /id="aoChapters"/);
   for (const m of html.matchAll(/(?:src|href)="([^"#?:]+\.(?:js|png|svg|webmanifest|json))"/g)) assert.ok(fs.existsSync(path.join(root, m[1])), "missing file: " + m[1]);
 });
@@ -184,7 +183,7 @@ test("ao: what the privacy page says about location matches what the page does",
 
 test("ao: the page is the chapter's app in every place it names itself", () => {
   const html = read("ao.html"), man = JSON.parse(read("ao.webmanifest"));
-  assert.match(html, /<title>AO Matchday — AO Central New Jersey<\/title>/);
+  assert.match(html, /<title>AO Matchday — American Outlaws Central New Jersey<\/title>/);
   assert.equal(man.name, "AO Matchday");
   for (const [what, text] of [["the page", html.replace(/ao-concept/g, "")], ["the install details", JSON.stringify(man)], ["the sign", read("ao-sign.html")]]) assert.ok(!/concept/i.test(text), what + " still says concept");
   assert.equal((html.match(/not a product of American Outlaws national/gi) || []).length, 2, "the band and the footer both say whose app it is not");
@@ -241,4 +240,22 @@ test("ao page: Add to calendar subscribes to the chosen chapter's feed, and the 
   p.run("openSub()");
   assert.equal(p.el("subApple").href, "webcal://test.local/wc2026/data/usa/all.ics");
   assert.deepStrictEqual([p.el("subHead").textContent, p.el("subText").textContent], ["Never miss a match", "the hub's words"]);
+});
+
+test("ao: search engines may list the page, and can tell it from Cap Day", () => {
+  const ao = read("ao.html"), hub = read("index.html"), base = "https://jerredcook.github.io/wc2026/";
+  for (const [what, html] of [["the AO page", ao], ["Cap Day", hub]]) assert.ok(!/<meta name="robots"[^>]*noindex/i.test(html), what + " is not kept out of search");
+  const canon = html => (html.match(/<link rel="canonical" href="([^"]+)">/g) || []).join();
+  assert.equal(canon(ao), `<link rel="canonical" href="${base}ao.html">`, "the AO page names its own address, once");
+  assert.equal(canon(hub), `<link rel="canonical" href="${base}">`, "and Cap Day names its own");
+  assert.match(ao, /<meta name="description" content="American Outlaws Central New Jersey[^"]{40,140}">/, "the description spells the chapter out and fits a search result");
+  assert.match(read("privacy.html"), /<a href="ao\.html">AO Matchday<\/a>/, "a listed page links to it, so it can be reached by following links");
+  const locs = [...read("sitemap.xml").matchAll(/<loc>([^<]+)<\/loc>/g)].map(m => m[1]);
+  assert.ok(locs.includes(base) && locs.includes(base + "ao.html"), "the sitemap lists both");
+  for (const u of locs) {
+    assert.ok(u.startsWith(base), u + " is on this site");
+    const f = u.slice(base.length) || "index.html";
+    assert.ok(fs.existsSync(path.join(root, f)), "the sitemap names a missing page: " + f);
+    assert.ok(!/<meta name="robots"[^>]*noindex/i.test(read(f)), "the sitemap names a page that is kept out of search: " + f);
+  }
 });
