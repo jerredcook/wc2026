@@ -136,4 +136,14 @@ LOCATION:Texas Health Mansfield Stadium\, Mansfield
 DESCRIPTION:Concacaf W Championship · Quarterfinals\nWatch: Paramount+\nh
  ttps://jerredcook.github.io/wc2026/
 END:VEVENT
+BEGIN:VEVENT
+UID:usa-401934658@capday
+DTSTAMP:20270113T030000Z
+DTSTART:20270113T030000Z
+DTEND:20270113T050000Z
+SUMMARY:USA Women vs Panama
+LOCATION:Dignity Health Sports Park\, Carson\, California
+DESCRIPTION:Women's International Friendly\nWatch: TNT / truTV / HBO Max 
+ / Universo\nhttps://jerredcook.github.io/wc2026/
+END:VEVENT
 END:VCALENDAR
