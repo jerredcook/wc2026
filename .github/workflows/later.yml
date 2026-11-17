@@ -23,6 +23,8 @@ on:
           - record-live.yml
           - usa-hub.yml
           - canary.yml
+          - ao-notes.yml
+          - ao-chapters.yml
       at:
         description: "When to start it (UTC, like 2026-11-14T20:45Z)"
         required: true
