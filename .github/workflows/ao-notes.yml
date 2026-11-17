@@ -43,10 +43,11 @@ jobs:
         run: |
           if [ -n "$(git status --porcelain data/ao/notes.json)" ]; then echo "changed=true" >> "$GITHUB_OUTPUT"; else echo "No changes — nothing to commit."; fi
 
-      # The notes are only committed if the tests that read them pass (the deploy runs the whole suite again).
-      - name: Check the notes and the page against them
+      # The notes are only committed if the whole test suite passes with them: the deploy runs the same suite,
+      # and a note that is committed but cannot be deployed would also hold up every later data refresh.
+      - name: Check the notes and the app against them
         if: steps.diff.outputs.changed == 'true'
-        run: node --test test/ao-notes.test.mjs test/ao.test.cjs
+        run: node --test
 
       - name: Commit changed notes
         id: commit

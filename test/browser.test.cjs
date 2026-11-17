@@ -130,7 +130,8 @@ test("the page as it opens is short: sections folded, a few screens in all", opt
 });
 const AO_IDS = "nextup,aoWatch,hero,aoChapters,stories,facts,pool,fixtures,results,poll";
 test("AO Matchday: layout holds on a small phone, folded and with everything opened", opts, async () => {
-  const shut = await probe("url=/ao.html%23men&w=320&sections=" + AO_IDS);
+  checkLayout(await probe("url=/ao.html%23men&w=320&sections=" + AO_IDS));     // as published today, with whatever the chapter has written
+  const shut = await probe("url=/ao.html%23men&notes=0&w=320&sections=" + AO_IDS);     // the card's own size, with no note on it
   checkLayout(shut);
   assert.ok(shut.sections.aoWatch < 420, "the watch party card stays compact above the match card (" + shut.sections.aoWatch + "px)");
   assert.ok(shut.sections.aoChapters < 90, "the chapter finder is one line when folded");
@@ -228,7 +229,8 @@ test("a chapter's link opens the app on that chapter in a real browser", opts, a
 test("AO Matchday: long notes from the chapter and an opened songbook stay inside a small phone's screen", opts, async () => {
   const shut = await probe("url=/ao.html%23men&notes=1&w=320&sections=" + AO_IDS);
   checkLayout(shut);
-  const plain = await probe("url=/ao.html%23men&w=320&sections=" + AO_IDS);
+  const plain = await probe("url=/ao.html%23men&notes=0&w=320&sections=" + AO_IDS);
+  assert.ok(shut.sections.aoWatch < plain.sections.aoWatch + 420, "two notes of the longest kind add a bounded amount to the card (" + (shut.sections.aoWatch - plain.sections.aoWatch) + "px)");
   assert.ok(shut.sections.aoWatch > plain.sections.aoWatch + 60, "the notes are drawn on the watch party card (" + plain.sections.aoWatch + "px without, " + shut.sections.aoWatch + "px with)");
   assert.ok(shut.sections.aoChapters > plain.sections.aoChapters + 40 && shut.sections.aoChapters < 190, "the songbook adds one folded line under Find your crew (" + shut.sections.aoChapters + "px)");
   checkLayout(await probe("url=/ao.html%23men&notes=1&open=1&w=320&sections=" + AO_IDS));

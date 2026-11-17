@@ -22,8 +22,10 @@ async function measure() {
     win.__G = G;
     win.eval("clearTimeout(pollT); refreshLive = function () {}; S.live[focus().id] = parseSummary(__G, '660'); S.liveOk = Date.now(); S.open.xi = true; S.open.l5 = true; renderHero();");
   }
+  /* notes=0 (AO page): measure the page with nothing written by the chapter's leaders, whatever the published notes file says today. */
+  if (q.get("notes") === "0") win.eval("AO.notes = null; renderAO();");
   /* notes=1 (AO page): the chapter's leaders have written two long notes and a songbook with a long title and an unbroken word. */
-  if (q.get("notes")) win.eval("(function(){ AO.notes = {}; AO.notes[AO.home] = { notes: [{ text: 'Doors at 6, we are upstairs in the back room. '.repeat(5).trim() }, { text: 'Supercalifragilisticexpialidocious'.repeat(6) }], songs: [{ title: 'A very long name for a chant that will not fit on one line of a small phone at all', words: 'I believe\\nI believe that\\nI believe that we will win! '.repeat(3) }, { title: 'USA', words: 'U-S-A!'.repeat(40) }] }; renderAO(); })()");
+  if (q.get("notes") === "1") win.eval("(function(){ AO.notes = {}; AO.notes[AO.home] = { notes: [{ text: 'Doors at 6, we are upstairs in the back room. '.repeat(5).trim() }, { text: 'Supercalifragilisticexpialidocious'.repeat(6) }], songs: [{ title: 'A very long name for a chant that will not fit on one line of a small phone at all', words: 'I believe\\nI believe that\\nI believe that we will win! '.repeat(3) }, { title: 'USA', words: 'U-S-A!'.repeat(40) }] }; renderAO(); })()");
   /* open=1: unfold every folding section, so what is inside them is measured too. */
   if (q.get("open")) { for (const x of d.querySelectorAll("details")) x.open = true; await new Promise(res => setTimeout(res, 300)); }
   if (q.get("expand")) {
