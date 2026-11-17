@@ -1,7 +1,12 @@
 {
  "chapters": {
   "middlesex-county": {
-   "notes": [],
+   "notes": [
+    {
+     "date": "2026-11-17",
+     "text": "We will be in the back room at Hailey's."
+    }
+   ],
    "songs": []
   }
  }
