@@ -76,6 +76,21 @@ h1{font-size:22px;font-weight:700;letter-spacing:-.01em}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
 @media (prefers-reduced-motion:reduce){.livebadge{animation:none}}
 .when{text-align:center;font-size:15px;font-weight:700}
+.rec{margin-top:10px;border-top:1px solid var(--line);padding-top:8px;font-size:13px}
+.rec small{display:block;font-size:11.5px;color:var(--ink3);margin-top:2px}
+.wc{border-top:1px solid var(--line)}
+.wc>summary{margin:0;min-height:44px;display:flex;align-items:center;flex-wrap:wrap;column-gap:8px;font-size:14px;font-weight:700;color:var(--ink)}
+.wc>summary small{font-size:12px;font-weight:600;color:var(--ink3)}
+.wc>summary .on,.wm .on{color:var(--red)}
+.wday{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);margin:8px 0 2px}
+.wm{display:grid;grid-template-columns:58px 1fr;gap:8px;padding:6px 0;border-top:1px solid var(--line);font-size:13px;color:var(--ink2);overflow-wrap:anywhere}
+.wm.me{color:var(--ink);font-weight:700}
+.wm .wt{font-size:12px;font-weight:700;color:var(--ink3)}
+.wm b{color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.wm small{display:block;font-size:11.5px;font-weight:500;color:var(--ink3)}
+.wtab{margin-bottom:8px}
+.wtab>summary{margin:0;min-height:40px;display:flex;align-items:center}
+.wg{font-size:12px;font-weight:800;margin:10px 0 2px}
 .agg{margin-top:8px;text-align:center;font-size:13.5px;font-weight:700;color:var(--ink2)}
 .ruled{width:fit-content;margin:8px auto 0;padding:5px 12px;border-radius:10px;background:var(--chip);color:var(--ink);font-size:12.5px;font-weight:700;text-align:center}
 .count{text-align:center;font-size:13px;color:var(--good);font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
@@ -326,6 +341,7 @@ dialog input{display:block;width:100%;margin:8px 0 12px;padding:10px;border:1px 
   <div id="fixtures"></div>
   <p class="cnote" id="stamp" style="margin:-6px 2px 14px"></p>
   <div id="results"></div>
+  <div id="world"></div>
 
   <div id="poll"></div>
 
@@ -393,7 +409,7 @@ const TEAM = { women: { id: "2765" }, men: { id: "660" } };
 const USA_LOGO = "https://a.espncdn.com/i/teamlogos/countries/500/usa.png";
 const KEY = "wc2026.usa.v1";
 
-const S = { team: "men", data: {}, ranks: {}, live: {}, sums: {}, open: {}, pos: "all", sort: "pos", ed: null, calls: {}, flash: false, news: {}, ahead: null, liveOk: 0, failed: {}, rivals: {}, name: "", jump: null, fact: 0, ruled: 0 };
+const S = { team: "men", data: {}, ranks: {}, live: {}, sums: {}, open: {}, pos: "all", sort: "pos", ed: null, calls: {}, flash: false, news: {}, ahead: null, liveOk: 0, failed: {}, rivals: {}, name: "", jump: null, fact: 0, ruled: 0, world: null };
 try { S.calls = JSON.parse(localStorage.getItem(KEY + ".calls") || "{}") || {}; } catch (e) {}
 try { S.rivals = JSON.parse(localStorage.getItem(KEY + ".rivals") || "{}") || {}; } catch (e) {}
 try { S.name = cleanName(localStorage.getItem(KEY + ".name") || ""); } catch (e) {}
@@ -639,6 +655,7 @@ function setOpen(key, on) {
   const was = S.open[key] != null ? S.open[key] : !!SEC_DEF[key];
   if (was === on) return;
   S.open[key] = on; if (on) track("open-" + key.slice(2));
+  if (on && key === "s.world") renderWorld();
   try { const o = {}; for (const k of Object.keys(S.open)) if (/^s\.[a-z]+$/.test(k)) o[k] = S.open[k]; localStorage.setItem(KEY + ".open", JSON.stringify(o)); } catch (e) {}
 }
 const plain = html => String(html).replace(/<[^>]+>/g, "");
@@ -648,6 +665,23 @@ function track(name) { name = "capday: " + name; try { if (window.goatcounter &&
 function saveCalls() { try { localStorage.setItem(KEY + ".calls", JSON.stringify(S.calls)); } catch (e) {} }
 function callOf(id) { return S.calls[id] || (S.calls[id] = { us: 2, them: 0, locked: false }); }
 function bump(id, side, n) { const c = callOf(id); c[side] = Math.max(0, Math.min(15, c[side] + n)); renderHero(); }
+/* A locked call is graded once its match is in the results: the final score is kept with the call, so the
+   record survives after the match drops off the results list. Kept on this device only. */
+function settleCalls() {
+  if (S.test) return;
+  let changed = false;
+  for (const t of ORDER) for (const m of (S.data[t] && Array.isArray(S.data[t].results) ? S.data[t].results : [])) {
+    const c = S.calls[m.id];
+    if (c && c.locked && !Array.isArray(c.fin) && typeof m.us === "number" && typeof m.them === "number") { c.fin = [m.us, m.them]; changed = true; }
+  }
+  if (changed) saveCalls();
+}
+function recordHtml() {
+  const r = callRecord(S.calls); if (!r.n) return "";
+  const n = (k, one, many) => `${k} ${k === 1 ? one : many}`;
+  return `<div class="rec">Your record: <b>${n(r.pts, "point", "points")}</b> from ${n(r.n, "call", "calls")}${r.exact ? ` · ${n(r.exact, "exact score", "exact scores")}` : ""}
+    <small>3 for the exact score, 1 for the right result. Kept on this phone.</small></div>`;
+}
 function lockCall(id, on) { callOf(id).locked = on; saveCalls(); renderHero(); if (on) track("call-locked"); }
 const usShort = () => S.test ? S.test.usName : "USA";
 function callText(m, c) { return m.ha === "H" ? `${usShort()} ${c.us}–${c.them} ${m.opp.name}` : `${m.opp.name} ${c.them}–${c.us} ${usShort()}`; }
@@ -741,7 +775,7 @@ function callHtml(m, st, us, them) {
     const rows = [row(usShort(), "us"), row(m.opp.name, "them")];
     const says = rivals.length ? `<div class="says">${rivals.map(r => `<b>${h(r.n)}</b> says ${h(callText(m, r))}`).join(" · ")}. What's your call?</div>` : "";
     return `<div class="call" id="callBox">${says}<div class="kicker">Call the score</div>${home ? rows.join("") : rows.reverse().join("")}
-      <button class="lock" onclick="lockCall('${h(m.id)}',true)">Lock in my call</button></div>`;
+      <button class="lock" onclick="lockCall('${h(m.id)}',true)">Lock in my call</button>${recordHtml()}</div>`;
   }
   if (!mine && !rivals.length) return "";
   const verdict = mine ? callVerdict(mine, us, them, st) : "";
@@ -751,7 +785,7 @@ function callHtml(m, st, us, them) {
     ${mine ? `<div class="acts" style="margin-top:10px">
       ${st === "pre" ? `<button class="btn" onclick="openDuel('${h(m.id)}')">🆚 Challenge a friend</button><button class="btn" onclick="lockCall('${h(m.id)}',false)">Change</button>`
         : `<button class="btn" id="shareCall" onclick="shareCall('${h(m.id)}')">↗ Share my call</button>`}
-    </div>` : ""}</div>`;
+    </div>` : ""}${recordHtml()}</div>`;
 }
 
 function sideHtml(name, logo) {
@@ -1179,9 +1213,15 @@ function renderResults() {
     }
     return `<div class="m tap" role="button" tabindex="0" aria-expanded="${S.open["m" + m.id] ? "true" : "false"}" onclick="toggleMatch('${h(m.id)}')"><div class="md">${fmtShort(m.date)}<small>${yearOf(m.date)}</small></div>
       <div><div class="mt">${img(m.opp.logo, "")}${m.ha === "H" ? "vs" : "at"} ${h(m.opp.name)}</div>
-      <div class="ms">${ctag(m)} ${h(compLine(m))}</div></div>
+      <div class="ms">${ctag(m)} ${h(compLine(m))}</div>${yourCall(m)}</div>
       <div class="res">${m.us}–${m.them}${m.pen ? ` <small style="font-weight:600;color:var(--ink3)">(${m.pen[0]}–${m.pen[1]} p)</small>` : ""} ${pill(m)}</div>${extra}</div>`;
   }).join(""));
+}
+/* On a finished match's row: what you called, and what it earned. */
+function yourCall(m) {
+  const c = S.calls[m.id]; if (!c || !c.locked || typeof c.us !== "number" || typeof c.them !== "number") return "";
+  const p = callPoints(c, m.us, m.them);
+  return `<div class="ms">You called ${h(callText(m, c))} · ${p} ${p === 1 ? "point" : "points"}</div>`;
 }
 async function toggleMatch(id) {
   const k = "m" + id; S.open[k] = !S.open[k]; renderResults();
@@ -1195,13 +1235,78 @@ async function toggleMatch(id) {
 }
 
 /* ── Shell ── */
+/* ── Other international matches ──
+   Folded until asked for, and nothing is fetched until then. Opened, it asks the feed for the current matches of
+   each senior national-team competition (js/core.js, WORLD), keeps the ones that are active, and shows them with
+   the USA's own competition first. Each competition's tables load when its "Tables" line is opened. */
+let worldT = null;
+async function loadWorld(quiet) {
+  const team = S.team, mine = focus(), list = worldLeagues(team, mine && mine.lg), old = S.world && S.world.team === team ? S.world : null;
+  if (!quiet || !old) { S.world = { team, loading: true, comps: old ? old.comps : [], tables: old ? old.tables : {} }; renderWorld(); }
+  const got = await Promise.all(list.map(lg => getJson(`${API}/${lg}/scoreboard`, { cache: "no-store" }).then(G => (G ? Object.assign(parseBoard(G), { lg }) : null), () => null)));
+  if (S.team !== team) return;
+  const ok = got.filter(Boolean);
+  S.world = { team, loading: false, failed: !ok.length, comps: ok.filter(c => c.name && boardActive(c.matches, Date.now())), tables: (S.world && S.world.team === team && S.world.tables) || {} };
+  renderWorld();
+  clearTimeout(worldT);
+  if (S.open["s.world"] && S.world.comps.some(c => c.matches.some(m => m.state === "in"))) worldT = setTimeout(() => loadWorld(true), 6e4);
+}
+async function worldTables(lg, on) {
+  const k = "wt." + lg; if (!!S.open[k] === on) return;
+  S.open[k] = on; if (!on) return;
+  track("world-tables");
+  const W = S.world; if (!W || W.tables[lg] !== undefined) return;
+  W.tables[lg] = "loading"; renderWorld();
+  let t = "err";
+  try { const G = await getJson(`https://site.api.espn.com/apis/v2/sports/soccer/${lg}/standings`); if (G) t = parseTables(G); } catch (e) {}
+  if (S.world === W) { W.tables[lg] = t; renderWorld(); }
+}
+function worldMatch(m, usId) {
+  const live = m.state === "in", played = m.state !== "pre" && m.home.score != null && m.away.score != null;
+  const when = m.state === "pre" ? fmtTime(m.date) : h(m.clock || (live ? "Live" : "FT"));
+  const pens = played && m.home.pens != null && m.away.pens != null ? ` <small style="display:inline">(${m.home.pens}–${m.away.pens} on penalties)</small>` : "";
+  const sub = m.note || m.label;
+  return `<div class="wm ${m.home.id === usId || m.away.id === usId ? "me" : ""}"><span class="wt ${live ? "on" : ""}">${when}</span>
+    <span>${h(m.home.name)} <b>${played ? `${m.home.score}–${m.away.score}` : "v"}</b> ${h(m.away.name)}${pens}${sub ? `<small>${h(sub)}</small>` : ""}</span></div>`;
+}
+function worldComp(c, first, W, usId) {
+  const key = "w." + c.lg, open = S.open[key] != null ? S.open[key] : first, all = !!S.open["wa." + c.lg];
+  const live = c.matches.filter(m => m.state === "in").length, shown = all ? c.matches : c.matches.slice(0, 10);
+  let day = "", rows = "";
+  for (const m of shown) { const d = fmtDay(m.date); if (d !== day) { day = d; rows += `<div class="wday">${h(d)}</div>`; } rows += worldMatch(m, usId); }
+  const t = W.tables[c.lg];
+  const tables = /^fifa\.friendly/.test(c.lg) ? "" : `<details class="wtab" ${S.open["wt." + c.lg] ? "open" : ""} ontoggle="worldTables('${c.lg}',this.open)"><summary>Tables</summary>${
+    t === undefined || t === "loading" ? `<div class="empty">Loading…</div>` : t === "err" ? `<div class="empty">Couldn't load the tables.</div>` :
+    !t.length ? `<div class="empty">No tables: this tournament, or this stage of it, is a knockout.</div>` :
+    t.map(g => `<div class="wg">${h(g.name)}</div><table class="tbl"><tr><th></th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr>` + g.rows.map(r =>
+      `<tr class="${r.id === usId ? "me" : ""}"><td>${h(r.name)}</td>${[r.p, r.w, r.d, r.l].map(x => `<td>${x == null ? "" : x}</td>`).join("")}<td>${r.gd == null ? "" : (r.gd > 0 ? "+" : "") + r.gd}</td><td><b>${r.pts == null ? "" : r.pts}</b></td></tr>`).join("") + `</table>`).join("")}</details>`;
+  return `<details class="wc" ${open ? "open" : ""} ontoggle="S.open['${key}']=this.open"><summary>${h(c.name)} <small>${c.matches.length} ${c.matches.length === 1 ? "match" : "matches"}${live ? ` · <span class="on">${live} live</span>` : ""}</small></summary>
+    ${rows}${c.matches.length > 10 ? `<div class="acts"><button class="btn" onclick="S.open['wa.${c.lg}']=${!all};renderWorld()">${all ? "Show fewer" : "Show all " + c.matches.length}</button></div>` : ""}${tables}</details>`;
+}
+function renderWorld() {
+  const el = $("world"); if (!el) return;
+  const open = S.open["s.world"] === true, W = S.world && S.world.team === S.team ? S.world : null;
+  if (open && !W) { loadWorld(); return; }
+  const usId = TEAM[S.team].id, kind = S.team === "women" ? "women's" : "men's";
+  let preview = `Scores, fixtures and tables for the active ${kind} tournaments`, body = `<div class="empty">Loading…</div>`;
+  if (W && (!W.loading || W.comps.length)) {
+    const n = W.comps.reduce((a, c) => a + c.matches.length, 0), live = W.comps.reduce((a, c) => a + c.matches.filter(m => m.state === "in").length, 0);
+    if (W.comps.length) preview = `${W.comps.length} ${W.comps.length === 1 ? "tournament" : "tournaments"} · ${n} ${n === 1 ? "match" : "matches"}${live ? ` · ${live} live` : ""}`;
+    body = W.failed ? `<div class="empty">Couldn't load other matches.</div><div class="acts"><button class="btn" onclick="loadWorld()">Try again</button></div>` :
+      !W.comps.length ? `<div class="empty">No ${kind} international tournament has a match in the last few days or the next two weeks.</div>` :
+      `<div class="cnote">The latest or next matches in each ${kind} tournament, in your local time.</div>` + W.comps.map((c, i) => worldComp(c, i === 0, W, usId)).join("");
+  }
+  el.innerHTML = sec("world", "Other international matches", preview, body);
+}
+
 function render() {
   renderNextUp();
   const d = S.data[S.team];
   const when = iso => D(iso).toLocaleString([], { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
   $("stamp").textContent = d ? (d.checked ? "Schedule, squads and club form checked " + when(d.checked) : "Club form updated " + when(d.updated)) : "";
   renderStale();
-  renderHero(); renderStories(); renderFacts(); renderNews(); renderPool(); renderOppo(); renderFixtures(); renderResults();
+  settleCalls();
+  renderHero(); renderStories(); renderFacts(); renderNews(); renderPool(); renderOppo(); renderFixtures(); renderResults(); renderWorld();
 }
 /* ── Fail-safe sections ──
    Each section draws inside a guard: if one throws (a surprise in the feed, a

@@ -218,6 +218,81 @@ function factOrder(facts, o) {
   return out;
 }
 
+/* ── Your record: points for score calls ──
+   3 for the exact score, 1 for the right result (win, draw or loss), 0 otherwise. */
+function callPoints(c, us, them) {
+  return c.us === us && c.them === them ? 3 : outcome(c.us, c.them) === outcome(us, them) ? 1 : 0;
+}
+/* The tally over every locked call whose match has finished (c.fin = [us, them], the final score). */
+function callRecord(calls) {
+  const r = { n: 0, pts: 0, exact: 0, right: 0 };
+  for (const c of Object.values(calls || {})) {
+    if (!c || !c.locked || !Array.isArray(c.fin) || typeof c.fin[0] !== "number" || typeof c.fin[1] !== "number" || typeof c.us !== "number" || typeof c.them !== "number") continue;
+    const p = callPoints(c, c.fin[0], c.fin[1]);
+    r.n++; r.pts += p; if (p === 3) r.exact++; else if (p === 1) r.right++;
+  }
+  return r;
+}
+
+/* ── Other international matches ──
+   The senior national-team competitions the feed knows, in the order they are shown (friendlies last).
+   Youth, Olympic men's (under-23) and club competitions are left out on purpose. */
+const WORLD = {
+  men: ["fifa.world", "concacaf.nations.league", "concacaf.gold", "concacaf.gold_qual", "fifa.worldq.concacaf", "fifa.wcq.ply", "uefa.nations", "uefa.euro", "uefa.euroq", "fifa.worldq.uefa",
+    "conmebol.america", "fifa.worldq.conmebol", "caf.nations", "caf.nations_qual", "fifa.worldq.caf", "afc.asian.cup", "afc.cupq", "fifa.worldq.afc", "fifa.worldq.ofc", "global.finalissima", "fifa.friendly"],
+  women: ["fifa.wwc", "concacaf.womens.championship", "concacaf.w.gold", "fifa.shebelieves", "fifa.w.olympics", "fifa.wwcq.ply", "uefa.w.nations", "uefa.weuro", "fifa.wworldq.uefa",
+    "conmebol.america.femenina", "caf.w.nations", "afc.w.asian.cup", "global.w.finalissima", "fifa.friendly.w"],
+};
+/* The competitions to ask about for a team: the USA's own (the match on the card) first, unless that is a
+   friendly: the day's friendlies around the world are not "the USA's tournament" and stay last. */
+function worldLeagues(team, mine) {
+  const list = (WORLD[team] || []).slice();
+  if (mine && /^[a-z0-9._]+$/.test(mine) && !/friendly/.test(mine)) { const i = list.indexOf(mine); if (i >= 0) list.splice(i, 1); list.unshift(mine); }
+  return list;
+}
+/* One competition's current matches, from the feed's scoreboard: { name, matches: [{ id, date, state, clock, home, away, label, note }] }. */
+function parseBoard(B) {
+  const lg = B && B.leagues && B.leagues[0], name = (lg && lg.name) || "", abbr = (lg && lg.abbreviation) || "", out = [];
+  for (const e of (B && Array.isArray(B.events) ? B.events : [])) {
+    const c = e && e.competitions && e.competitions[0];
+    if (!c || !Array.isArray(c.competitors) || !e.date || isNaN(Date.parse(e.date))) continue;
+    const st = ((c.status || e.status || {}).type) || {};
+    const state = st.state === "in" || st.state === "post" ? st.state : "pre";
+    const side = k => {
+      const x = c.competitors.find(t => t && t.homeAway === k); if (!x || !x.team) return null;
+      const n = state === "pre" || x.score == null || x.score === "" ? NaN : Number(x.score);     // the feed says "0" before kickoff: that is no score
+      return { id: String(x.team.id || x.id || ""), name: String(x.team.displayName || x.team.name || ""), score: Number.isFinite(n) ? n : null, pens: typeof x.shootoutScore === "number" ? x.shootoutScore : null };
+    };
+    const home = side("home"), away = side("away");
+    if (!home || !away || !home.name || !away.name) continue;
+    const note = String(((c.notes || []).find(n => n && n.headline) || {}).headline || "");
+    /* The round, without the competition's own name (or short name) in front of it. */
+    let label = String(c.altGameNote || "");
+    for (const pre of [name, abbr]) if (pre && label.indexOf(pre) === 0) { label = label.slice(pre.length).replace(/^[,\s]+/, ""); break; }
+    out.push({ id: String(e.id || ""), date: e.date, state, clock: String(st.shortDetail || ""), home, away, label, note });
+  }
+  out.sort((a, b) => a.date.localeCompare(b.date) || a.home.name.localeCompare(b.home.name));
+  return { name, matches: out };
+}
+/* A competition is active when one of its matches is being played, was played in the last four days, or is within two weeks. */
+const WORLD_BACK = 4 * 864e5, WORLD_AHEAD = 14 * 864e5;
+function boardActive(matches, now) {
+  return (matches || []).some(m => m.state === "in" || (Date.parse(m.date) >= now - WORLD_BACK && Date.parse(m.date) <= now + WORLD_AHEAD));
+}
+/* A competition's tables, from the feed's standings: [{ name, rows: [{ id, name, p, w, d, l, gd, pts }] }]. Empty for a knockout. */
+function parseTables(T) {
+  const out = [];
+  for (const c of (T && Array.isArray(T.children) ? T.children : [])) {
+    const en = c && c.standings && c.standings.entries; if (!Array.isArray(en) || !en.length) continue;
+    const v = (e, k) => { const s = (e.stats || []).find(x => x && x.name === k); return s && typeof s.value === "number" && Number.isFinite(s.value) ? s.value : null; };
+    const rows = en.filter(e => e && e.team && (e.team.displayName || e.team.name)).map(e => ({ id: String(e.team.id || ""), name: String(e.team.displayName || e.team.name),
+      p: v(e, "gamesPlayed"), w: v(e, "wins"), d: v(e, "ties"), l: v(e, "losses"), gd: v(e, "pointDifferential"), pts: v(e, "points"), rank: v(e, "rank") }));
+    if (rows.every(r => r.rank != null)) rows.sort((a, b) => a.rank - b.rank);
+    if (rows.length) out.push({ name: String(c.name || ""), rows: rows.map(({ rank, ...r }) => r) });
+  }
+  return out;
+}
+
 if (typeof module === "object" && module.exports) {
-  module.exports = { VERSION, outcome, norm, winExpectancy, COMPS, compInfo, matchLine, callVerdict, formScore, parseSummary, cleanName, packChallenge, parseChallenge, mergeRivals, callDistance, rankCalls, MAX_RIVALS, MAX_NAME, factOrder, statsReady };
+  module.exports = { VERSION, outcome, norm, winExpectancy, COMPS, compInfo, matchLine, callVerdict, formScore, parseSummary, cleanName, packChallenge, parseChallenge, mergeRivals, callDistance, rankCalls, MAX_RIVALS, MAX_NAME, factOrder, statsReady, callPoints, callRecord, WORLD, worldLeagues, parseBoard, boardActive, parseTables };
 }

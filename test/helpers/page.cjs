@@ -61,7 +61,7 @@ async function boot(opts = {}) {
   const data = { men: fixture("data-men.json"), women: fixture("data-women.json"), ...(opts.data || {}) };
   const store = { ...(opts.storage || {}) };
   const els = {}, tracked = [], fetched = [], timers = [], shared = [];
-  const page = { summary: opts.summary === undefined ? null : opts.summary, news: opts.news || { articles: [] }, build: opts.build || null, hang: opts.hang || null };
+  const page = { summary: opts.summary === undefined ? null : opts.summary, news: opts.news || { articles: [] }, build: opts.build || null, hang: opts.hang || null, board: opts.board, tables: opts.tables };
 
   const answer = url => {
     if (/data\/usa\/(men|women)\.json/.test(url)) return data[/men\.json/.test(url) && !/women/.test(url) ? "men" : "women"];
@@ -70,6 +70,8 @@ async function boot(opts = {}) {
     if (url.includes("rankings-women.json")) return RANKS_WOMEN;
     if (url.includes("rankings.json")) return RANKS_MEN;
     if (url.includes("/summary?event=")) return typeof page.summary === "function" ? page.summary(url) : page.summary;
+    if (/\/scoreboard(\?|$)/.test(url)) return typeof page.board === "function" ? page.board(url) : page.board;
+    if (/\/standings(\?|$)/.test(url)) return typeof page.tables === "function" ? page.tables(url) : page.tables;
     if (url.includes("/news?")) return page.news;
     if (url.includes("build.json")) return page.build;
     return undefined;

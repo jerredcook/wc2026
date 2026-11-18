@@ -62,7 +62,7 @@ test("the app boots in a real browser and every section fills in", opts, async (
   assert.ok(!dom.includes("couldn't be shown"), "a section failed to draw");
   assert.equal((dom.match(/class="nu ?(on)?"/g) || []).length, 2, "both team tiles are drawn");
   assert.ok(dom.indexOf("Women &middot; next") < dom.indexOf("Men &middot; next") || dom.indexOf("Women · next") < dom.indexOf("Men · next"), "women first");
-  for (const [id, mark] of [["hero", "What is this match?"], ["facts", "Did you know?"], ["facts", "Another one"], ["fixtures", "every upcoming match"], ["pool", "player pool"], ["results", "results"], ["poll", "Cap Day"]]) {
+  for (const [id, mark] of [["hero", "What is this match?"], ["facts", "Did you know?"], ["facts", "Another one"], ["fixtures", "every upcoming match"], ["pool", "player pool"], ["results", "results"], ["world", "Other international matches"], ["poll", "Cap Day"]]) {
     assert.ok(section(dom, id).includes(mark), `#${id} does not contain "${mark}"`);
   }
   assert.match(section(dom, "hero"), /class="cd"|LIVE|Full time/, "the match card shows a countdown, a live badge or a final score");
@@ -234,4 +234,15 @@ test("AO Matchday: long notes from the chapter and an opened songbook stay insid
   assert.ok(shut.sections.aoWatch > plain.sections.aoWatch + 60, "the notes are drawn on the watch party card (" + plain.sections.aoWatch + "px without, " + shut.sections.aoWatch + "px with)");
   assert.ok(shut.sections.aoChapters > plain.sections.aoChapters + 40 && shut.sections.aoChapters < 190, "the songbook adds one folded line under Find your crew (" + shut.sections.aoChapters + "px)");
   checkLayout(await probe("url=/ao.html%23men&notes=1&open=1&w=320&sections=" + AO_IDS));
+});
+
+test("Other international matches: one line when folded; opened with three tournaments, every match and fourteen tables it stays inside a phone", opts, async () => {
+  const shut = await probe("url=/ao.html%23men&w=320&sections=world");
+  checkLayout(shut);
+  assert.ok(shut.sections.world >= 44 && shut.sections.world < 96, "one line when folded (" + shut.sections.world + "px)");
+  for (const w of [320, 390]) {
+    const r = await probe("url=/ao.html%23men&world=1&w=" + w + "&sections=" + AO_IDS + ",world");
+    checkLayout(r);
+    assert.ok(r.sections.world > 2500, "the matches and tables are drawn (" + r.sections.world + "px)");
+  }
 });

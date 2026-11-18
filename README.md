@@ -21,6 +21,8 @@ The app answers three questions for both teams: **when do they play next, what i
 - **Storylines:** written from the data — the winning run, who is in form, who is short of club minutes, teenagers, the opponent's danger men.
 - **Player pool club form:** every recently called-up player with what they did in their club's last three matches (started / came on / unused sub / not in squad, goals, assists, cards). The next opponent's squad gets the same treatment.
 - **Fixtures and results**, a Men / Women toggle, calendar export, a QR code for sharing.
+- **Other international matches:** a folded section that, once opened, asks the feed for the current matches of each senior national-team competition (the list is `WORLD` in `js/core.js`), shows the active ones with the USA's own first, and loads a competition's tables on request. Nothing is fetched until it is opened.
+- **Your record:** each locked score call is graded when its match is in the results (3 points for the exact score, 1 for the right result) and the tally is kept on the device.
 
 The schedule, squads and club form are built by [`scripts/build-usa.mjs`](scripts/build-usa.mjs) into `data/usa/men.json` and `data/usa/women.json`, refreshed hourly by the [`usa-hub`](.github/workflows/usa-hub.yml) Action. Live match detail is fetched by the page itself. [`usa.html`](usa.html) is only a redirect, kept so old links and QR codes still work.
 
@@ -30,7 +32,7 @@ The schedule, squads and club form are built by [`scripts/build-usa.mjs`](script
 
 - **Core logic is separate and tested.** [`js/core.js`](js/core.js) holds the pure match logic (feed parsing, competition and match explanations, prediction grading, win expectancy). The page loads it as a plain script; the tests load it with `require()`.
 - **The "Did you know?" facts are a plain list.** [`js/facts.js`](js/facts.js) holds them, each marked as one for newcomers or a deep cut, with the rules for adding one at the top of the file. A fact that a future result could change carries an `until` date and drops out of the app after it, until someone checks it and moves the date. `factOrder` in `js/core.js` decides the order: the next opponent's facts first, then a fresh mix each day.
-- **Tests:** `node --test` (236 tests, no dependencies, about ten seconds).
+- **Tests:** `node --test` (254 tests, no dependencies, about ten seconds).
   - [`test/core.test.cjs`](test/core.test.cjs): the logic against real recorded feed data in `test/fixtures/`.
   - [`test/render.test.cjs`](test/render.test.cjs): what each section puts on screen in every state — before kickoff, live, connection lost, full time, second leg, friendly, no match scheduled, women's view, test mode — plus the prediction flow, the feedback poll, escaping of feed text, and one section failing without taking the others down. The page's own code runs in a sandbox with a stand-in document, a fixed clock and recorded data ([`test/helpers/page.cjs`](test/helpers/page.cjs)).
   - [`test/browser.test.cjs`](test/browser.test.cjs): the whole app in headless Chrome, served locally — it boots, every section fills in, old links redirect. Skipped where no Chrome is installed.

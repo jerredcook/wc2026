@@ -15,6 +15,14 @@ f.style.width = w + "px"; f.style.height = "3000px";
 const desc = e => (e.tagName.toLowerCase() + (e.id ? "#" + e.id : "") + (e.className && typeof e.className === "string" ? "." + e.className.trim().split(/\s+/).join(".") : "")).slice(0, 60) + " «" + (e.textContent || "").trim().slice(0, 30) + "»";
 async function measure() {
   const d = f.contentDocument, win = f.contentWindow, r = { width: w };
+  /* The "Other international matches" section asks the live feed about some twenty competitions when it is opened.
+     A test must not depend on that: here the section is given nothing, or with world=1 recorded matches and tables. */
+  if (win.eval("typeof loadWorld === 'function'")) {
+    win.__W = null;
+    if (q.get("world")) { const j = async n => (await fetch("/test/fixtures/" + n)).json(); win.__W = { cnl: await j("board-concacaf-nations.json"), uefa: await j("board-uefa-nations.json"), fr: await j("board-friendly.json"), tab: await j("tables-uefa-nations.json") }; }
+    win.eval("loadWorld = async function () { var W = window.__W, comps = W ? [['concacaf.nations.league', W.cnl], ['uefa.nations', W.uefa], ['fifa.friendly', W.fr]].map(function (x) { return Object.assign(parseBoard(x[1]), { lg: x[0] }); }) : []; S.world = { team: S.team, loading: false, failed: false, comps: comps, tables: W ? { 'uefa.nations': parseTables(W.tab), 'concacaf.nations.league': [] } : {} }; renderWorld(); }; worldTables = async function (lg, on) { S.open['wt.' + lg] = on; };");
+    if (q.get("world")) win.eval("S.open['s.world'] = true; S.open['w.uefa.nations'] = true; S.open['w.fifa.friendly'] = true; S.open['wa.fifa.friendly'] = true; S.open['wt.uefa.nations'] = true; S.open['wt.concacaf.nations.league'] = true; S.world = null; renderWorld();");
+  }
   if (q.get("live") && !win.eval("!!focus()")) r.noMatch = true;
   else if (q.get("live")) {
     const G = await (await fetch("/test/fixtures/summary-finished-usa-canada.json")).json();

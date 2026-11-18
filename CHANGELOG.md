@@ -13,6 +13,8 @@ Schedules, squads, scores and rankings refresh on their own all day. Those are c
 
 ## 0.2.0 — not yet released
 
+- **Other international matches.** A new section with the latest or next matches in every active national-team tournament, the USA's own first, with live scores and each tournament's tables. It follows the Women / Men switch.
+- **Your record.** Your score calls now earn points: 3 for the exact score, 1 for the right result. The running total shows with your call, and each past result shows what you called. It is kept on your phone.
 - **The score over two matches.** In the second match of a two-match tie, the match card now says how the tie stands ("USA leads 8–0 over the two matches"), and the round's standing counts the match in progress.
 - **Cap Day is now AO Matchday.** The Cap Day name is retired for now. The old address opens AO Matchday, the World Cup page leads back to it, and the calendars, the privacy page and the picture that shows when the link is shared all carry the new name.
 - **AO Matchday is AO Central New Jersey's app.** The version of Cap Day under American Outlaws naming is no longer a concept: the chapter uses it. It shows where the chapter is watching each match, and every other chapter's watch party in the country, nearest first, with a search by city, state or bar. The listings are read from American Outlaws' site twice a day.
