@@ -10,17 +10,16 @@ name: Record a live match
 #
 #   gh workflow run record-live.yml -f start_at=2026-11-14T20:45Z
 #
-# The wait can be at most 5 h 45 min (one job may run for six hours). The timed
-# starts below are a weak backup: GitHub's scheduler ran them five hours late
-# on Nov 13. A start that finds no match in progress or about to begin exits.
+# The wait can be at most 5 h 45 min (one job may run for six hours); for
+# longer, use later.yml, which reaches 34 hours:
+#
+#   gh workflow run later.yml -f workflow=record-live.yml -f at=2026-11-17T23:15Z \
+#     -f fields="matches=concacaf.nations.league:401929766"
+#
+# It has no timed starts of its own: GitHub's scheduler ran them five hours late
+# on Nov 13 2026. A start that finds no match in progress or about to begin exits.
 
 on:
-  schedule:
-    # Nations League quarterfinal first legs, November 2026 (times are UTC).
-    - cron: "10,40 0,1 13 11 *"      # Curaçao v Panama, kickoff 00:30 on the 13th
-    - cron: "40 1 14 11 *"           # Guatemala v Canada, kickoff 02:00 on the 14th
-    - cron: "10,40 2 14 11 *"
-    - cron: "10,40 21,22 14 11 *"    # Haiti v USA, kickoff 21:30 on the 14th
   workflow_dispatch:
     inputs:
       matches:

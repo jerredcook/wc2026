@@ -38,8 +38,14 @@ jobs:
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: "22"
+      # A second try, because GitHub's machine sometimes cannot start the browser the
+      # layout tests need: on Nov 17 2026 that alone held back a data refresh three
+      # hours before a match. A real fault fails both times.
       - name: Run tests
-        run: node --test
+        run: |
+          node --test && exit 0
+          echo "::warning::The tests failed once. Trying a second time before giving up."
+          node --test
 
   deploy:
     needs: test

@@ -50,7 +50,7 @@ function chrome(url, ua) {
 }
 async function open(urlPath, ua) {
   let r = await chrome(base + urlPath, ua);
-  if (r.stdout.length < 500) r = await chrome(base + urlPath, ua);   // one retry: a cold browser start can time out
+  for (let again = 0; again < 2 && r.stdout.length < 500; again++) r = await chrome(base + urlPath, ua);   // up to two more tries: a cold browser start can time out
   assert.ok(r.stdout.length > 500, "the browser produced no page: " + r.note);
   return r.stdout.replace(/<script[\s\S]*?<\/script>/g, "").replace(/<style[\s\S]*?<\/style>/g, "");
 }

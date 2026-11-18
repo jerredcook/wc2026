@@ -869,3 +869,48 @@ test("replay, USA at Haiti: the USA away from home, a penalty, and the final sco
   assert.match(end, /82' ⚽ Folarin Balogun \(assist Malik Tillman\)/);
   assert.ok(!/Lenny Joseph/.test(tl), "the goal that was ruled out is not in the list of goals");
 });
+
+/* ── The second leg, USA v Haiti, Nov 17 2026 (test/fixtures/replay-usa-haiti.json): the score over two matches ── */
+const SECOND_LEG = replay("replay-usa-haiti.json");
+async function replaySecondLeg() {
+  const men = clone(fixture("data-men.json"));
+  men.fixtures = men.fixtures.filter(f => f.id !== "401929710");                    // the first leg has been played…
+  const tie = men.fixtures[0].stand.ties.find(t => t.us);
+  Object.assign(tie.legs[0], { hs: 0, as: 6, state: "post" });                       // …Haiti 0–6 USA
+  let cur = SECOND_LEG.frames[0];
+  const p = await boot({ hash: "#men", data: { men }, summary: () => cur.summary, now: cur.at });
+  return { p, men, async show(f) { cur = f; p.setNow(f.at); await p.refresh(); return p.text("hero"); } };
+}
+
+test("replay, USA v Haiti second leg: the card says how the tie stands over the two matches", async () => {
+  const r = await replaySecondLeg(), seen = [];
+  for (const f of SECOND_LEG.frames) {
+    const t = await r.show(f), m = /(?:\S+ (?:leads|wins)|Level at) \d+–\d+ over the two matches/.exec(t);
+    assert.ok(!/undefined|NaN/.test(t), "an unfilled value at " + f.at);
+    const line = m ? m[0] : "";
+    if (line !== seen[seen.length - 1]) seen.push(line);
+  }
+  assert.deepStrictEqual(seen, ["", "USA leads 6–0 over the two matches", "USA leads 7–0 over the two matches", "USA leads 8–0 over the two matches", "USA wins 8–0 over the two matches"],
+    "nothing before kickoff, then the first leg plus the live score at each change, then the result");
+  assert.match(r.p.html("hero"), /<div class="vs">[\s\S]*?<\/div>\s*<div class="agg">USA wins 8–0 over the two matches<\/div>/, "directly under the score");
+  assert.match(r.p.text("hero"), /Haiti v United States 0–6 · 0–2 \(0–8 overall\)/, "and the round's standing counts the match in progress, not only the first leg");
+});
+
+test("the score over two matches: who leads, level ties, and when it does not apply", async () => {
+  const r = await replaySecondLeg(), m = r.men.fixtures[0];
+  const say = (L, mm) => r.p.run("aggText(" + JSON.stringify(mm || m) + ", " + JSON.stringify(L) + ")");
+  assert.equal(say({ state: "in", us: 0, them: 7 }), "Haiti leads 7–6 over the two matches", "the leader's score comes first");
+  assert.equal(say({ state: "post", us: 0, them: 7 }), "Haiti wins 7–6 over the two matches");
+  assert.equal(say({ state: "in", us: 0, them: 6 }), "Level at 6–6 over the two matches");
+  assert.equal(say({ state: "post", us: 0, them: 6 }), "6–6 over the two matches", "level at the end: extra time or penalties decided it, so no winner is claimed here");
+  for (const L of [{ state: "pre", us: 0, them: 0 }, {}, null, { state: "in" }, { state: "in", us: "1", them: "0" }]) assert.equal(say(L), "", JSON.stringify(L));
+  const home = clone(m); home.stand.ties.find(t => t.us).legs[0] = { id: "1", home: "660", away: "2654", hs: 3, as: 1, state: "post" };
+  assert.equal(say({ state: "in", us: 1, them: 1 }, home), "USA leads 4–2 over the two matches", "a first leg played at home is read the right way round");
+  const first = clone(m); first.id = "401929710";
+  assert.equal(say({ state: "in", us: 2, them: 0 }, first), "", "the first of the two matches has nothing to add up");
+  const unplayed = clone(m); Object.assign(unplayed.stand.ties.find(t => t.us).legs[0], { hs: null, as: null });
+  assert.equal(say({ state: "in", us: 2, them: 0 }, unplayed), "", "no first-leg score, no sum");
+  const single = clone(m); single.stand.ties.find(t => t.us).legs.pop();
+  assert.equal(say({ state: "in", us: 2, them: 0 }, single), "", "a single match is not a tie over two");
+  for (const mm of [Object.assign(clone(m), { stand: null }), Object.assign(clone(m), { stand: { kind: "table", rows: [] } })]) assert.equal(say({ state: "in", us: 2, them: 0 }, mm), "");
+});

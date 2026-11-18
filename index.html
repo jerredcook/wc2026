@@ -76,6 +76,7 @@ h1{font-size:22px;font-weight:700;letter-spacing:-.01em}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
 @media (prefers-reduced-motion:reduce){.livebadge{animation:none}}
 .when{text-align:center;font-size:15px;font-weight:700}
+.agg{margin-top:8px;text-align:center;font-size:13.5px;font-weight:700;color:var(--ink2)}
 .ruled{width:fit-content;margin:8px auto 0;padding:5px 12px;border-radius:10px;background:var(--chip);color:var(--ink);font-size:12.5px;font-weight:700;text-align:center}
 .count{text-align:center;font-size:13px;color:var(--good);font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
 .where{text-align:center;font-size:12px;color:var(--ink2);margin-top:4px}
@@ -756,6 +757,23 @@ function callHtml(m, st, us, them) {
 function sideHtml(name, logo) {
   return `<div class="side">${img(logo, name)}<div class="tname">${h(name)}</div>${rankChip(name)}</div>`;
 }
+/* The second match of a two-match tie: the score over both, USA first, once this match has started.
+   Null for anything else (a single match, the first of the two, or a first match with no score yet). */
+function aggOf(m, L) {
+  const t = m && m.stand && m.stand.kind === "ties" && (m.stand.ties || []).find(x => x.us);
+  if (!t || !t.legs || t.legs.length !== 2 || String(t.legs[1].id) !== String(m.id)) return null;
+  const g = t.legs[0], opp = String(m.opp.id);
+  if (typeof g.hs !== "number" || typeof g.as !== "number" || !L || !L.state || L.state === "pre" || typeof L.us !== "number" || typeof L.them !== "number") return null;
+  const oppHome = String(g.home) === opp;
+  return { us: (oppHome ? g.as : g.hs) + L.us, them: (oppHome ? g.hs : g.as) + L.them };
+}
+function aggText(m, L) {
+  const a = aggOf(m, L); if (!a) return "";
+  const done = L.state === "post";
+  if (a.us === a.them) return (done ? "" : "Level at ") + `${a.us}–${a.them} over the two matches`;
+  const usa = a.us > a.them;
+  return `${usa ? "USA" : m.opp.name} ${done ? "wins" : "leads"} ${usa ? a.us : a.them}–${usa ? a.them : a.us} over the two matches`;
+}
 function renderHero() {
   const d = S.data[S.team], m = focus(), el = $("hero");
   if (!d) { el.innerHTML = `<div class="card"><div class="empty">${LOADING()}</div></div>`; return; }
@@ -831,6 +849,7 @@ function renderHero() {
     ${S.test ? `<div class="testbar">TEST MODE: following another match to check live updates. <a href="./">Exit</a></div>` : ""}
     <div class="kicker">${st === "in" ? "Live now" : st === "post" ? "Full time" : "Next match"} &middot; ${h(label)}</div>
     <div class="vs">${home ? usSide : oppSide}<div class="mid">${mid}</div>${home ? oppSide : usSide}</div>
+    ${aggText(m, L) ? `<div class="agg">${h(aggText(m, L))}</div>` : ""}
     ${st === "in" && S.ruled && Date.now() - S.ruled < RULED_MS ? `<div class="ruled" role="status">Goal ruled out. The score has been corrected.</div>` : ""}
     ${st === "pre" ? `<div class="when">${fmtDay(m.date)} &middot; ${fmtTime(m.date)} <span style="font-weight:600;color:var(--ink3)">${h(fmtZone(m.date))}</span></div>
       <div class="cd" id="cd" data-iso="${h(m.date)}">${cdTiles(m.date)}</div>` : ""}
@@ -890,13 +909,19 @@ function standHtml(m) {
   } else {
     body = sd.ties.map(t => {
       const first = t.legs[0], a = t.teams[first.home], b = t.teams[first.away];
+      /* A leg's score as [home, away]: from the data file, or for the USA's own tie from the live feed while the file has none. */
+      const sc = g => {
+        if (g.hs != null && g.as != null) return [g.hs, g.as];
+        const lv = t.us && S.live[g.id];
+        if (lv && lv.state && lv.state !== "pre" && typeof lv.us === "number" && typeof lv.them === "number") return String(g.home) === String(m.opp.id) ? [lv.them, lv.us] : [lv.us, lv.them];
+        return null;
+      };
       const L = t.legs.map(g => {   // each leg as "home–away" from the first leg's point of view
-        const live = S.live[g.id], hs = g.hs, as = g.as;
-        if (live && live.state !== "pre" && t.us) { /* the hero carries the live score; keep the table simple */ }
-        if (hs == null) return fmtShort(g.date);
-        return g.home === first.home ? `${hs}–${as}` : `${as}–${hs}`;
+        const s = sc(g);
+        if (!s) return fmtShort(g.date);
+        return g.home === first.home ? `${s[0]}–${s[1]}` : `${s[1]}–${s[0]}`;
       });
-      const played = t.legs.filter(g => g.hs != null);
+      const played = t.legs.filter(g => sc(g)).map(g => ({ home: g.home, hs: sc(g)[0], as: sc(g)[1] }));
       let agg = "";
       if (t.legs.length > 1 && played.length) {
         const A = played.reduce((n, g) => n + (g.home === first.home ? g.hs : g.as), 0), B = played.reduce((n, g) => n + (g.home === first.home ? g.as : g.hs), 0);

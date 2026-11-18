@@ -139,3 +139,15 @@ test("the recorded USA match: complete, in order, and the score goes down twice 
   assert.deepEqual(goals.filter(g => g.note === "pen").map(g => g.who), ["Christian Pulisic"]);
   assert.ok(readFileSync(path.join(ROOT, "test", "fixtures", "replay-haiti-usa.json")).length < 170e3, "the fixture stays small");
 });
+
+test("the second-leg recording (USA v Haiti, Nov 17 2026) is whole: kickoff to full time, 2–0, both goals in order", () => {
+  const R = replay("replay-usa-haiti.json");
+  assert.equal(R.match, "United States v Haiti");
+  assert.ok(R.frames.length >= 10 && R.looks >= 50);
+  assert.deepEqual(R.frames.map(f => f.at), R.frames.map(f => f.at).slice().sort(), "frames are in the order recorded");
+  const Ls = R.frames.map(f => core.parseSummary(f.summary, "660"));
+  assert.equal(Ls[0].state, "pre"); assert.equal(Ls[Ls.length - 1].state, "post");
+  const scores = []; for (const L of Ls) { const s = L.state === "pre" ? "pre" : L.us + "-" + L.them; if (s !== scores[scores.length - 1]) scores.push(s); }
+  assert.deepEqual(scores, ["pre", "0-0", "1-0", "2-0"], "the score only ever went up");
+  assert.ok(readFileSync(path.join(ROOT, "test", "fixtures", "replay-usa-haiti.json")).length < 170e3, "the fixture stays small");
+});
