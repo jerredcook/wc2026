@@ -106,6 +106,9 @@ async function world(opts = {}) {
 const asked = (p, what) => p.fetched.filter(u => u.includes("/" + what)).map(lgOf);
 const comps = p => p.html("world").split('<details class="wc"').slice(1);
 const flat = s => s.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ").trim();
+/* A tournament's match rows as text. Day headings are taken out first: which day a match falls on depends on the
+   time zone of the machine running the tests, and a heading must not end up glued to the row before it. */
+const rowsOf = c => c.replace(/<div class="wday">[^<]*<\/div>/g, "").split('<div class="wm ').slice(1).map(flat);
 
 test("world: the section is folded and asks the feed for nothing until it is opened", async () => {
   const p = await world();
@@ -127,7 +130,7 @@ test("world: opened, it shows each active tournament's matches, the USA's tourna
   assert.match(flat(c[0]), /^open[^>]*> Concacaf Nations League 9 matches /, "the USA's competition is open");
   assert.match(flat(c[1]), /^ontoggle[^>]*> UEFA Nations League 8 matches /, "the others are folded");
   assert.match(flat(c[2]), /> International Friendly 18 matches /);
-  const rows = c[0].split('<div class="wm ').slice(1).map(flat);
+  const rows = rowsOf(c[0]);
   assert.equal(rows.length, 9);
   assert.match(rows.find(r => /United States/.test(r)), /^me"> FT United States 2–0 Haiti 2nd Leg - United States win 8-0 on aggregate$/, "the USA's own match stands out, with how the tie ended");
   assert.match(rows.find(r => /Mexico/.test(r)), /^"> FT Mexico \d–\d Jamaica 2nd Leg - Tied on aggregate - MEX win on away goals$/);
@@ -177,7 +180,7 @@ test("world: the women's side asks about women's competitions and shows matches 
   p.run("pickTeam('women')"); await p.settle();
   assert.deepEqual(p.fetched.slice(before).filter(u => u.includes("/scoreboard")).map(lgOf), core.worldLeagues("women", p.run("focus().lg")), "switching team asks again, for the women's list");
   assert.match(p.text("world"), /^Other international matches 1 tournament · 2 matches The latest or next matches in each women's tournament/);
-  const rows = comps(p)[0].split('<div class="wm ').slice(1).map(flat);
+  const rows = rowsOf(comps(p)[0]);
   assert.match(rows[0], /^"> \d{1,2}:\d\d [AP]M Jamaica v Costa Rica Quarterfinals$/, "a kickoff time and no score for a match not yet played");
   assert.match(flat(comps(p)[0]), /^open[^>]*> Concacaf W Championship 2 matches /);
 });
