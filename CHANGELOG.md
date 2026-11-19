@@ -13,7 +13,7 @@ Schedules, squads, scores and rankings refresh on their own all day. Those are c
 
 ## 0.3.0 — not yet released
 
-Nothing yet.
+Nothing has changed since 0.2.0 yet. Changes will be listed here as they are made.
 
 ## 0.2.0 — 2026-11-19
 
