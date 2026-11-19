@@ -32,7 +32,7 @@ const aoCrest = c => c.logo ? `<img class="crest" src="${h(c.logo)}" alt="" load
 function aoStatus(c) {
   if (!c.status) return "";
   const k = c.status === "Official" ? "ok" : c.status === "Rebuilding" ? "rb" : "un";
-  return `<span class="st ${k}">${h(c.status)}${c.num ? " · #" + c.num : ""}</span>`;
+  return `<span class="aost ${k}">${h(c.status)}${c.num ? " · #" + c.num : ""}</span>`;
 }
 
 /* The match the hub's match card is showing. */

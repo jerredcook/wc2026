@@ -55,6 +55,13 @@ async function measure() {
   const clipped = e => { for (let p = e.parentElement; p; p = p.parentElement) { const s = win.getComputedStyle(p); if (/(auto|scroll|hidden)/.test(s.overflowX)) return true; } return false; };
   r.pageOverflow = d.documentElement.scrollWidth - d.documentElement.clientWidth;
   r.offScreen = [...d.querySelectorAll("body *")].filter(visible).filter(e => { const b = e.getBoundingClientRect(); return (b.right > w + 1 || b.left < -1) && !clipped(e); }).slice(0, 6).map(desc);
+  /* Text that does not fit the box it was given and spills out of it: what a row looks like when a style meant for
+     something small (a 20px badge) lands on it. A box that clips or scrolls its own overflow is doing so on purpose. */
+  r.squeezed = [...d.querySelectorAll("body *")].filter(visible).filter(e => {
+    const cs = win.getComputedStyle(e);
+    if (cs.display === "inline" || cs.overflowX !== "visible" || !e.clientWidth || clipped(e)) return false;
+    return (e.scrollWidth > e.clientWidth + 6 || e.scrollHeight > e.clientHeight + 6) && [...e.childNodes].some(n => (n.nodeType === 3 && n.textContent.trim()) || (n.nodeType === 1 && n.textContent.trim() && win.getComputedStyle(n).display.indexOf("inline") === 0));
+  }).slice(0, 8).map(e => desc(e) + " " + e.clientWidth + "x" + e.clientHeight + " holds " + e.scrollWidth + "x" + e.scrollHeight);
   r.hiddenButShown = [...d.querySelectorAll("[hidden]")].filter(e => win.getComputedStyle(e).display !== "none").map(desc);
   r.sections = {};
   for (const id of (q.get("sections") || "nextup,hero,stories,facts,pool,fixtures,results,poll").split(",")) { const e = d.getElementById(id); r.sections[id] = e ? Math.round(e.getBoundingClientRect().height) : -1; }

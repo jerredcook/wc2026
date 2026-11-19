@@ -193,3 +193,19 @@ test("every committed calendar file ends its lines the way the calendar format r
     assert.ok(!/(^|[^\r])\n/.test(s), f + " has a line that ends without a carriage return: some calendar apps reject that");
   }
 });
+
+test("no style name is defined twice: a second rule for the same name silently restyles whatever used the first", () => {
+  /* On Nov 18 2026 the match rows of a new section were given the class "wm", which already styled a 20px badge.
+     Every row was drawn 20px wide. A rule that stands alone (".name{") may appear once per page; the one exception
+     is the match card, whose second rule is its dark theme. */
+  const fs = require("node:fs"), path = require("node:path"), root = path.join(__dirname, "..");
+  for (const page of ["index.html", "ao.html", "worldcup.html", "ao-sign.html", "privacy.html"]) {
+    const html = fs.readFileSync(path.join(root, page), "utf8"), css = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m => m[1]).join("\n")
+      .replace(/@(?:media|supports)[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}/g, "");     // a rule inside @media is an adjustment for a screen size, not a second definition
+    const seen = {};
+    for (const m of css.matchAll(/(?:^|[}\n])\s*\.([A-Za-z0-9_-]+)\s*\{/g)) seen[m[1]] = (seen[m[1]] || 0) + 1;
+    const twice = Object.keys(seen).filter(k => seen[k] > 1 && !(page !== "worldcup.html" && k === "hero"));
+    if (page === "worldcup.html") continue;     // the older page has its own conventions; it is only read here so a typo in the list above would show
+    assert.deepEqual(twice, [], page + " defines these style names more than once: " + twice.join(", "));
+  }
+});

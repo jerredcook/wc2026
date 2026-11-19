@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html><head><meta charset="utf-8"><title>look</title>
+<style>html,body{margin:0;background:#888}iframe{border:0;display:block;background:#fff}</style></head>
+<body>
+<!-- A page for looking at one section of the app as a phone shows it (not a test; used to take a picture).
+     ?url=/ao.html%23men&w=390&h=2200&id=world[&open=uefa.nations][&tables=uefa.nations][&theme=light|dark][&live=1]   or &sel=<a CSS selector> to scroll to anything else
+     Without live=1 the "Other international matches" section is filled from the recorded test files. -->
+<iframe id="f"></iframe>
+<div id="done" hidden></div>
+<script>
+const q = new URLSearchParams(location.search), f = document.getElementById("f");
+f.style.width = (+q.get("w") || 390) + "px"; f.style.height = (+q.get("h") || 2200) + "px";
+const wait = ms => new Promise(r => setTimeout(r, ms));
+f.onload = async () => {
+  const win = f.contentWindow, d = f.contentDocument;
+  await wait(2500);
+  if (q.get("theme")) d.documentElement.setAttribute("data-theme", q.get("theme"));
+  if (q.get("id") === "world") {
+    if (!q.get("live")) {
+      const j = async n => (await fetch("/test/fixtures/" + n)).json();
+      win.__W = { cnl: await j("board-concacaf-nations.json"), uefa: await j("board-uefa-nations.json"), fr: await j("board-friendly.json"), ww: await j("board-w-championship.json"), tab: await j("tables-uefa-nations.json") };
+      /* &data=<file in test/fixtures>: a list of [competition, the feed's answer] pairs saved a moment ago, to see today's real matches. */
+      if (q.get("data")) win.__L = await j(q.get("data"));
+      win.eval("loadWorld = async function () { var W = window.__W, comps = (window.__L ? window.__L : S.team === 'women' ? [['concacaf.womens.championship', W.ww]] : [['concacaf.nations.league', W.cnl], ['uefa.nations', W.uefa], ['fifa.friendly', W.fr]]).map(function (x) { return Object.assign(parseBoard(x[1]), { lg: x[0] }); }); S.world = { team: S.team, loading: false, failed: false, comps: comps, tables: { 'uefa.nations': parseTables(W.tab) } }; renderWorld(); }; worldTables = async function (lg, on) { S.open['wt.' + lg] = on; };");
+    }
+    win.eval("S.world = null; setOpen('s.world', true);");
+    await wait(q.get("live") ? 5000 : 600);
+    for (const k of (q.get("open") || "").split(",").filter(Boolean)) win.eval("S.open['w." + k + "'] = true;");
+    if (q.get("tables")) { if (q.get("live")) { win.eval("worldTables('" + q.get("tables") + "', true)"); await wait(4000); } else win.eval("S.open['wt." + q.get("tables") + "'] = true;"); }
+    win.eval("renderWorld()");
+    await wait(400);
+  }
+  const el = q.get("sel") ? d.querySelector(q.get("sel")) : d.getElementById(q.get("id") || "world");
+  if (el) win.scrollTo(0, el.getBoundingClientRect().top + win.scrollY - 8);
+  await wait(300);
+  document.getElementById("done").hidden = false; document.title = "ready";
+};
+f.src = q.get("url") || "/ao.html#men";
+</script>
+</body></html>

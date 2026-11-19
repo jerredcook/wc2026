@@ -67,10 +67,10 @@ swap(`</style>`, `
 .aod{flex:0 0 auto;text-align:right;font-size:12px;font-weight:700;color:var(--ink2);display:flex;flex-direction:column;gap:4px}
 .aod a,.aol a{font-weight:600;text-decoration:none}
 .aol{display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;font-size:12px}
-.st{display:inline-block;font-size:10.5px;font-weight:800;border-radius:5px;padding:1px 6px;vertical-align:1px;white-space:nowrap}
-.st.ok{background:var(--goodbg);color:var(--good)}
-.st.rb{background:var(--warnbg);color:var(--warn)}
-.st.un{background:var(--chip);color:var(--ink2)}
+.aost{display:inline-block;font-size:10.5px;font-weight:800;border-radius:5px;padding:1px 6px;vertical-align:1px;white-space:nowrap}
+.aost.ok{background:var(--goodbg);color:var(--good)}
+.aost.rb{background:var(--warnbg);color:var(--warn)}
+.aost.un{background:var(--chip);color:var(--ink2)}
 a.btn{display:inline-block;text-decoration:none;color:var(--ink)}
 .aohome .chip{background:var(--card)}
 .aoq{display:block;width:100%;margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:16px;background:var(--card);color:var(--ink)}

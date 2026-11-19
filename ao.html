@@ -78,19 +78,27 @@ h1{font-size:22px;font-weight:700;letter-spacing:-.01em}
 .when{text-align:center;font-size:15px;font-weight:700}
 .rec{margin-top:10px;border-top:1px solid var(--line);padding-top:8px;font-size:13px}
 .rec small{display:block;font-size:11.5px;color:var(--ink3);margin-top:2px}
-.wc{border-top:1px solid var(--line)}
-.wc>summary{margin:0;min-height:44px;display:flex;align-items:center;flex-wrap:wrap;column-gap:8px;font-size:14px;font-weight:700;color:var(--ink)}
-.wc>summary small{font-size:12px;font-weight:600;color:var(--ink3)}
-.wc>summary .on,.wm .on{color:var(--red)}
-.wday{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);margin:8px 0 2px}
-.wm{display:grid;grid-template-columns:58px 1fr;gap:8px;padding:6px 0;border-top:1px solid var(--line);font-size:13px;color:var(--ink2);overflow-wrap:anywhere}
-.wm.me{color:var(--ink);font-weight:700}
-.wm .wt{font-size:12px;font-weight:700;color:var(--ink3)}
-.wm b{color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
-.wm small{display:block;font-size:11.5px;font-weight:500;color:var(--ink3)}
-.wtab{margin-bottom:8px}
-.wtab>summary{margin:0;min-height:40px;display:flex;align-items:center}
-.wg{font-size:12px;font-weight:800;margin:10px 0 2px}
+.wxc{border-top:1px solid var(--line)}
+.wxc>summary{position:relative;margin:0;padding:9px 0 9px 20px;font-size:14.5px;font-weight:700;line-height:1.25;color:var(--ink)}
+.wxc>summary::before{position:absolute;left:1px;top:10px}
+.wxc>summary small{display:block;margin-top:2px;font-size:12px;font-weight:600;color:var(--ink3)}
+.wxc>summary .on{color:var(--red)}
+.wxd{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink3);text-align:center;margin:10px 0 4px}
+.wxm{display:grid;grid-template-columns:1fr auto 1fr;column-gap:10px;align-items:baseline;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px;line-height:1.3;color:var(--ink2);overflow-wrap:anywhere}
+.wxm .wxh{text-align:right}
+.wxm .won,.wxm.me .wxh,.wxm.me .wxa{color:var(--ink);font-weight:700}
+.wxm .wxs{min-width:56px;text-align:center;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums;white-space:nowrap}
+.wxm .wxs.pre{font-size:12px;font-weight:600;color:var(--ink3)}
+.wxm .wxs.on{color:var(--red)}
+.wxm .wxs small{display:block;font-size:10.5px;font-weight:700}
+.wxm .wxn{grid-column:1/-1;text-align:center;font-size:11.5px;color:var(--ink3);margin-top:2px}
+.wxtab{margin:2px 0 10px}
+.wxtab>summary{margin:0;min-height:44px;display:flex;align-items:center}
+.wxtab>summary::before{margin-right:6px}
+.wxg{font-size:12px;font-weight:800;margin:12px 0 2px}
+.wxtbl{table-layout:fixed}
+.wxtbl th{width:28px}.wxtbl th:first-child{width:auto}.wxtbl th:nth-child(6){width:38px}.wxtbl th:nth-child(7){width:36px}
+.wxtbl td:first-child{overflow-wrap:anywhere}
 .agg{margin-top:8px;text-align:center;font-size:13.5px;font-weight:700;color:var(--ink2)}
 .ruled{width:fit-content;margin:8px auto 0;padding:5px 12px;border-radius:10px;background:var(--chip);color:var(--ink);font-size:12.5px;font-weight:700;text-align:center}
 .count{text-align:center;font-size:13px;color:var(--good);font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
@@ -339,10 +347,10 @@ dialog input{display:block;width:100%;margin:8px 0 12px;padding:10px;border:1px 
 .aod{flex:0 0 auto;text-align:right;font-size:12px;font-weight:700;color:var(--ink2);display:flex;flex-direction:column;gap:4px}
 .aod a,.aol a{font-weight:600;text-decoration:none}
 .aol{display:flex;gap:12px;flex-wrap:wrap;margin-top:4px;font-size:12px}
-.st{display:inline-block;font-size:10.5px;font-weight:800;border-radius:5px;padding:1px 6px;vertical-align:1px;white-space:nowrap}
-.st.ok{background:var(--goodbg);color:var(--good)}
-.st.rb{background:var(--warnbg);color:var(--warn)}
-.st.un{background:var(--chip);color:var(--ink2)}
+.aost{display:inline-block;font-size:10.5px;font-weight:800;border-radius:5px;padding:1px 6px;vertical-align:1px;white-space:nowrap}
+.aost.ok{background:var(--goodbg);color:var(--good)}
+.aost.rb{background:var(--warnbg);color:var(--warn)}
+.aost.un{background:var(--chip);color:var(--ink2)}
 a.btn{display:inline-block;text-decoration:none;color:var(--ink)}
 .aohome .chip{background:var(--card)}
 .aoq{display:block;width:100%;margin-top:12px;padding:10px 12px;border:1px solid var(--line);border-radius:10px;font-size:16px;background:var(--card);color:var(--ink)}
@@ -1308,26 +1316,36 @@ async function worldTables(lg, on) {
   try { const G = await getJson(`https://site.api.espn.com/apis/v2/sports/soccer/${lg}/standings`); if (G) t = parseTables(G); } catch (e) {}
   if (S.world === W) { W.tables[lg] = t; renderWorld(); }
 }
+/* One match as a scoreboard row: home on the left, away on the right, and between them the score, or the kickoff
+   time for a match still to come. A finished match shows only its score; anything else about it (the minute while
+   it is live, extra time, a postponement) goes under the score. */
 function worldMatch(m, usId) {
   const live = m.state === "in", played = m.state !== "pre" && m.home.score != null && m.away.score != null;
-  const when = m.state === "pre" ? fmtTime(m.date) : h(m.clock || (live ? "Live" : "FT"));
-  const pens = played && m.home.pens != null && m.away.pens != null ? ` <small style="display:inline">(${m.home.pens}–${m.away.pens} on penalties)</small>` : "";
-  const sub = m.note || m.label;
-  return `<div class="wm ${m.home.id === usId || m.away.id === usId ? "me" : ""}"><span class="wt ${live ? "on" : ""}">${when}</span>
-    <span>${h(m.home.name)} <b>${played ? `${m.home.score}–${m.away.score}` : "v"}</b> ${h(m.away.name)}${pens}${sub ? `<small>${h(sub)}</small>` : ""}</span></div>`;
+  const extra = live ? (m.clock || "Live") : m.state === "post" && m.clock && !/^FT$/i.test(m.clock) ? m.clock : "";
+  const mid = played ? `${m.home.score}–${m.away.score}${extra ? `<small>${h(extra)}</small>` : ""}` : m.state === "pre" ? fmtTime(m.date) : h(m.clock || "v");
+  const won = k => (played && m.state === "post" && m[k].score > m[k === "home" ? "away" : "home"].score ? " won" : "");
+  const pens = played && m.home.pens != null && m.away.pens != null ? `${m.home.pens}–${m.away.pens} on penalties` : "";
+  const note = [(m.note || m.label).replace(/ - /g, " · "), pens].filter(Boolean).join(" · ");
+  return `<div class="wxm ${m.home.id === usId || m.away.id === usId ? "me" : ""}"><span class="wxh${won("home")}">${h(m.home.name)}</span><span class="wxs ${live ? "on" : played ? "" : "pre"}">${mid}</span><span class="wxa${won("away")}">${h(m.away.name)}</span>${note ? `<span class="wxn">${h(note)}</span>` : ""}</div>`;
 }
-function worldComp(c, first, W, usId) {
-  const key = "w." + c.lg, open = S.open[key] != null ? S.open[key] : first, all = !!S.open["wa." + c.lg];
+/* When a tournament's matches are: "Nov 17", or "Nov 27 – Nov 28" when they run over more than one day (local time). */
+function worldWhen(c) {
+  const a = fmtShort(c.matches[0].date), b = fmtShort(c.matches[c.matches.length - 1].date);
+  return a === b ? a : `${a} – ${b}`;
+}
+function worldComp(c, W, usId) {
+  /* Folded to one line each. Only the tournament the USA is playing in starts open. */
+  const key = "w." + c.lg, open = S.open[key] != null ? S.open[key] : c.matches.some(m => m.home.id === usId || m.away.id === usId), all = !!S.open["wa." + c.lg];
   const live = c.matches.filter(m => m.state === "in").length, shown = all ? c.matches : c.matches.slice(0, 10);
   let day = "", rows = "";
-  for (const m of shown) { const d = fmtDay(m.date); if (d !== day) { day = d; rows += `<div class="wday">${h(d)}</div>`; } rows += worldMatch(m, usId); }
+  for (const m of shown) { const d = fmtDay(m.date); if (d !== day) { day = d; rows += `<div class="wxd">${h(d)}</div>`; } rows += worldMatch(m, usId); }
   const t = W.tables[c.lg];
-  const tables = /^fifa\.friendly/.test(c.lg) ? "" : `<details class="wtab" ${S.open["wt." + c.lg] ? "open" : ""} ontoggle="worldTables('${c.lg}',this.open)"><summary>Tables</summary>${
+  const tables = /^fifa\.friendly/.test(c.lg) ? "" : `<details class="wxtab" ${S.open["wt." + c.lg] ? "open" : ""} ontoggle="worldTables('${c.lg}',this.open)"><summary>Group tables</summary>${
     t === undefined || t === "loading" ? `<div class="empty">Loading…</div>` : t === "err" ? `<div class="empty">Couldn't load the tables.</div>` :
     !t.length ? `<div class="empty">No tables: this tournament, or this stage of it, is a knockout.</div>` :
-    t.map(g => `<div class="wg">${h(g.name)}</div><table class="tbl"><tr><th></th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr>` + g.rows.map(r =>
+    t.map(g => `<div class="wxg">${h(g.name)}</div><table class="tbl wxtbl"><tr><th></th><th>P</th><th>W</th><th>D</th><th>L</th><th>GD</th><th>Pts</th></tr>` + g.rows.map(r =>
       `<tr class="${r.id === usId ? "me" : ""}"><td>${h(r.name)}</td>${[r.p, r.w, r.d, r.l].map(x => `<td>${x == null ? "" : x}</td>`).join("")}<td>${r.gd == null ? "" : (r.gd > 0 ? "+" : "") + r.gd}</td><td><b>${r.pts == null ? "" : r.pts}</b></td></tr>`).join("") + `</table>`).join("")}</details>`;
-  return `<details class="wc" ${open ? "open" : ""} ontoggle="S.open['${key}']=this.open"><summary>${h(c.name)} <small>${c.matches.length} ${c.matches.length === 1 ? "match" : "matches"}${live ? ` · <span class="on">${live} live</span>` : ""}</small></summary>
+  return `<details class="wxc" ${open ? "open" : ""} ontoggle="S.open['${key}']=this.open"><summary>${h(c.name.replace(/ - /g, " · "))} <small>${c.matches.length} ${c.matches.length === 1 ? "match" : "matches"} · ${live ? `<span class="on">${live} live</span>` : h(worldWhen(c))}</small></summary>
     ${rows}${c.matches.length > 10 ? `<div class="acts"><button class="btn" onclick="S.open['wa.${c.lg}']=${!all};renderWorld()">${all ? "Show fewer" : "Show all " + c.matches.length}</button></div>` : ""}${tables}</details>`;
 }
 function renderWorld() {
@@ -1341,7 +1359,7 @@ function renderWorld() {
     if (W.comps.length) preview = `${W.comps.length} ${W.comps.length === 1 ? "tournament" : "tournaments"} · ${n} ${n === 1 ? "match" : "matches"}${live ? ` · ${live} live` : ""}`;
     body = W.failed ? `<div class="empty">Couldn't load other matches.</div><div class="acts"><button class="btn" onclick="loadWorld()">Try again</button></div>` :
       !W.comps.length ? `<div class="empty">No ${kind} international tournament has a match in the last few days or the next two weeks.</div>` :
-      `<div class="cnote">The latest or next matches in each ${kind} tournament, in your local time.</div>` + W.comps.map((c, i) => worldComp(c, i === 0, W, usId)).join("");
+      `<div class="cnote">The latest or next matches in each ${kind} tournament. Tap one to open it. Times are your local time.</div>` + W.comps.map(c => worldComp(c, W, usId)).join("");
   }
   el.innerHTML = sec("world", "Other international matches", preview, body);
 }
