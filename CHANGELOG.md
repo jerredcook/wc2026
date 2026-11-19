@@ -13,7 +13,7 @@ Schedules, squads, scores and rankings refresh on their own all day. Those are c
 
 ## 0.3.0 — not yet released
 
-- **The World Cup page reads better on a phone.** Match rows put the group and city under the match, team names no longer break in two, and the top scorers' names are no longer cut short.
+Nothing yet.
 
 ## 0.2.0 — 2026-11-19
 
