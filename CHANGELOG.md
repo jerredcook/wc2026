@@ -11,6 +11,10 @@ How the numbers work, for a version like 0.1.2:
 
 Schedules, squads, scores and rankings refresh on their own all day. Those are content updates, not new versions, and are not listed here.
 
+## 0.3.0 — not yet released
+
+- **The World Cup page reads better on a phone.** Match rows put the group and city under the match, team names no longer break in two, and the top scorers' names are no longer cut short.
+
 ## 0.2.0 — 2026-11-19
 
 - **Other international matches.** A new section with the latest or next matches in every active national-team tournament, the USA's own first, with live scores and each tournament's tables. It follows the Women / Men switch.
