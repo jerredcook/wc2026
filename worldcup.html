@@ -1089,6 +1089,8 @@ html[data-theme="dark"] .mp-status.ft{color:#34d39a;background:#16271d}
 .sc-track{flex:1;height:7px;background:#eef0f2;border-radius:4px;overflow:hidden}
 .sc-bar{display:block;height:100%;background:#0d8a4f;border-radius:4px}
 .sc-goals{font-size:15px;font-weight:800;color:#0d6b52;font-variant-numeric:tabular-nums;width:16px;text-align:right;flex-shrink:0}
+/* On a phone the goal bar took 128px of a 220px row and the scorer was cut to "Lion…". A shorter bar leaves the name room. */
+@media (max-width:480px){.sc-goalwrap{width:66px;gap:6px}}
 .sc-foot{font-size:10.5px;color:#9a9a9a;margin-top:11px;line-height:1.5;max-width:560px}
 html[data-theme="dark"] .sc-section{background:#1e2026;box-shadow:0 1px 3px rgba(0,0,0,.45)}
 html[data-theme="dark"] .sc-title{color:#f2f3f5}
@@ -1294,6 +1296,17 @@ html[data-theme="dark"] [role="button"]:focus-visible{outline-color:#34d39a}
    the row wider than the screen. Controls: at least 36px tall, comfortable to tap. */
 .td-game{min-width:0}
 .td-meta{white-space:normal;flex-shrink:1;min-width:0;max-width:42%}
+/* On a phone the three parts of a match row do not fit side by side: the match itself was left a column 33px wide at
+   320px, text spilled out of it up to about 415px, and "South Korea" was still breaking in two at 470px. So up to
+   480px the group-and-city label goes under the match, and the match gets the row's width. */
+@media (max-width:480px){
+  .td-row{display:grid;grid-template-columns:auto minmax(0,1fr);column-gap:10px;row-gap:2px;align-items:center}
+  .td-when{min-width:64px;grid-row:1 / span 2}     /* room for "12:00 AM", so finished and upcoming matches line up; only a long live clock is wider */
+  .td-meta{grid-column:2;max-width:none;text-align:left}
+}
+/* At every width, a team's name and rank stay together: where a row needs two lines it breaks between the teams,
+   not in the middle of "South Africa". (An inline block still wraps inside itself if one name alone is wider than the row.) */
+.td-game .tlink{display:inline-block}
 .tzbtn,.tz-select,.theme-btn,.rs-mode,.bk-pathsel{min-height:36px}
 .tzbtn,.rs-mode{padding-left:12px;padding-right:12px}
 .rs-collapse{min-height:36px;padding:0 4px}

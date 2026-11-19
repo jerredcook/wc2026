@@ -14,7 +14,6 @@ const wait = ms => new Promise(r => setTimeout(r, ms));
 f.onload = async () => {
   const win = f.contentWindow, d = f.contentDocument;
   await wait(2500);
-  if (q.get("theme")) d.documentElement.setAttribute("data-theme", q.get("theme"));
   if (q.get("id") === "world") {
     if (!q.get("live")) {
       const j = async n => (await fetch("/test/fixtures/" + n)).json();
@@ -30,11 +29,19 @@ f.onload = async () => {
     win.eval("renderWorld()");
     await wait(400);
   }
+  /* &run=<script>: run something in the page first, to put it in a state that cannot be reached today (a live match, say). */
+  if (q.get("run")) { win.eval(q.get("run")); await wait(300); }
   const el = q.get("sel") ? d.querySelector(q.get("sel")) : d.getElementById(q.get("id") || "world");
   if (el) win.scrollTo(0, el.getBoundingClientRect().top + win.scrollY - 8);
   await wait(300);
+  /* &ask=<CSS selector>: also report that element's size and colours as text (read with --dump-dom), for when a picture raises a question. */
+  if (q.get("ask")) document.getElementById("done").textContent = JSON.stringify([...d.querySelectorAll(q.get("ask"))].slice(0, 4).map(e => { const c = win.getComputedStyle(e), b = e.getBoundingClientRect();
+    return { text: e.textContent.trim().slice(0, 30), w: Math.round(b.width), h: Math.round(b.height), color: c.color, opacity: c.opacity, display: c.display, theme: d.documentElement.getAttribute("data-theme") }; }));
   document.getElementById("done").hidden = false; document.title = "ready";
 };
+/* The theme is set the way a visitor's own choice is (the saved preference both pages read), before the page loads.
+   Changing it afterwards starts colour transitions, and a picture taken part-way through shows colours that are never really seen. */
+if (q.get("theme")) { try { const p = JSON.parse(localStorage.getItem("wc2026.prefs.v1") || "{}"); p.theme = q.get("theme"); localStorage.setItem("wc2026.prefs.v1", JSON.stringify(p)); } catch (e) {} }
 f.src = q.get("url") || "/ao.html#men";
 </script>
 </body></html>

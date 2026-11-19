@@ -98,12 +98,10 @@ async function probe(query) {
   assert.ok(!r.error, "the layout probe failed: " + r.error);
   return r;
 }
-function checkLayout(r, known) {
+function checkLayout(r) {
   assert.equal(r.pageOverflow, 0, "the page scrolls sideways");
   assert.deepEqual(r.offScreen, [], "something sticks out past the edge of the screen");
-  /* The World Cup archive's match rows are tight on a small phone (a team's name and rank in a 33px column at 320px):
-     cramped but readable, seen by eye on Nov 19 2026, and left as it is. Everywhere else, spilling text is a fault. */
-  if (!(known && known.crampedRows)) assert.deepEqual(r.squeezed, [], "text is spilling out of a box too small for it");
+  assert.deepEqual(r.squeezed, [], "text is spilling out of a box too small for it");
   assert.deepEqual(r.hiddenButShown, [], "something marked hidden is visible");
   assert.deepEqual(r.smallTargets, [], "a button is too small to tap comfortably (under 32px)");
   assert.deepEqual(r.unreachableRows, [], "a tappable row cannot be reached by keyboard or screen reader");
@@ -142,9 +140,9 @@ test("AO Matchday: layout holds on a small phone, folded and with everything ope
 });
 /* The World Cup page keeps most of its sections collapsed: measure it as it opens, and again with everything opened. */
 const WC_OPEN = "rs-body,bk-body,sy-body,sc-body,sg-body,nw-body", WC_ALL = WC_OPEN + ",st-body,rk-body,hx-body,th-body,fr-body,sd-body,cd-body";
-test("World Cup page: layout holds as it opens on a small phone", opts, async () => checkLayout(await probe("url=/worldcup.html&w=360&sections=" + WC_OPEN), { crampedRows: true }));
+test("World Cup page: layout holds as it opens on a small phone", opts, async () => checkLayout(await probe("url=/worldcup.html&w=360&sections=" + WC_OPEN)));
 for (const w of [320, 360, 390, 768]) {
-  test(`World Cup page: layout holds at ${w}px wide with every section opened`, opts, async () => checkLayout(await probe("url=/worldcup.html&w=" + w + "&expand=1&sections=" + WC_ALL), { crampedRows: true }));
+  test(`World Cup page: layout holds at ${w}px wide with every section opened`, opts, async () => checkLayout(await probe("url=/worldcup.html&w=" + w + "&expand=1&sections=" + WC_ALL)));
 }
 test("a challenge link opens on the friend's call, in a real browser", opts, async () => {
   const men = JSON.parse(fs.readFileSync(path.join(ROOT, "data", "usa", "men.json"), "utf8")), m = men.fixtures[0];
