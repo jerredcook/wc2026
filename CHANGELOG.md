@@ -11,7 +11,7 @@ How the numbers work, for a version like 0.1.2:
 
 Schedules, squads, scores and rankings refresh on their own all day. Those are content updates, not new versions, and are not listed here.
 
-## 0.2.0 — not yet released
+## 0.2.0 — 2026-11-19
 
 - **Other international matches.** A new section with the latest or next matches in every active national-team tournament, the USA's own first, with live scores and each tournament's tables. It follows the Women / Men switch.
 - **Your record.** Your score calls now earn points: 3 for the exact score, 1 for the right result. The running total shows with your call, and each past result shows what you called. It is kept on your phone.
