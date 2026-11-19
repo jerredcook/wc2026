@@ -204,8 +204,11 @@ test("no style name is defined twice: a second rule for the same name silently r
       .replace(/@(?:media|supports)[^{]*\{(?:[^{}]*\{[^{}]*\})*[^{}]*\}/g, "");     // a rule inside @media is an adjustment for a screen size, not a second definition
     const seen = {};
     for (const m of css.matchAll(/(?:^|[}\n])\s*\.([A-Za-z0-9_-]+)\s*\{/g)) seen[m[1]] = (seen[m[1]] || 0) + 1;
-    const twice = Object.keys(seen).filter(k => seen[k] > 1 && !(page !== "worldcup.html" && k === "hero"));
-    if (page === "worldcup.html") continue;     // the older page has its own conventions; it is only read here so a typo in the list above would show
+    /* The World Cup page adds to some of its own rules further down (a "small screens and tap targets" block): the same
+       component, styled in two places. Those names are listed here; any other name defined twice is two different
+       things sharing a name, as "sc-row" was until Nov 19 2026 (top scorers, and the group-stage "what needs to happen" rows). */
+    const sameThing = page === "worldcup.html" ? ["grid", "st-grid", "st-card", "pk-row", "rs-modes", "rs-collapse", "rs-rname", "dg-line", "td-row", "td-game", "td-meta"] : ["hero"];
+    const twice = Object.keys(seen).filter(k => seen[k] > 1 && !sameThing.includes(k));
     assert.deepEqual(twice, [], page + " defines these style names more than once: " + twice.join(", "));
   }
 });

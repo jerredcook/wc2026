@@ -191,13 +191,15 @@ html[data-theme="dark"] .pens-tag{color:#e9c767;background:#3a3320}
 .st-live{font-size:10px;color:#d6322c;font-weight:600;padding:6px 11px;border-top:1px solid #f0f0f0;background:#fffafa;line-height:1.4}
 .st-scn{border-top:1px solid #eee;background:#fbfbfc;padding:8px 11px}
 .st-scn-h{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:#888;margin-bottom:6px}
-.sc-row{display:flex;align-items:baseline;gap:6px;font-size:12px;padding:2px 0}
-.sc-ic{flex-shrink:0}
-.sc-row .tlink{font-weight:700;color:#1a1a1a;flex-shrink:0}
-.sc-dt{color:#666;min-width:0}
-.sc-won .sc-dt{color:#b8860b;font-weight:600}
-.sc-through .sc-dt{color:#0d8a4f;font-weight:600}
-.sc-out{opacity:.6}
+/* "What needs to happen" rows (scn-…). They were called sc-row, the same name as the top scorers' rows further
+   down, so each list was being styled by the other's rule as well as its own. */
+.scn-row{display:flex;align-items:baseline;gap:6px;font-size:12px;padding:2px 0}
+.scn-ic{flex-shrink:0}
+.scn-row .tlink{font-weight:700;color:#1a1a1a;flex-shrink:0}
+.scn-dt{color:#666;min-width:0}
+.scn-won .scn-dt{color:#b8860b;font-weight:600}
+.scn-through .scn-dt{color:#0d8a4f;font-weight:600}
+.scn-out{opacity:.6}
 .form-dots{display:inline-flex;gap:3px;margin-left:6px;vertical-align:middle}
 .fd{display:inline-flex;align-items:center;justify-content:center;width:13px;height:13px;border-radius:50%;font-size:8px;font-weight:800;color:#fff;line-height:1;flex-shrink:0}
 .fd-W{background:#1aa251}.fd-D{background:#9aa0a8}.fd-L{background:#d6322c}
@@ -444,10 +446,10 @@ html[data-theme="dark"] .rs-tn.w{color:#fff}
 html[data-theme="dark"] .rs-sc{background:#2b2f38;color:#e9eaed}
 html[data-theme="dark"] .st-scn{background:#1c1f26;border-color:#31343d}
 html[data-theme="dark"] .st-scn-h{color:#80868f}
-html[data-theme="dark"] .sc-row .tlink{color:#e9eaed}
-html[data-theme="dark"] .sc-dt{color:#9aa0a8}
-html[data-theme="dark"] .sc-won .sc-dt{color:#e8c75a}
-html[data-theme="dark"] .sc-through .sc-dt{color:#34d39a}
+html[data-theme="dark"] .scn-row .tlink{color:#e9eaed}
+html[data-theme="dark"] .scn-dt{color:#9aa0a8}
+html[data-theme="dark"] .scn-won .scn-dt{color:#e8c75a}
+html[data-theme="dark"] .scn-through .scn-dt{color:#34d39a}
 .st-legend{display:flex;gap:14px;flex-wrap:wrap;font-size:10.5px;color:#777;margin-top:13px;align-items:center}
 .st-legend .sw{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:4px;vertical-align:middle}
 .st-foot{font-size:10.5px;color:#9a9a9a;margin-top:9px;line-height:1.55}
@@ -1078,12 +1080,16 @@ html[data-theme="dark"] .mp-status.ft{color:#34d39a;background:#16271d}
 .sc-updated{font-size:11px;color:#888;margin:12px 0 6px}
 .sc-updated .ok{color:#0d6b52;font-weight:700}
 .sc-empty{font-size:12px;color:#aaa;padding:4px 0}
-.sc-row{display:flex;align-items:center;gap:11px;padding:7px 2px;border-bottom:1px solid #f4f4f4;max-width:560px}
+.sc-row{display:flex;align-items:center;gap:11px;padding:7px 2px;border-bottom:1px solid #f4f4f4;max-width:560px;font-size:12px}     /* 12px used to arrive from the other list's rule of the same name */
 .sc-row:last-child{border-bottom:none}
 .sc-rank{width:20px;text-align:center;font-weight:800;color:#aaa;font-variant-numeric:tabular-nums;flex-shrink:0}
 .sc-who{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
 .sc-name{font-size:13.5px;font-weight:700;color:#1a1a1a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sc-team{font-size:11px;color:#888}
+/* The scorer's team has always shown in bold, dark type: that came from the other list's rule reaching in here.
+   It is kept, now as this list's own rule, so the top scorers look exactly as they did. */
+.sc-team .tlink{font-weight:700;color:#1a1a1a}
+html[data-theme="dark"] .sc-team .tlink{color:#e9eaed}
 .sc-pen{font-size:9px;font-weight:700;color:#7a5000;background:#fef4dc;border-radius:3px;padding:0 4px;margin-left:6px;white-space:nowrap}
 .sc-goalwrap{display:flex;align-items:center;gap:8px;width:128px;flex-shrink:0}
 .sc-track{flex:1;height:7px;background:#eef0f2;border-radius:4px;overflow:hidden}
@@ -4438,7 +4444,7 @@ function groupScenarioHTML(rows,played,rem){
   const items=rows.map(function(r){
     const sc=teamScenario(r,rows,played,rem);
     const icon=sc.status==="won"?"🥇":sc.status==="through"?"✅":sc.status==="out"?"⛔":"➡️";
-    return '<div class="sc-row sc-'+sc.status+'"><span class="sc-ic">'+icon+'</span>'+teamLink(r.name,false,false)+'<span class="sc-dt">'+escHTML(sc.detail)+'</span></div>';
+    return '<div class="scn-row scn-'+sc.status+'"><span class="scn-ic">'+icon+'</span>'+teamLink(r.name,false,false)+'<span class="scn-dt">'+escHTML(sc.detail)+'</span></div>';
   }).join("");
   return '<div class="st-scn"><div class="st-scn-h">🔮 What needs to happen</div>'+items+'</div>';
 }
