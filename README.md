@@ -67,17 +67,11 @@ The schedule, squads and club form are built by [`scripts/build-usa.mjs`](script
 
 The app's version is one line in [`js/core.js`](js/core.js) (`const VERSION`). The footer shows it, and the anonymous error reports carry it. [`CHANGELOG.md`](CHANGELOG.md) says what changed in each version, in plain words.
 
-- **The numbers:** a fix raises the last one (0.1.0 → 0.1.1), something new raises the middle one (0.1.1 → 0.2.0), and 1.0.0 is kept for the first app-store release.
-- **Between versions** the line ends in `-pre` (`0.2.0-pre` means "on the way to 0.2.0") and the top changelog entry reads "not yet released". Every push to `main` still goes live once the tests pass; a version is a named checkpoint on top of that.
+- **Every change that goes live takes the next number,** in the same commit, with a dated entry in the changelog. A fix or a small change raises the last number (0.3.0 → 0.3.1). What is live always has a plain number; there is no "-pre" or other in-between label.
+- **The middle number is a decision.** It goes up (0.3.4 → 0.4.0) when the owner agrees a change is big enough. 1.0.0 is kept for the first app-store release.
 - **Data is not a version.** The hourly schedule, squad and score refreshes, and the weekly rankings, do not change the number.
 
-To release a version:
-
-1. In `js/core.js`, remove `-pre` from the `VERSION` line.
-2. In `CHANGELOG.md`, replace "not yet released" with the date, like `## 0.1.0 — 2026-11-15`.
-3. Commit, push, then tag that commit and push the tag: `git tag v0.1.0 && git push origin v0.1.0`.
-
-The [`release`](.github/workflows/release.yml) Action then runs the tests, refuses the tag unless it matches the version line and a dated changelog entry ([`scripts/release-notes.mjs`](scripts/release-notes.mjs)), and publishes a GitHub release with that entry as its notes. The next change after a release starts a new `-pre` version with its own changelog entry; the tests fail if the number moves without one.
+A middle-number version also gets a GitHub release. Once it is live, tag its commit and push the tag: `git tag v0.3.0 && git push origin v0.3.0`. The [`release`](.github/workflows/release.yml) Action then runs the tests, refuses the tag unless it matches the version line and a dated changelog entry ([`scripts/release-notes.mjs`](scripts/release-notes.mjs)), and publishes the release with that entry as its notes. The tests fail if the number moves without a changelog entry.
 
 ## Road to Google Play
 

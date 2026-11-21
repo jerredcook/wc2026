@@ -13,8 +13,8 @@ import path from "node:path";
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 
-/* "0.1.0" or "0.1.0-pre" (on the way to 0.1.0, not released). */
-export const VERSION_RE = /^(\d+)\.(\d+)\.(\d+)(-pre)?$/;
+/* "0.1.0". Nothing else: what is live always has a plain number (there is no "-pre" in between). */
+export const VERSION_RE = /^(\d+)\.(\d+)\.(\d+)$/;
 
 /* The changelog's entries, newest first: [{ version, when, body }].
    An entry starts at a heading like "## 0.1.0 — 2026-11-15". */
@@ -37,7 +37,6 @@ const isDate = s => /^\d{4}-\d{2}-\d{2}$/.test(s);
 export function checkRelease({ tag, version, changelog }) {
   const m = VERSION_RE.exec(version || "");
   if (!m) return { ok: false, why: `VERSION "${version}" is not in the form 1.2.3` };
-  if (m[4]) return { ok: false, why: `VERSION is still "${version}": remove "-pre" from the line in js/core.js before tagging` };
   if (tag !== "v" + version) return { ok: false, why: `the tag is ${tag} but the app says it is v${version}` };
   const top = entries(changelog)[0];
   if (!top || top.version !== version) return { ok: false, why: `the newest entry in CHANGELOG.md is ${top ? top.version : "missing"}, not ${version}` };

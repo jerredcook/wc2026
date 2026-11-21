@@ -8,7 +8,7 @@
 /* The app's version. This line is the only place the number lives: the footer,
    the anonymous error reports and the release check all read it from here.
    "-pre" means "on the way to that version, not released yet". See CHANGELOG.md. */
-const VERSION = "0.3.0-pre";
+const VERSION = "0.3.0";
 
 /* W / D / L from one side's point of view; a level score with a shootout goes to the shootout winner. */
 const outcome = (us, them, pen) => us > them ? "W" : us < them ? "L" : pen ? (pen[0] > pen[1] ? "W" : "L") : "D";

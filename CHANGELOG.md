@@ -5,13 +5,13 @@ The version you have is shown at the bottom of the app.
 
 How the numbers work, for a version like 0.1.2:
 
-- The last number goes up for a fix (0.1.1 → 0.1.2).
-- The middle number goes up when something new is added (0.1.2 → 0.2.0).
+- The last number goes up for a fix or a small change (0.1.1 → 0.1.2).
+- The middle number goes up for a bigger change (0.1.2 → 0.2.0).
 - 1.0.0 is reserved for the first app-store release.
 
 Schedules, squads, scores and rankings refresh on their own all day. Those are content updates, not new versions, and are not listed here.
 
-## 0.3.0 — not yet released
+## 0.3.0 — 2026-11-21
 
 - **The chapter's crest is the app's picture.** AO Central New Jersey's harp crest now shows as the app's icon on a phone's home screen, in the browser tab, and in the picture that appears when the link is shared. If the app is already on your iPhone's home screen, remove it and add it again to get the new icon; Android changes it on its own within a few days.
 
