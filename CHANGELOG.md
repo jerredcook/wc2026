@@ -11,6 +11,10 @@ How the numbers work, for a version like 0.1.2:
 
 Schedules, squads, scores and rankings refresh on their own all day. Those are content updates, not new versions, and are not listed here.
 
+## 0.3.0 — not yet released
+
+- **The chapter's crest is the app's picture.** AO Central New Jersey's harp crest now shows as the app's icon on a phone's home screen, in the browser tab, and in the picture that appears when the link is shared. If the app is already on your iPhone's home screen, remove it and add it again to get the new icon; Android changes it on its own within a few days.
+
 ## 0.2.0 — 2026-11-19
 
 - **Other international matches.** A new section with the latest or next matches in every active national-team tournament, the USA's own first, with live scores and each tournament's tables. It follows the Women / Men switch.

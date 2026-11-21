@@ -12,7 +12,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="AO Matchday">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="ao-icon-192.png">
+<link rel="apple-touch-icon" href="ao-touch-icon.png">
 <!-- Search + social share preview -->
 <meta name="description" content="The FIFA World Cup, men's and women's — the complete 2026 tournament preserved in full (every match, scorer, card and shootout), FIFA world rankings kept current, and every World Cup since 1930.">
 <meta property="og:type" content="website">
@@ -3996,7 +3997,7 @@ function armKickReminder(){
       const g=matchTeamsStr(nx.m),f=fmtInstant(nx.ts);
       new Notification("⚽ Kickoff in 15 minutes",{
         body:g+" — "+f.time+" "+f.tz+" · "+roundLabel(nx.m.r)+" · "+String(nx.s.city).split(",")[0],
-        tag:"kick-"+nx.ts, icon:"apple-touch-icon.png"
+        tag:"kick-"+nx.ts, icon:"ao-touch-icon.png"
       });
     }catch(e){}
     armKickReminder();                       // chain to the following fixture

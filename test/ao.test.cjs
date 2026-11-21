@@ -189,6 +189,52 @@ test("ao: the page is the chapter's app in every place it names itself", () => {
   assert.equal((html.match(/not a product of American Outlaws national/gi) || []).length, 2, "the band and the footer both say whose app it is not");
 });
 
+/* A PNG's pixels, read with nothing but Node (8-bit RGB, not interlaced: what the icon files are). */
+function pixels(file) {
+  const b = fs.readFileSync(path.join(root, file)), w = b.readUInt32BE(16), h = b.readUInt32BE(20), idat = [];
+  assert.equal([b[24], b[25], b[28]].join("/"), "8/2/0", file + " should be plain 8-bit colour with no see-through parts (a phone paints those black)");
+  for (let o = 8; o < b.length;) { const len = b.readUInt32BE(o); if (b.toString("latin1", o + 4, o + 8) === "IDAT") idat.push(b.subarray(o + 8, o + 8 + len)); o += 12 + len; }
+  const raw = require("node:zlib").inflateSync(Buffer.concat(idat)), row = w * 3, out = Buffer.alloc(h * row);
+  for (let y = 0; y < h; y++) {
+    const f = raw[y * (row + 1)], line = raw.subarray(y * (row + 1) + 1, (y + 1) * (row + 1));
+    for (let x = 0; x < row; x++) {
+      const a = x >= 3 ? out[y * row + x - 3] : 0, up = y ? out[(y - 1) * row + x] : 0, c = x >= 3 && y ? out[(y - 1) * row + x - 3] : 0;
+      let v = line[x];
+      if (f === 1) v += a; else if (f === 2) v += up; else if (f === 3) v += (a + up) >> 1;
+      else if (f === 4) { const p = a + up - c, pa = Math.abs(p - a), pb = Math.abs(p - up), pc = Math.abs(p - c); v += pa <= pb && pa <= pc ? a : pb <= pc ? up : c; }
+      out[y * row + x] = v & 255;
+    }
+  }
+  return { w, h, at: (x, y) => [out[y * row + x * 3], out[y * row + x * 3 + 1], out[y * row + x * 3 + 2]] };
+}
+
+test("ao: the app's picture is the chapter's crest, on every page and in the install details", () => {
+  const NAVY = [11, 42, 91], navy = p => p.every((v, i) => Math.abs(v - NAVY[i]) <= 3);
+  const man = JSON.parse(read("ao.webmanifest")), cap = ["icon-192.png", "icon-512.png", "apple-touch-icon.png"];
+  assert.deepEqual(man.icons.map(i => i.sizes + " " + i.purpose).sort(), ["192x192 any", "512x512 any", "512x512 maskable"], "a small icon, a large one, and one Android can cut to its own shape");
+  for (const i of [...man.icons, { src: "ao-touch-icon.png", sizes: "180x180", purpose: "any" }]) {
+    assert.ok(!cap.includes(i.src), i.src + " is Cap Day's picture");
+    const px = pixels(i.src), mid = px.w / 2;
+    assert.equal(px.w + "x" + px.h, i.sizes, i.src + " is not the size it is listed as");
+    for (const [x, y] of [[0, 0], [px.w - 1, 0], [0, px.h - 1], [px.w - 1, px.h - 1]]) assert.ok(navy(px.at(x, y)), i.src + " should be navy to its corners: the phone rounds them off itself");
+    let drawn = 0, outside = 0;
+    for (let y = 0; y < px.h; y += 2) for (let x = 0; x < px.w; x += 2) if (!navy(px.at(x, y))) { drawn++; if (Math.hypot(x - mid, y - mid) > px.w * 0.4) outside++; }
+    assert.ok(drawn > px.w * px.h / 4 * 0.2, i.src + " has no crest on it");
+    // Android keeps only a circle 80% as wide as the picture: on the icon made for it, nothing of the crest may be outside.
+    if (i.purpose === "maskable") assert.equal(outside, 0, "part of the crest would be cut off on Android");
+    else assert.ok(outside > 0, i.src + " shows the crest as large as the square allows");
+  }
+  for (const f of ["ao.html", "worldcup.html", "privacy.html", "ao-sign.html"]) {
+    const html = read(f);
+    for (const c of cap) assert.ok(!html.includes('"' + c + '"'), f + " still uses Cap Day's " + c);
+    assert.match(html, /<link rel="icon" href="ao-icon-192\.png">/, f + " has no icon for the browser tab");
+  }
+  for (const f of ["ao.html", "worldcup.html"]) assert.match(read(f), /<link rel="apple-touch-icon" href="ao-touch-icon\.png">/, f + " has no icon for an iPhone home screen");
+  const shell = /const SHELL = (\[[^\]]*\])/.exec(read("sw.js"))[1];
+  for (const f of ["ao-icon-192.png", "ao-touch-icon.png"]) assert.ok(shell.includes(`"./${f}"`), f + " is not kept for offline use");
+  assert.ok(pixels("ao-og.png").at(220, 300).some((v, i) => Math.abs(v - NAVY[i]) > 40), "the share picture has nothing where the crest goes");
+});
+
 test("ao: the sign for the bar points at the AO page and can be printed", () => {
   const sign = read("ao-sign.html");
   assert.match(sign, /<img class="qr" id="qr" src="ao-qr\.svg" alt="[^"]+"/);

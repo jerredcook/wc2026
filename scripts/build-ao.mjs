@@ -32,6 +32,9 @@ swapRe(/<meta property="og:site_name" content="[^"]*">/, `<meta property="og:sit
 swapRe(/<meta property="og:description" content="[^"]*">/, `<meta property="og:description" content="The matchday app of AO Central New Jersey.">`);
 swapRe(/<meta property="og:url" content="[^"]*">/, `<meta property="og:url" content="https://jerredcook.github.io/wc2026/ao.html">`);
 swap(`<link rel="manifest" href="manifest.webmanifest">`, `<link rel="manifest" href="ao.webmanifest">`);
+// The app's picture is the chapter's own crest (the harp), not Cap Day's cap.
+swap(`<link rel="icon" href="icon-192.png">`, `<link rel="icon" href="ao-icon-192.png">`);
+swap(`<link rel="apple-touch-icon" href="apple-touch-icon.png">`, `<link rel="apple-touch-icon" href="ao-touch-icon.png">`);
 swap(`<meta name="apple-mobile-web-app-title" content="Cap Day">`, `<meta name="apple-mobile-web-app-title" content="AO Matchday">`);
 
 swap(`</style>`, `
