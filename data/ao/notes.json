@@ -4,7 +4,8 @@
    "notes": [
     {
      "date": "2026-11-27",
-     "text": "There is no official watch party due to the holiday weekend."
+     "text": "There is no official watch party due to the holiday weekend.",
+     "official": false
     }
    ],
    "songs": [

@@ -87,6 +87,14 @@ function aoNotes(m) {
   return w.notes.filter(n => ok(n) && n.date === day).concat(w.notes.filter(n => ok(n) && !n.date)).slice(0, 2);
 }
 
+/* The leaders can say a match has no official watch party (a "no" beside that match's date in their sheet).
+   AO's own listing may still name the bar, so the card keeps the place and only drops the word "official". */
+function aoNotOfficial(m) {
+  const w = aoWritten(); if (!w || !Array.isArray(w.notes) || !m) return false;
+  const day = aoEtDay(m.date);
+  return w.notes.some(n => n && n.official === false && typeof n.date === "string" && n.date === day);
+}
+
 function renderWatch() {
   const el = $("aoWatch"); if (!el) return;
   const m = aoMatch();
@@ -101,7 +109,7 @@ function renderWatch() {
     <div class="kicker">Watch with American Outlaws</div>
     <div class="cnote" style="margin:2px 0 0">${h(title)} · ${h(fmtDay(m.date))} · ${h(fmtTime(m.date))}</div>
     ${aoNear(m) != null ? `<div class="aonear">🚗 You could go: ${h(m.venue)} is ${h(aoNearText(aoNear(m)).replace(/^[AI]/, c => c.toLowerCase()))}.</div>` : ""}
-    ${home ? `<div class="aohome">${aoCrest(home.c)}<div class="aot"><div class="kicker" style="color:var(--red)">Your chapter${home.p.official ? " · official watch party" : ""}</div>
+    ${home ? `<div class="aohome">${aoCrest(home.c)}<div class="aot"><div class="kicker" style="color:var(--red)">Your chapter${home.p.official && !aoNotOfficial(m) ? " · official watch party" : ""}</div>
         <div class="aon big">${h(aoName(home.c))}</div><b>${h(home.p.venue)}</b>${home.p.address ? `<small>${h(home.p.address)}</small>` : ""}</div>
         ${said}<div class="aoacts">${home.p.address ? `<a class="btn" href="${h(aoMaps(home.p.address))}" target="_blank" rel="noopener" onclick="track('directions')">📍 Directions</a>` : ""}
         <button class="btn" onclick="aoSub()">📅 Add to calendar</button></div></div>`

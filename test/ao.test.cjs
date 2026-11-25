@@ -426,6 +426,27 @@ test("ao page: the leaders' note for this match shows on the watch party card, a
   assert.ok(html.indexOf('class="aonotes"') < html.indexOf('class="aoacts"') && html.indexOf('class="aonotes"') < html.indexOf("<details"), "inside the chapter's own block, not in the folded list");
 });
 
+test("ao page: when the leaders say a match has no official watch party, the card keeps the place and drops the word official", async () => {
+  const say = notes => ({ "middlesex-county": { notes, songs: [] }, nyc: { notes: [{ date: "2026-11-14", official: false }], songs: [] } });
+  const p = await aoWritten(null, say([{ date: "2026-11-14", text: "There is no official watch party due to the holiday weekend.", official: false }])), t = p.text("aoWatch");
+  assert.match(t, /Your chapter AO Central New Jersey Hailey's Harp & Pub 400 Main St, Metuchen, NJ From the chapter There is no official watch party due to the holiday weekend\. 📍 Directions/, "the card, the place, the note and the buttons all stay");
+  assert.ok(!/official watch party AO/.test(t), "the label is gone");
+  assert.equal((p.html("aoWatch").match(/class="aonote"/g) || []).length, 1);
+
+  const bare = await aoWritten(null, say([{ date: "2026-11-14", official: false }])), bt = bare.text("aoWatch");
+  assert.match(bt, /Your chapter AO Central New Jersey Hailey's Harp & Pub/, "a no without a note still drops the label");
+  assert.ok(!/From the chapter|undefined/.test(bt), "and draws no empty note");
+
+  // Only that match's day, only a real `false`, and only the chapter that said it.
+  for (const notes of [[{ date: "2026-11-15", text: "tomorrow's match", official: false }], [{ text: "no date", official: false }], [{ date: "2026-11-14", text: "x", official: "false" }],
+    [{ date: "2026-11-14", text: "x", official: 0 }], [{ date: "2026-11-14", text: "x" }], [null, { date: 20261114, official: false }]]) {
+    const q = await aoWritten(null, say(notes));
+    assert.match(q.text("aoWatch"), /Your chapter · official watch party AO Central New Jersey/, JSON.stringify(notes));
+  }
+  const other = await aoWritten(null, { "middlesex-county": { notes: [], songs: [] }, nyc: { notes: [{ date: "2026-11-14", official: false }], songs: [] } });
+  assert.match(other.text("aoWatch"), /Your chapter · official watch party AO Central New Jersey/, "another chapter's no does not touch ours");
+});
+
 test("ao page: a note belongs to the match's day in U.S. Eastern time", async () => {
   const p = await aoWritten();
   assert.equal(p.run("aoEtDay('2026-11-18T00:00Z')"), "2026-11-17", "a 7 PM Eastern kickoff is the next day in UTC");

@@ -53,6 +53,19 @@ test("notes: the Notes tab gives dated and undated notes, without its heading, p
   assert.deepEqual(readNotes([], TODAY), { notes: [], skipped: [] });
 });
 
+test("notes: a \"no\" in the third column marks that match as having no official watch party", () => {
+  const rows = [["Match date", "Note for the watch party card", "Official watch party? Type no if there is not one"],
+    ["11/27/26", "There is no official watch party due to the holiday weekend.", "no"], ["12/13", "", " No "], ["11/17", "Upstairs", ""], ["11/18", "Bring a scarf", "yes"],
+    ["11/19", "", "yes"], ["", "Members get $1 off drafts.", "no"], ["", "", "no"], ["someday", "", "no"], ["11/20", "x", "no thanks"]];
+  const { notes, skipped } = readNotes(rows, TODAY);
+  assert.deepEqual(notes, [{ date: "2026-11-27", text: "There is no official watch party due to the holiday weekend.", official: false },
+    { date: "2026-12-13", official: false }, { date: "2026-11-17", text: "Upstairs" }, { date: "2026-11-18", text: "Bring a scarf" },
+    { text: "Members get $1 off drafts." }, { date: "2026-11-20", text: "x" }], "only a plain no counts; a no with a date needs no note; anything else leaves the row as it was");
+  assert.deepEqual(skipped, ['a "no" for the official watch party needs a match date', 'a "no" for the official watch party needs a match date', '"someday" is not a date'],
+    "a no without a date would call off every match, so it is left out and said so");
+  assert.deepEqual(readNotes([["11/13/2026", "", "no"]], TODAY).notes, [], "a no for a match more than a day past is dropped like any note");
+});
+
 test("notes: the Songbook tab keeps its order and its line breaks", () => {
   const rows = [["Chant or song", "Words (press Ctrl+Enter, or Cmd+Enter on a Mac, for a new line)"], ["I Believe", "I believe\r\nI believe that\nI believe that we will win!"], ["", ""], ["", "words with no name"], ["A name with no words", ""]];
   assert.deepEqual(readSongs(rows), [{ title: "I Believe", words: "I believe\nI believe that\nI believe that we will win!" }, { title: "Untitled", words: "words with no name" }, { title: "A name with no words", words: "" }]);
@@ -122,7 +135,12 @@ test("notes: the committed file is well-formed, and no sheet id is in the reposi
   for (const [slug, c] of Object.entries(d.chapters)) {
     assert.ok(slugs.has(slug), slug + " is a chapter");
     assert.ok(Array.isArray(c.notes) && c.notes.length <= LIMITS.notes && Array.isArray(c.songs) && c.songs.length <= LIMITS.songs);
-    for (const n of c.notes) { assert.ok(typeof n.text === "string" && n.text && n.text.length <= LIMITS.note); assert.ok(n.date == null || /^\d{4}-\d\d-\d\d$/.test(n.date)); }
+    for (const n of c.notes) {
+      assert.ok(n.text === undefined ? n.official === false : typeof n.text === "string" && n.text && n.text.length <= LIMITS.note, "a note has words, unless it only says there is no official watch party");
+      assert.ok(n.date == null || /^\d{4}-\d\d-\d\d$/.test(n.date));
+      assert.ok(n.official === undefined || (n.official === false && n.date), "\"no official watch party\" is always for one dated match");
+      assert.deepEqual(Object.keys(n).filter(k => !["date", "text", "official"].includes(k)), []);
+    }
     for (const s of c.songs) assert.ok(typeof s.title === "string" && s.title.length <= LIMITS.title && typeof s.words === "string" && s.words.length <= LIMITS.words);
   }
   const wf = readFileSync(path.join(root, ".github/workflows/ao-notes.yml"), "utf8");

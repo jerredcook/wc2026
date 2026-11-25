@@ -11,6 +11,10 @@ How the numbers work, for a version like 0.1.2:
 
 Schedules, squads, scores and rankings refresh on their own all day. Those are content updates, not new versions, and are not listed here.
 
+## 0.3.1 — 2026-11-25
+
+- **A match with no official watch party.** The chapter's leaders can now mark a match as having no official watch party. The card still shows where the chapter usually watches, with the leaders' note, but no longer calls it an official watch party.
+
 ## 0.3.0 — 2026-11-21
 
 - **The chapter's crest is the app's picture.** AO Central New Jersey's harp crest now shows as the app's icon on a phone's home screen, in the browser tab, and in the picture that appears when the link is shared. If the app is already on your phone's home screen, it keeps the old icon: remove it and add it again to get the new one. (On Android, Chrome may instead ask you to approve the new icon when you open the app.)

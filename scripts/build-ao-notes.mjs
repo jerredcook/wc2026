@@ -4,7 +4,7 @@
      ... --dry      read the sheets, print what would be written, write nothing
 
    Each chapter that uses this keeps a Google Sheet with two tabs:
-     Notes     (the first tab)   match date (optional) | note for the watch party card
+     Notes     (the first tab)   match date (optional) | note for the watch party card | "no" when that match has no official watch party
      Songbook  (the second tab)  chant or song         | its words
    The sheet is shared "anyone with the link can view" and its id is kept out of
    the repository, in the AO_SHEETS secret (several chapters: "slug=id,slug=id").
@@ -82,15 +82,20 @@ export function readDate(v, today) {
 const body = (rows, heading) => (rows.length && heading.test((rows[0][1] || "") + " " + (rows[0][0] || "")) ? rows.slice(1) : rows);
 
 /* The Notes tab. A note for a match already more than a day past is dropped; so is one whose date cannot be read
-   (better missing than shown on every match by mistake). Returns { notes, skipped }. */
+   (better missing than shown on every match by mistake). Returns { notes, skipped }.
+   A "no" in the third column says that match has no official watch party: the row is kept as `official: false`
+   (with or without a note), and the card drops its "official watch party" label for that day. It needs a date;
+   without one it would call off every match, so the "no" is left out and the note is kept. */
 export function readNotes(rows, today) {
   const notes = [], skipped = [], floor = new Date(Date.parse(today + "T00:00:00Z") - 864e5).toISOString().slice(0, 10);
   for (const r of body(rows, /note for the watch party|match date/i)) {
-    const text = clean(r[1], LIMITS.note); if (!text) continue;
+    const text = clean(r[1], LIMITS.note); let off = /^(no|n|none)$/i.test(clean(r[2], 20));
+    if (!text && !off) continue;
     const date = readDate(r[0], today);
     if (date == null) { skipped.push(`"${clean(r[0], 30)}" is not a date`); continue; }
     if (date && date < floor) continue;
-    notes.push(date ? { date, text } : { text });
+    if (off && !date) { skipped.push('a "no" for the official watch party needs a match date'); off = false; if (!text) continue; }
+    notes.push(Object.assign(date ? { date } : {}, text ? { text } : {}, off ? { official: false } : {}));
   }
   return { notes: notes.slice(0, LIMITS.notes), skipped };
 }
