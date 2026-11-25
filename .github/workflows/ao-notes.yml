@@ -67,4 +67,11 @@ jobs:
         if: steps.commit.outputs.pushed == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh workflow run deploy-pages.yml --ref main
+        # GitHub sometimes answers this with a server error (on 2026-11-25 a 504 left new data unpublished), so it is tried a few times.
+        run: |
+          for try in 1 2 3 4 5; do
+            gh workflow run deploy-pages.yml --ref main && exit 0
+            echo "Could not start the deploy (try $try of 5)."
+            if [ "$try" -lt 5 ]; then sleep $((try * 20)); fi
+          done
+          exit 1

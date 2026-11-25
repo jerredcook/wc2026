@@ -90,6 +90,7 @@ test("every workflow that pushes also starts the deploy, and is allowed to", () 
     if (!/^\s*git push\s*$/m.test(y)) continue;
     pushers++;
     assert.match(y, /gh workflow run deploy-pages\.yml/, `${f} pushes but never starts the deploy`);
+    assert.match(y, /for try in 1 2 3 4 5; do\s+gh workflow run deploy-pages\.yml --ref main && exit 0\s[^]*?\bdone\s+exit 1/, `${f} should try again when GitHub cannot start the deploy, and fail if it never can`);
     assert.match(y, /^\s*actions: write/m, `${f} needs "actions: write" to start the deploy`);
     assert.match(y, /echo "pushed=true" >> "\$GITHUB_OUTPUT"/, `${f} should record that it pushed`);
   }
